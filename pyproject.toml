@@ -1,13 +1,29 @@
 [project]
 authors = [{name = "Rudolf J", email = "r.schnetler@uq.edu.au"}]
-dependencies = []
+dependencies = [
+    "click>=8.0",
+    "strictyaml>=1.7.3",
+]
 name = "agent-skills"
 requires-python = ">= 3.11"
 version = "0.1.0"
 
+[project.scripts]
+ref = "skills.ref.cli:main"
+
 [build-system]
 build-backend = "hatchling.build"
 requires = ["hatchling"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/skills"]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.0",
+    "pytest>=7.0",
+    "ruff>=0.8.0",
+]
 
 [tool.pixi.workspace]
 channels = ["conda-forge"]
@@ -17,6 +33,15 @@ platforms = ["linux-64"]
 agent_skills = { path = ".", editable = true }
 
 [tool.pixi.tasks]
+format = "ruff format ."
+hooks-install = "pre-commit install"
+hooks-run = "pre-commit run --all-files"
+lint = "ruff check ."
+test = "pytest"
+validate-skills = "python -m skills.ref.repo_check"
 
 [tool.pixi.dependencies]
+pre-commit = ">=4.0"
+pytest = ">=7.0"
+ruff = ">=0.8.0"
 zensical = ">=0.0.31,<0.0.32"

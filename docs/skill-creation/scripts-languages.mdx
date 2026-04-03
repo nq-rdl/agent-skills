@@ -1,0 +1,71 @@
+---
+icon: lucide/code-2
+---
+
+# Scripts Language Guide
+
+Skills may ship a `scripts/` directory containing executable tooling invoked by the agent. This document defines the supported languages, their conventions, and platform assumptions.
+
+## Platform Assumptions
+
+Agent skills assume **macOS, Linux, or Linux via WSL2**. Windows (native, non-WSL) is not supported. Scripts may use POSIX-compatible shells, standard Unix utilities, and language runtimes available on these platforms.
+
+## Supported Languages
+
+### Bash
+
+Use for lightweight glue scripts, environment setup, and simple automation.
+
+- Shebang: `#!/usr/bin/env bash`
+- Use `set -euo pipefail` at the top of every script
+- Prefer POSIX-compatible constructs; avoid bashisms that differ between macOS and Linux
+- Not suitable for complex logic — use Python, TypeScript, or Go instead
+
+### Python
+
+Use for data processing, PDF/document handling, CLI tools, and anything needing the PyPI ecosystem.
+
+- Minimum version: **Python 3.11+**
+- Dependency management: `requirements.txt` + `ensure-deps.sh` (auto-detects pixi > uv > mamba > conda > pip)
+- CLI framework: `typer` (preferred) or `click`
+- Do not commit virtual environments or `.pixi/` directories
+
+### TypeScript (Bun)
+
+Use for MCP servers, Claude SDK integrations, and scripts that benefit from the npm ecosystem.
+
+- Runtime: **Bun 1.0+** (not Node.js — Bun is the standard runtime for TS skills)
+- Dependency management: `package.json` + `bun install`
+- Test runner: `bun:test`
+- Do not commit `node_modules/`
+
+> **Note on MCP servers:** MCP wiring (server.ts, .mcp.json) is platform-specific and belongs in `agent-extensions`, not in portable skills. Skills ship the runtime; extensions ship the MCP bridge.
+
+### Go
+
+Use for long-running services, ConnectRPC/gRPC servers, CLI binaries, and performance-sensitive tooling.
+
+- Minimum version: **Go 1.25+**
+- Each skill with Go scripts has its own `go.mod` inside `scripts/` — no shared module
+- Build tool: standard `go build` + `Makefile` (no pixi required)
+- Code generation (protobuf): use `buf` with a `buf.gen.yaml`; commit generated code under `gen/`
+- Do not commit `bin/` directories or compiled binaries
+
+## Choosing a Language
+
+| Situation | Preferred Language |
+|-----------|-------------------|
+| Simple file operations, env setup | Bash |
+| Data extraction, document processing, PyPI dependency | Python |
+| MCP server, Claude SDK wrapper, npm ecosystem | TypeScript (Bun) |
+| Long-running service, ConnectRPC, CLI binary | Go |
+
+## No Windows-specific code
+
+Do not use:
+- Windows path separators (`\`)
+- `cmd.exe` or PowerShell syntax
+- Windows-only APIs or registry access
+- `.bat` or `.ps1` scripts
+
+If a script needs to handle both macOS and Linux differences (e.g. `sed -i` syntax), use a compatibility shim or prefer Python/Go for that logic.
