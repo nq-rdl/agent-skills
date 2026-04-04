@@ -4,17 +4,17 @@ icon: lucide/book-open
 
 # Skills Catalog
 
-Portable, provider-agnostic skills following the [agentskills.io specification](https://agentskills.io/specification). Each skill is a directory under `skills/` containing a `SKILL.md` with YAML frontmatter and markdown instructions.
+Portable, provider-agnostic skills following the [agentskills.io specification](https://agentskills.io/specification). Each skill is self-contained: a directory under `skills/` with a `SKILL.md` plus any optional scripts, references, templates, or assets it needs.
 
-## Installation
+This repo documents and validates those skills. The repo-specific structure used here is outlined in [`specification.mdx`](specification.mdx).
 
-Skills are discovered automatically when placed in the standard locations:
+## Repo Scope
 
-| Scope | Path |
-|-------|------|
-| Project | `<project>/.agents/skills/<name>/` |
-| User | `~/.agents/skills/<name>/` |
-| Client-specific | `~/.<client>/skills/<name>/` |
+This repository is for authoring skills and maintaining the reference tooling around them.
+
+It is not the packaging or installation layer.
+
+RDL uses [nq-rdl/agent-extensions](https://github.com/nq-rdl/agent-extensions) to package and install skills into target agent environments.
 
 ## Skill Index
 
