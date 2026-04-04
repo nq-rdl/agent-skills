@@ -113,7 +113,3 @@ pixi run lint               # ruff lint
 pixi run test               # pytest
 pixi run hooks-run          # run all pre-commit hooks
 ```
-
-## Code of Conduct
-
-Be respectful and constructive. We're all here to build useful agent skills.
