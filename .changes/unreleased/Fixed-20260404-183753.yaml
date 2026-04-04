@@ -1,0 +1,3 @@
+kind: Fixed
+body: Prevent Python cache artifacts from being recommitted to the repository
+time: 2026-04-04T18:37:53+10:00
