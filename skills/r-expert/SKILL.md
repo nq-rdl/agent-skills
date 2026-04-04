@@ -1,5 +1,6 @@
 ---
 name: r-expert
+license: MIT
 description: >-
   R language expert skill. Use when writing, reviewing, or debugging R code,
   or when the user asks for R best practices, idiomatic R, or guidance on the

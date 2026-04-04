@@ -1,5 +1,6 @@
 ---
 name: cc-hooks
+license: MIT
 description: >-
   Create, manage, and debug Claude Code hooks — event-driven scripts that run
   before or after agent actions. Use when the user asks about hooks,

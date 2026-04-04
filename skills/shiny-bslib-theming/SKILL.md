@@ -1,5 +1,6 @@
 ---
 name: shiny-bslib-theming
+license: MIT
 description: >-
   Advanced theming for Shiny apps using bslib and Bootstrap 5. Use when
   customizing app appearance with bs_theme(), Bootswatch themes, custom

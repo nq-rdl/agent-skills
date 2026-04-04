@@ -1,5 +1,6 @@
 ---
 name: r-lib-lifecycle
+license: MIT
 description: >-
   Guidance for managing R package lifecycle according to tidyverse principles
   using the lifecycle package. Use when: (1) Setting up lifecycle

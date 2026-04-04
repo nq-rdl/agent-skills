@@ -1,5 +1,6 @@
 ---
 name: go-secure
+license: MIT
 description: >-
   Secure Go error handling and information leakage prevention. Use whenever
   writing Go code that handles errors in APIs, services, or any code that

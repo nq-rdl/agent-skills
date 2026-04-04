@@ -1,5 +1,6 @@
 ---
 name: dispatch
+license: MIT
 description: >-
   Use this skill when the user says "dispatch", "offload", "fan out",
   "fan-out", or asks to route tasks to external coding backends. Also trigger

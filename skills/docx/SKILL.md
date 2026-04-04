@@ -1,5 +1,6 @@
 ---
 name: docx
+license: MIT
 description: >-
   Use this skill whenever the user wants to create, read, edit, or manipulate
   Word documents (.docx files). Triggers include: any mention of 'Word doc',

@@ -1,5 +1,6 @@
 ---
 name: jules
+license: MIT
 description: >-
   Use when dispatching tasks to Jules, creating or monitoring Jules AI coding
   sessions. Also covers approving Jules plans, sending follow-up messages,

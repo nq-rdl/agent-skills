@@ -1,5 +1,6 @@
 ---
 name: lychee
+license: MIT
 description: >-
   Fast link checker for documentation, READMEs, skills, and any text/markdown files.
   Use when the user asks to "check links", "find broken links", "lint URLs",

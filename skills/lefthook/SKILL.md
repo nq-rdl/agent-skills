@@ -1,5 +1,6 @@
 ---
 name: lefthook
+license: MIT
 description: >-
   Git hooks management with Lefthook. Use when writing or reviewing git hook
   configuration for Go projects, polyglot repos, or any project where Node.js

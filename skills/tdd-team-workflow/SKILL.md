@@ -1,5 +1,6 @@
 ---
 name: tdd-team-workflow
+license: MIT
 description: >-
   TDD orchestration workflow — drives a red→green→refactor→review cycle by
   delegating each phase to a subagent or any installed dispatch backend. Use

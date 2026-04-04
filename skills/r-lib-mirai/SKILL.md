@@ -1,5 +1,6 @@
 ---
 name: r-lib-mirai
+license: MIT
 description: >-
   Help users write correct R code for async, parallel, and distributed
   computing using mirai. Use when users need to: run R code asynchronously

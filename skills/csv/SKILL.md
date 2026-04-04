@@ -1,5 +1,6 @@
 ---
 name: csv
+license: MIT
 description: >-
   Use when scanning, updating, validating, or summarising pipe-delimited
   CSV extraction sheets for the scoping review. Also covers converting the Excel

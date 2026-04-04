@@ -1,5 +1,6 @@
 ---
 name: husky
+license: MIT
 description: >-
   Manage Git hooks with husky v9. Use when the user asks about git hooks
   setup, pre-commit hooks, commit-msg hooks, husky configuration, the

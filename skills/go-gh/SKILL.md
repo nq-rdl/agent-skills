@@ -1,5 +1,6 @@
 ---
 name: go-gh
+license: MIT
 description: >-
   GitHub Actions CI/CD for Go projects. Use when writing or reviewing GitHub
   Actions workflows that build, test, lint, or release Go code — including
@@ -26,6 +27,7 @@ Minimal CI workflow:
 
 ```yaml
 name: Go CI
+license: MIT
 on: [push, pull_request]
 jobs:
   build:

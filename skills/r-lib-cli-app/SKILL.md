@@ -1,5 +1,6 @@
 ---
 name: r-lib-cli-app
+license: MIT
 description: >-
   Build command-line apps in R using the Rapp package. Use when creating
   a CLI tool in R, adding argument parsing to an R script, turning an R

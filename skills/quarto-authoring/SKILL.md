@@ -1,5 +1,6 @@
 ---
 name: quarto-authoring
+license: MIT
 description: >-
   Writing and authoring Quarto documents (.qmd), including code cell options,
   figure and table captions, cross-references, callout blocks (notes, warnings,

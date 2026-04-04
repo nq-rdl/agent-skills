@@ -1,5 +1,6 @@
 ---
 name: writerside
+license: MIT
 description: >-
   Use when the user asks about Writerside topics, markup tags, documentation
   templates, or building/deploying Writerside projects. Covers semantic XML

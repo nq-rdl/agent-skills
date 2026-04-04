@@ -1,5 +1,6 @@
 ---
 name: tdd
+license: MIT
 description: >-
   Test-driven development concepts, cycle, and anti-patterns. Load when
   writing or reviewing tests, adding mocks, implementing new behaviour, or

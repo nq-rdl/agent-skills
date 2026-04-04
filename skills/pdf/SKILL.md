@@ -1,5 +1,6 @@
 ---
 name: pdf
+license: MIT
 description: >-
   Use when extracting text, tables, or data from PDF files,
   especially academic papers. Also covers converting PDFs to markdown,

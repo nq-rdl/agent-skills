@@ -1,5 +1,6 @@
 ---
 name: ansible
+license: MIT
 description: >-
   Use this skill whenever the user wants to create, modify, debug, or optimise
   Ansible playbooks, roles, inventories, or configuration. Triggers include any

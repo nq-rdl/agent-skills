@@ -1,5 +1,6 @@
 ---
 name: go-naming
+license: MIT
 description: >-
   Go naming conventions and idiomatic identifier choices. Use when writing new
   Go code, reviewing Go naming decisions, naming packages, types, functions,

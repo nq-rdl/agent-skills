@@ -1,5 +1,6 @@
 ---
 name: r-lib-cli
+license: MIT
 description: >-
   Comprehensive R package for command-line interface styling, semantic messaging,
   and user communication. Use this skill when working with R code that needs to:

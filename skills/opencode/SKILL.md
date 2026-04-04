@@ -1,5 +1,6 @@
 ---
 name: opencode
+license: MIT
 description: >-
   Use when interacting with the OpenCode server via its HTTP API. Covers
   starting the server, creating sessions, sending prompts (sync and async),
