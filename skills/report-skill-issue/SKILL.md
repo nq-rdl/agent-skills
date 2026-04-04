@@ -35,13 +35,14 @@ If the user provides a URL, skip to step 3. Otherwise stop and do not proceed.
 
 ### 2. Check for a `repo` Field
 
-Read the skill's `SKILL.md` and parse its YAML frontmatter. Look for a `repo` field — this is the URL of the repository where the skill is maintained.
+Read the skill's `SKILL.md` and parse its YAML frontmatter. Look for a `repo` field under `metadata` — this is the URL of the repository where the skill is maintained.
 
 ```yaml
 ---
 name: example-skill
 description: "..."
-repo: https://github.com/org/repo   # ← this is what you need
+metadata:
+  repo: https://github.com/org/repo   # ← this is what you need
 ---
 ```
 

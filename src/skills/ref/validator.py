@@ -15,6 +15,7 @@ MAX_COMPATIBILITY_LENGTH = 500
 ALLOWED_FIELDS = {
     "name",
     "description",
+    "license",
     "allowed-tools",
     "metadata",
     "compatibility",

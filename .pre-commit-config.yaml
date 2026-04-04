@@ -10,3 +10,36 @@ repos:
         language: system
         files: ^skills/
         pass_filenames: true
+
+      - id: ruff-check
+        name: Ruff lint
+        entry: pixi
+        args: [run, lint]
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: ruff-format
+        name: Ruff format check
+        entry: pixi
+        args: [run, --, ruff, format, --check]
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: pixi-lock-check
+        name: Check pixi.lock is up-to-date
+        entry: pixi
+        args: [install, --locked]
+        language: system
+        files: (pyproject\.toml|pixi\.lock)
+        pass_filenames: false
+
+      - id: test
+        name: Run tests
+        entry: pixi
+        args: [run, test]
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]
