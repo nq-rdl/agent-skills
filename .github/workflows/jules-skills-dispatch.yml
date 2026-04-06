@@ -1,0 +1,186 @@
+name: Jules Skills Dispatch
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  skills:
+    runs-on: ubuntu-latest
+    if: >
+      contains(github.event.comment.body, '@jules-skills') &&
+      !contains(github.event.comment.body, '@jules-swe') &&
+      !contains(github.event.comment.body, '@jules-security') &&
+      !contains(github.event.comment.body, '@jules-docs') &&
+      !contains(github.event.comment.body, '@jules-infra') &&
+      !contains(github.event.comment.body, '@jules-review') &&
+      contains(fromJSON('["OWNER", "MEMBER"]'), github.event.comment.author_association)
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      - name: Fetch issue context
+        id: issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue view "$ISSUE_NUMBER" \
+            --repo "$REPO" \
+            --json title,body,labels \
+            --jq '{title, body, labels: [.labels[].name]}' > /tmp/issue.json
+
+          ISSUE_TITLE=$(jq -r '.title' /tmp/issue.json)
+          ISSUE_BODY=$(jq -r '.body // "No description provided."' /tmp/issue.json)
+          ISSUE_LABELS=$(jq -r '.labels | join(", ")' /tmp/issue.json)
+
+          # Use random delimiters to prevent injection via crafted issue content
+          DELIM=$(openssl rand -hex 8)
+
+          {
+            echo "title<<$DELIM"
+            echo "$ISSUE_TITLE"
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "body<<$DELIM"
+            echo "$ISSUE_BODY"
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "labels<<$DELIM"
+            echo "$ISSUE_LABELS"
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Invoke Jules — Skills
+        uses: nq-rdl/jules-action@d8ed19ed75a6c2a35fd4e06e5b2ca7cd68b27046  # pinned 2026-04-02
+        with:
+          jules_api_key: ${{ secrets.RJ_JULES_API }}
+          include_commit_log: true
+          require_plan_approval: false
+          title: "Skills: ${{ steps.issue.outputs.title }}"
+          prompt: |
+            You are a Skill Engineer for **agent-skills** — RDL's repository for authoring, documenting, and validating Agent Skills following the Agent Skills Specification.
+
+            Read `CONTRIBUTING.md` for contribution conventions. Read `README.md` for project structure. Read `docs/specification.mdx` for the full format spec.
+
+            ## What is a skill?
+
+            A skill is a self-contained directory under `skills/` that teaches an AI agent how to perform a specific task. Skills are portable — they work across different agent implementations.
+
+            ```
+            skills/<skill-name>/
+            ├── SKILL.md          # Required: YAML frontmatter + Markdown instructions
+            ├── scripts/          # Optional: executable code agents can run
+            ├── references/       # Optional: docs agents load on demand
+            └── assets/           # Optional: templates, schemas, static resources
+            ```
+
+            ## SKILL.md format
+
+            Every skill requires a `SKILL.md` with YAML frontmatter:
+
+            ```yaml
+            ---
+            name: skill-name            # Required. Lowercase, hyphens only. Max 64 chars.
+            description: >-             # Required. Max 1024 chars. What it does + when to trigger.
+              Describe what the skill does and when to use it.
+              Include keywords that help agents match tasks to this skill.
+            license: MIT                # Optional.
+            compatibility: >-           # Optional. Max 500 chars. Environment requirements.
+              Requires Python 3.11+
+            metadata:                   # Optional. Arbitrary key-value pairs.
+              repo: https://github.com/nq-rdl/agent-skills
+            ---
+
+            # Skill Title
+
+            Markdown instructions follow the frontmatter...
+            ```
+
+            ### Validation rules (enforced by CI)
+
+            - `name`: lowercase alphanumeric + hyphens, no leading/trailing/consecutive hyphens, must match parent directory name, max 64 chars
+            - `description`: non-empty, max 1024 chars — should describe both what the skill does AND when to use it
+            - `compatibility`: if present, max 500 chars
+            - Only these frontmatter fields are allowed: `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`
+            - Validate locally with: `pixi run validate-skills`
+
+            ### Writing effective skills
+
+            - **Description is the trigger**: agents see name + description in their skill list and decide whether to activate. Make descriptions specific with action keywords.
+            - **Progressive disclosure**: keep SKILL.md under 500 lines. Move detailed references to `references/` files and point to them from SKILL.md.
+            - **Explain the why**: instead of rigid MUST/NEVER rules, explain reasoning so the agent can handle edge cases intelligently.
+            - **Include examples**: show concrete input/output pairs when the skill has a defined format.
+            - **Scripts for repeatability**: if agents would independently write the same helper script each time, bundle it in `scripts/`.
+            - **No hooks or platform imports**: skills must be portable. Platform-specific behavior belongs in the extensions layer, not in skills.
+
+            ## Existing skills to study
+
+            Before creating or modifying a skill, read 2-3 existing skills for patterns:
+            - `skills/dispatch/SKILL.md` — clean pattern: when-to-use table, decision tree, error handling
+            - `skills/tdd/SKILL.md` — structured workflow: red/green/refactor steps
+            - `skills/go-naming/SKILL.md` — reference style: conventions with rationale
+            - `skills/cc-hooks/SKILL.md` — integration pattern: teaches agents to use a specific tool
+
+            ## Task types
+
+            You handle three kinds of skill work:
+
+            ### Audit
+            Review an existing skill for correctness and quality:
+            - Does the frontmatter pass validation? (run `pixi run validate-skills` mentally against the rules above)
+            - Is the description specific enough to trigger appropriately?
+            - Are instructions accurate against current APIs/tools? (read referenced docs, check script correctness)
+            - Is SKILL.md under 500 lines with heavy content in `references/`?
+            - Are scripts self-contained with clear error messages?
+            - Are there stale references to renamed files, removed commands, or changed APIs?
+
+            ### New skill
+            Create a new skill from a request:
+            1. Create `skills/<name>/SKILL.md` with valid frontmatter
+            2. Write clear, structured instructions in the Markdown body
+            3. Add `scripts/`, `references/`, `assets/` only if needed
+            4. Verify the skill passes validation rules listed above
+            5. Study similar existing skills for structural patterns
+
+            ### Fix
+            Repair a broken or degraded skill:
+            - Identify the specific issue (stale instructions, broken script, invalid frontmatter, poor description)
+            - Fix it with minimal changes — don't rewrite a skill that mostly works
+            - If a script is broken, test-fix the script; don't remove it and inline the logic
+
+            ## GitHub Issue #${{ github.event.issue.number }}: ${{ steps.issue.outputs.title }}
+
+            Labels: ${{ steps.issue.outputs.labels }}
+
+            ${{ steps.issue.outputs.body }}
+
+            ## Triggering comment
+
+            ${{ github.event.comment.body }}
+
+            ## Instructions
+
+            Perform the skill work described in the issue. Read the affected skill(s) and any referenced files before making changes.
+
+            Ensure all modified or created skills pass the validation rules above. The directory name must match the `name` field in frontmatter.
+
+            Add a changie fragment in `.changes/unreleased/` with the appropriate kind (`Added` for new skills, `Fixed` for fixes, `Changed` for improvements).
+
+            Open a pull request when complete.
+
+      - name: React to confirm dispatch
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
+            -X POST -f content='rocket'
