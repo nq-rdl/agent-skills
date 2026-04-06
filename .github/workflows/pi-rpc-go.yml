@@ -1,0 +1,52 @@
+name: pi-rpc Go CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - skills/pi-rpc/scripts/**
+  pull_request:
+    paths:
+      - skills/pi-rpc/scripts/**
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: skills/pi-rpc/scripts
+
+jobs:
+  test:
+    name: Test (Go ${{ matrix.go-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.24", "1.25"]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: skills/pi-rpc/scripts/go.sum
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: CGO_ENABLED=0 go build ./...
+
+      - name: Test
+        run: go test -v -race -coverprofile=coverage.out ./...
+
+      - name: Upload coverage
+        if: matrix.go-version == '1.25'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: skills/pi-rpc/scripts/coverage.out

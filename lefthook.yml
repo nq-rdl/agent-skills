@@ -1,0 +1,26 @@
+min_version: 1.9.0
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: go-vet
+      root: skills/pi-rpc/scripts/
+      glob: "*.go"
+      run: go vet ./...
+
+    - name: go-format
+      root: skills/pi-rpc/scripts/
+      glob: "*.go"
+      run: gofmt -l {staged_files}
+
+    - name: go-build
+      root: skills/pi-rpc/scripts/
+      glob: "*.go"
+      run: CGO_ENABLED=0 go build ./...
+
+pre-push:
+  jobs:
+    - name: go-test
+      root: skills/pi-rpc/scripts/
+      glob: "*.go"
+      run: go test -race -count=1 ./...
