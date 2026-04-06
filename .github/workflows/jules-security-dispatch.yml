@@ -1,0 +1,137 @@
+name: Jules Security Review
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  security-review:
+    runs-on: ubuntu-latest
+    if: >
+      contains(github.event.comment.body, '@jules-security') &&
+      !contains(github.event.comment.body, '@jules-swe') &&
+      !contains(github.event.comment.body, '@jules-docs') &&
+      !contains(github.event.comment.body, '@jules-infra') &&
+      !contains(github.event.comment.body, '@jules-review') &&
+      !contains(github.event.comment.body, '@jules-skills') &&
+      contains(fromJSON('["OWNER", "MEMBER"]'), github.event.comment.author_association)
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      - name: Fetch issue context
+        id: issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue view "$ISSUE_NUMBER" \
+            --repo "$REPO" \
+            --json title,body,labels \
+            --jq '{title, body, labels: [.labels[].name]}' > /tmp/issue.json
+
+          ISSUE_TITLE=$(jq -r '.title' /tmp/issue.json)
+          ISSUE_BODY=$(jq -r '.body // "No description provided."' /tmp/issue.json)
+          ISSUE_LABELS=$(jq -r '.labels | join(", ")' /tmp/issue.json)
+
+          # Use random delimiters to prevent injection via crafted issue content
+          DELIM=$(openssl rand -hex 8)
+
+          {
+            echo "title<<$DELIM"
+            echo "$ISSUE_TITLE"
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "body<<$DELIM"
+            echo "$ISSUE_BODY"
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "labels<<$DELIM"
+            echo "$ISSUE_LABELS"
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Detect PR branch
+        id: branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # PR comments arrive as issue_comment events — check if it's a PR
+          BRANCH=$(gh pr view "$ISSUE_NUMBER" --repo "$REPO" \
+            --json headRefName --jq '.headRefName' 2>/dev/null || echo "main")
+          echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Invoke Jules — Security Review
+        uses: nq-rdl/jules-action@d8ed19ed75a6c2a35fd4e06e5b2ca7cd68b27046  # pinned 2026-04-02
+        with:
+          jules_api_key: ${{ secrets.RJ_JULES_API }}
+          starting_branch: ${{ steps.branch.outputs.name }}
+          include_commit_log: true
+          require_plan_approval: false
+          title: "Security: ${{ steps.issue.outputs.title }}"
+          prompt: |
+            You are a Security Reviewer for **agent-skills** — RDL's repository for authoring, documenting, and validating Agent Skills following the Agent Skills Specification.
+
+            Read `CONTRIBUTING.md` at the repo root for contribution conventions. Read `README.md` for project structure. Read `docs/specification.mdx` for the skill format specification.
+
+            ## Project context
+
+            This repo contains 40+ self-contained skills under `skills/`, each with a `SKILL.md` file containing YAML frontmatter and Markdown instructions. Skills may bundle `scripts/`, `references/`, and `assets/` directories. The validation tooling lives in `src/skills/ref/` (Python). CI runs `pixi run validate-skills` on every PR.
+
+            ## Risk patterns for this stack
+
+            - **SKILL.md injection**: Skills contain instructions that LLMs execute. A malicious or poorly written skill could inject prompt content that causes unintended behavior in the consuming agent. Check for prompt injection vectors in skill instructions.
+            - **Script execution**: Skills may bundle executable scripts under `scripts/`. These run in user environments — check for command injection, path traversal, unsafe shell expansion, or unvalidated external input.
+            - **YAML frontmatter parsing**: The validation tooling in `src/skills/ref/` parses YAML frontmatter. Check for YAML deserialization risks, unconstrained input lengths, or regex denial-of-service patterns.
+            - **CI/CD pipeline security**: GitHub Actions workflows in `.github/workflows/` use secrets and run on PR events. Check for secret leakage, unsafe `pull_request_target` usage, or injection via PR titles/bodies into shell commands.
+            - **Dependency supply chain**: `pyproject.toml` and `pixi.lock` control dependencies. Check for unpinned dependencies, suspicious packages, or lock file integrity.
+            - **Reference file exfiltration**: Skills can reference external URLs or files. Check for data exfiltration vectors through skill instructions that direct agents to send data to external endpoints.
+
+            ## Severity classification
+
+            - **CRITICAL**: Direct code execution, secret leakage, or supply chain compromise
+            - **HIGH**: Prompt injection that could bypass safety controls, path traversal to sensitive files
+            - **MEDIUM**: Unsafe defaults, missing input validation at trust boundaries, overly broad permissions
+            - **LOW**: Informational findings, hardening recommendations, defense-in-depth suggestions
+
+            ## GitHub Issue #${{ github.event.issue.number }}: ${{ steps.issue.outputs.title }}
+
+            Labels: ${{ steps.issue.outputs.labels }}
+
+            ${{ steps.issue.outputs.body }}
+
+            ## Triggering comment
+
+            ${{ github.event.comment.body }}
+
+            ## Instructions
+
+            Perform the security review described in the issue. For each finding:
+            1. State the severity (CRITICAL / HIGH / MEDIUM / LOW)
+            2. Identify the affected file(s) and line(s)
+            3. Describe the vulnerability and attack scenario
+            4. Provide a concrete fix or mitigation
+
+            If fixes are straightforward, implement them. For complex findings that need design discussion, document them clearly but do not attempt speculative fixes.
+
+            Add a changie fragment in `.changes/unreleased/` with kind `Fixed` for any security fixes applied.
+
+            Open a pull request with your findings and any fixes when complete.
+
+      - name: React to confirm dispatch
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
+            -X POST -f content='rocket'

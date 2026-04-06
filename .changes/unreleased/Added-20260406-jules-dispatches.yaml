@@ -1,0 +1,5 @@
+kind: Added
+body: >-
+  Add Jules dispatch workflows for security review (@jules-security),
+  issue triage and spec writing (@jules-review), and skill
+  auditing/creation/fixing (@jules-skills).
