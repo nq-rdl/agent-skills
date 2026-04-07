@@ -1,0 +1,4 @@
+kind: Added
+body: >-
+  Add Jules CI review dispatch workflow that automatically invokes Jules
+  to diagnose and fix CI failures on pull request branches.
