@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -123,22 +122,19 @@ func newSessionCreateCmd(serverFlag *string) *cobra.Command {
 		Short: "Spawn a new pi.dev session",
 		Long: `Spawn a new pi.dev coding agent session and print the session ID.
 
+If --provider and --model are omitted, defaults (or PI_DEFAULT_PROVIDER/PI_DEFAULT_MODEL) are used.
+
 Tip: validate your provider/model pair before creating sessions:
   pi --provider <PROVIDER> --model <MODEL> --mode json "Reply with OK."`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if provider == "" || model == "" {
-				return errors.New("--provider and --model are required")
-			}
 			return runSessionCreate(cmd.Context(), serverURL(*serverFlag), provider, model, cwd, thinkingLevel)
 		},
 	}
 
-	cmd.Flags().StringVar(&provider, "provider", "", "Provider name, e.g. anthropic, openai-codex (required)")
-	cmd.Flags().StringVar(&model, "model", "", "Model ID from pi --list-models (required)")
+	cmd.Flags().StringVar(&provider, "provider", "", "Provider name, e.g. anthropic, openai-codex")
+	cmd.Flags().StringVar(&model, "model", "", "Model ID from pi --list-models")
 	cmd.Flags().StringVar(&cwd, "cwd", "", "Working directory for the agent (default: current directory)")
 	cmd.Flags().StringVar(&thinkingLevel, "thinking", "", "Thinking level: low, medium, high")
-	_ = cmd.MarkFlagRequired("provider")
-	_ = cmd.MarkFlagRequired("model")
 
 	return cmd
 }

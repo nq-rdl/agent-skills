@@ -19,8 +19,20 @@ func main() {
 		port = "4097"
 	}
 
+	defaultProvider := os.Getenv("PI_DEFAULT_PROVIDER")
+	if defaultProvider == "" {
+		defaultProvider = "openai"
+	}
+	defaultModel := os.Getenv("PI_DEFAULT_MODEL")
+	if defaultModel == "" {
+		defaultModel = "gpt-4.1"
+	}
+
 	mgr := session.NewManager("pi")
-	h := handler.NewSessionHandler(mgr)
+	h := handler.NewSessionHandler(mgr, handler.Defaults{
+		Provider: defaultProvider,
+		Model:    defaultModel,
+	})
 
 	mux := http.NewServeMux()
 	path, svcHandler := pirpcv1connect.NewSessionServiceHandler(h)

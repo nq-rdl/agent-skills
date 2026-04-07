@@ -18,8 +18,10 @@ import (
 
 func newServeCmd() *cobra.Command {
 	var (
-		port   string
-		binary string
+		port            string
+		binary          string
+		defaultProvider string
+		defaultModel    string
 	)
 
 	cmd := &cobra.Command{
@@ -31,20 +33,24 @@ The server listens for HTTP/JSON requests and spawns pi.dev subprocesses
 on demand. Agents communicate with it via the session subcommands.
 
 Environment variables:
-  PI_SERVER_PORT   Override the listening port (default: 4097)
-  PI_BINARY        Path to the pi binary (default: pi)`,
+  PI_SERVER_PORT       Override the listening port (default: 4097)
+  PI_BINARY            Path to the pi binary (default: pi)
+  PI_DEFAULT_PROVIDER  Fallback provider when Create omits it (default: openai)
+  PI_DEFAULT_MODEL     Fallback model when Create omits it (default: gpt-4.1)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runServe(port, binary)
+			return runServe(port, binary, defaultProvider, defaultModel)
 		},
 	}
 
 	cmd.Flags().StringVar(&port, "port", "", "Listening port (overrides PI_SERVER_PORT, default: 4097)")
 	cmd.Flags().StringVar(&binary, "binary", "", "Path to pi binary (overrides PI_BINARY, default: pi)")
+	cmd.Flags().StringVar(&defaultProvider, "default-provider", "", "Fallback provider (overrides PI_DEFAULT_PROVIDER, default: openai)")
+	cmd.Flags().StringVar(&defaultModel, "default-model", "", "Fallback model (overrides PI_DEFAULT_MODEL, default: gpt-4.1)")
 
 	return cmd
 }
 
-func runServe(portFlag, binaryFlag string) error {
+func runServe(portFlag, binaryFlag, defaultProviderFlag, defaultModelFlag string) error {
 	port := portFlag
 	if port == "" {
 		port = os.Getenv("PI_SERVER_PORT")
@@ -61,10 +67,29 @@ func runServe(portFlag, binaryFlag string) error {
 		binary = "pi"
 	}
 
+	defaultProvider := defaultProviderFlag
+	if defaultProvider == "" {
+		defaultProvider = os.Getenv("PI_DEFAULT_PROVIDER")
+	}
+	if defaultProvider == "" {
+		defaultProvider = "openai"
+	}
+
+	defaultModel := defaultModelFlag
+	if defaultModel == "" {
+		defaultModel = os.Getenv("PI_DEFAULT_MODEL")
+	}
+	if defaultModel == "" {
+		defaultModel = "gpt-4.1"
+	}
+
 	mgr := session.NewManager(binary)
 
 	mux := http.NewServeMux()
-	path, svcHandler := pirpcv1connect.NewSessionServiceHandler(handler.NewSessionHandler(mgr))
+	path, svcHandler := pirpcv1connect.NewSessionServiceHandler(handler.NewSessionHandler(mgr, handler.Defaults{
+		Provider: defaultProvider,
+		Model:    defaultModel,
+	}))
 	mux.Handle(path, svcHandler)
 
 	addr := fmt.Sprintf(":%s", port)
