@@ -1,43 +1,18 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 
 	"github.com/nq-rdl/agent-skills/skills/pi-rpc/scripts/gen/pirpc/v1/pirpcv1connect"
 	"github.com/nq-rdl/agent-skills/skills/pi-rpc/scripts/handler"
+	"github.com/nq-rdl/agent-skills/skills/pi-rpc/scripts/internal/config"
 	"github.com/nq-rdl/agent-skills/skills/pi-rpc/scripts/session"
 )
-
-func autoDetectProvider() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "openai"
-	}
-
-	authFile := filepath.Join(home, ".pi", "agent", "auth.json")
-	data, err := os.ReadFile(authFile)
-	if err != nil {
-		return "openai"
-	}
-
-	var auth map[string]interface{}
-	if err := json.Unmarshal(data, &auth); err != nil {
-		return "openai"
-	}
-
-	if _, ok := auth["openai-codex"]; ok {
-		return "openai-codex"
-	}
-
-	return "openai"
-}
 
 func main() {
 	port := os.Getenv("PI_SERVER_PORT")
@@ -47,7 +22,7 @@ func main() {
 
 	defaultProvider := os.Getenv("PI_DEFAULT_PROVIDER")
 	if defaultProvider == "" {
-		defaultProvider = autoDetectProvider()
+		defaultProvider = config.DetectProvider()
 	}
 	defaultModel := os.Getenv("PI_DEFAULT_MODEL")
 	if defaultModel == "" {
