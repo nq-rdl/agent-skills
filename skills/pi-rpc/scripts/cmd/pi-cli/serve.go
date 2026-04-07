@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -50,6 +52,30 @@ Environment variables:
 	return cmd
 }
 
+func autoDetectProvider() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "openai"
+	}
+
+	authFile := filepath.Join(home, ".pi", "agent", "auth.json")
+	data, err := os.ReadFile(authFile)
+	if err != nil {
+		return "openai"
+	}
+
+	var auth map[string]interface{}
+	if err := json.Unmarshal(data, &auth); err != nil {
+		return "openai"
+	}
+
+	if _, ok := auth["openai-codex"]; ok {
+		return "openai-codex"
+	}
+
+	return "openai"
+}
+
 func runServe(portFlag, binaryFlag, defaultProviderFlag, defaultModelFlag string) error {
 	port := portFlag
 	if port == "" {
@@ -72,7 +98,7 @@ func runServe(portFlag, binaryFlag, defaultProviderFlag, defaultModelFlag string
 		defaultProvider = os.Getenv("PI_DEFAULT_PROVIDER")
 	}
 	if defaultProvider == "" {
-		defaultProvider = "openai"
+		defaultProvider = autoDetectProvider()
 	}
 
 	defaultModel := defaultModelFlag
