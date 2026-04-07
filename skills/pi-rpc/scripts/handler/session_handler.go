@@ -48,7 +48,7 @@ func (h *SessionHandler) Create(ctx context.Context, req *connect.Request[pirpcv
 	if model == "" {
 		model = h.defaults.Model
 	}
-	id, err := h.mgr.Create(ctx, provider, model, req.Msg.Cwd, req.Msg.ThinkingLevel)
+	id, err := h.mgr.Create(ctx, provider, model, req.Msg.Cwd, req.Msg.ThinkingLevel, req.Msg.TimeoutSeconds)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("create session: %w", err))
 	}

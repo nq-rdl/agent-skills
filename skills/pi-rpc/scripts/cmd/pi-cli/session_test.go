@@ -67,7 +67,7 @@ func TestRunSessionCreate(t *testing.T) {
 
 	// runSessionCreate writes to stdout — we just verify no error is returned
 	// and the call succeeds against a real HTTP server.
-	if err := runSessionCreate(context.Background(), srv.URL, "anthropic", "claude-opus-4", "/tmp", ""); err != nil {
+	if err := runSessionCreate(context.Background(), srv.URL, "anthropic", "claude-opus-4", "/tmp", "", 0); err != nil {
 		t.Errorf("runSessionCreate failed: %v", err)
 	}
 }
