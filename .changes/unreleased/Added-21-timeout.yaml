@@ -1,0 +1,2 @@
+kind: Added
+body: Add configurable timeout_seconds parameter to CreateRequest to override the default 60s inactivity timeout
