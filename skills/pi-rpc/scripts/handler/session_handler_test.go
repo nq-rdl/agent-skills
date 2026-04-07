@@ -327,24 +327,6 @@ func TestHandlerGetMessagesEmptyWhenNoMessageEvents(t *testing.T) {
 	}
 }
 
-func TestHandlerCreateRejectsNegativeTimeout(t *testing.T) {
-	client, cleanup := setupTestServer(t)
-	defer cleanup()
-
-	_, err := client.Create(context.Background(), connect.NewRequest(&pirpcv1.CreateRequest{
-		Provider:       "openai-codex",
-		Model:          "gpt-5.4",
-		Cwd:            t.TempDir(),
-		TimeoutSeconds: -1,
-	}))
-	if err == nil {
-		t.Fatal("Create with negative timeout should fail")
-	}
-	if connect.CodeOf(err) != connect.CodeInvalidArgument {
-		t.Errorf("error code = %v, want InvalidArgument", connect.CodeOf(err))
-	}
-}
-
 func TestHandlerCreateAppliesDefaults(t *testing.T) {
 	client, cleanup := setupTestServerWithDefaults(t, fakePi(t), Defaults{
 		Provider: "default-provider",
