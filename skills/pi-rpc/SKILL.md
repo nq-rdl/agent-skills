@@ -38,6 +38,12 @@ You can start the server in the background using the provided wrapper script. It
 ./skills/pi-rpc/scripts/start.sh
 ```
 
+To configure default provider/model via environment variables:
+
+```bash
+PI_DEFAULT_PROVIDER=anthropic PI_DEFAULT_MODEL=claude-sonnet-4 ./skills/pi-rpc/scripts/start.sh
+```
+
 Alternatively, manage it manually:
 
 ```bash
@@ -47,6 +53,16 @@ make build      # Build ./bin/pi-server and ./bin/pi-cli
 make test       # Run all tests
 make serve      # Start on localhost:4097 (PI_SERVER_PORT to override)
 ```
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PI_SERVER_PORT` | `4097` | Listening port for the server |
+| `PI_SERVER_URL` | `http://localhost:4097` | Server URL used by pi-cli |
+| `PI_DEFAULT_PROVIDER` | `openai` | Fallback provider when `Create` omits it |
+| `PI_DEFAULT_MODEL` | `gpt-4.1` | Fallback model when `Create` omits it |
+| `PI_BINARY` | `pi` | Path to the pi binary |
 
 ## Health Check
 
@@ -63,9 +79,9 @@ If not running, start with `./skills/pi-rpc/scripts/start.sh`.
 ## Provider and Model Selection
 
 If the user specifies a provider and model, pass them to the `Create` endpoint.
-If omitted, the server will apply default fallbacks (`PI_DEFAULT_PROVIDER` / `PI_DEFAULT_MODEL`, which themselves default to `openai` / `gpt-5.4`).
+If omitted, the server applies defaults from `PI_DEFAULT_PROVIDER` / `PI_DEFAULT_MODEL` (see Environment Variables above; hardcoded fallbacks: `openai` / `gpt-4.1`).
 
-If you are explicitly specifying a provider/model pair, validate them before creating sessions:
+If explicitly specifying a provider/model pair, validate before creating sessions:
 
 ```bash
 pi --provider <PROVIDER> --model <MODEL> --mode json "Reply with OK."
@@ -79,7 +95,7 @@ All endpoints accept `Content-Type: application/json` POST requests.
 
 | Endpoint | Purpose | Key Fields |
 |----------|---------|------------|
-| `pirpc.v1.SessionService/Create` | Spawn a pi.dev subprocess | `provider`, `model`, `cwd`, `thinking_level` |
+| `pirpc.v1.SessionService/Create` | Spawn a pi.dev subprocess | `provider` (optional), `model` (optional), `cwd`, `thinking_level` |
 | `pirpc.v1.SessionService/Prompt` | Send prompt, wait for completion | `session_id`, `message` |
 | `pirpc.v1.SessionService/PromptAsync` | Send prompt, return immediately | `session_id`, `message` |
 | `pirpc.v1.SessionService/StreamEvents` | Server-streaming events | `session_id`, optional `filter` |

@@ -5,15 +5,15 @@ set -e
 cd "$(dirname "$0")"
 
 # Build the server binary if it doesn't exist
-if [ ! -f "bin/pi-cli" ]; then
-    make build
+if [ ! -f "bin/pi-server" ]; then
+    make build-server
 fi
 
 # Start the server in the background, suppressing stdout and stderr unless debug is requested
 if [ "$PI_DEBUG" = "1" ]; then
-    ./bin/pi-cli serve &
+    ./bin/pi-server &
 else
-    ./bin/pi-cli serve > /dev/null 2>&1 &
+    ./bin/pi-server > /dev/null 2>&1 &
 fi
 
 # Wait for server to come up
