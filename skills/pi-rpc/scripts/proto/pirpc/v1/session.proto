@@ -65,6 +65,7 @@ message CreateRequest {
   string thinking_level = 4;
 
   // Optional session inactivity timeout in seconds.
+  // 0 (default) uses the server default (60s). Negative values are rejected.
   int32 timeout_seconds = 5;
 }
 
