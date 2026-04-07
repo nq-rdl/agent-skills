@@ -1,0 +1,97 @@
+name: Jules CI Review
+
+on:
+  workflow_run:
+    workflows: ["Validate Skills", "Changelog Check"]
+    types: [completed]
+
+jobs:
+  fix-failure:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.head_branch != 'main' &&
+      !startsWith(github.event.workflow_run.head_branch, 'jules/')
+    concurrency:
+      group: jules-ci-review-${{ github.event.workflow_run.head_branch }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Fetch failed job details
+        id: failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+            const failed = jobs.data.jobs
+              .filter(j => j.conclusion === 'failure')
+              .map(j => j.name);
+            core.setOutput('failed_jobs', failed.join(', '));
+            core.setOutput('run_url', context.payload.workflow_run.html_url);
+
+      - name: Invoke Jules — CI Failure Fix
+        uses: nq-rdl/jules-action@d8ed19ed75a6c2a35fd4e06e5b2ca7cd68b27046  # pinned 2026-04-02
+        with:
+          jules_api_key: ${{ secrets.RJS_JULES_API }}
+          starting_branch: ${{ github.event.workflow_run.head_branch }}
+          include_commit_log: true
+          require_plan_approval: false
+          title: "CI Fix: ${{ github.event.workflow_run.name }} on ${{ github.event.workflow_run.head_branch }}"
+          prompt: |
+            You are a CI Failure Analyst and Fixer for **agent-skills** — RDL's repository for authoring, documenting, and validating Agent Skills following the Agent Skills Specification.
+
+            Read `CONTRIBUTING.md` at the repo root for contribution conventions. Read `README.md` for project structure. Read `docs/specification.mdx` for the skill format specification.
+
+            ## Project context
+
+            This repo contains 40+ self-contained skills under `skills/`, each with a `SKILL.md` file containing YAML frontmatter and Markdown instructions. Skills may bundle `scripts/`, `references/`, and `assets/` directories. The validation tooling lives in `src/skills/ref/` (Python). CI runs `pixi run validate-skills` on every PR. Every PR requires a changie fragment in `.changes/unreleased/`.
+
+            ## CI workflows in this repo
+
+            Two CI checks run on every pull request:
+
+            1. **Validate Skills** (`skills-validation.yml`): checks out the code, sets up pixi, and runs `pixi run validate-skills`. This validates all `SKILL.md` files against the specification — frontmatter fields, naming conventions, directory structure, and content constraints.
+
+            2. **Changelog Check** (`changelog-check.yml`): verifies that at least one new `.yaml` fragment file exists in `.changes/unreleased/` (compared against the PR base). PRs with the `skip-changelog` label are exempt.
+
+            ## Failure context
+
+            The CI workflow "${{ github.event.workflow_run.name }}" has failed on branch `${{ github.event.workflow_run.head_branch }}`.
+
+            Failed job(s): ${{ steps.failure.outputs.failed_jobs }}
+            Run URL: ${{ steps.failure.outputs.run_url }}
+
+            ## Diagnosis process
+
+            ### 1. Identify the failure type
+
+            Based on the failing workflow name:
+            - **"Validate Skills"** failure: one or more skills have invalid frontmatter, mismatched directory/name fields, missing required fields, fields exceeding length limits, or disallowed frontmatter keys. Run `pixi run validate-skills` to reproduce.
+            - **"Changelog Check"** failure: the branch is missing a changie fragment in `.changes/unreleased/`. Check if a fragment file exists; if not, create one.
+
+            ### 2. Reproduce and diagnose
+
+            - Read the recent commits on the branch to understand what changed.
+            - For validation failures: read the validation source in `src/skills/ref/` to understand the exact checks, then read the failing skill(s) to identify the specific violation.
+            - For changelog failures: check whether `.changes/unreleased/` contains a new YAML fragment added on this branch. If not, create one.
+
+            ### 3. Fix
+
+            - Make the minimal change needed to pass CI.
+            - For validation fixes: correct the frontmatter or directory structure. Do NOT change the validation rules unless the rules themselves are buggy.
+            - For missing changelog fragments: create a fragment with the appropriate `kind` (`Added`, `Changed`, or `Fixed`) and a `body` describing the change on the branch. Follow the naming convention of existing fragments in `.changes/unreleased/`.
+            - Ensure the fix does not break other skills or checks.
+
+            ## Instructions
+
+            Diagnose and fix the CI failure described above. Start from branch `${{ github.event.workflow_run.head_branch }}`.
+
+            After fixing, verify that `pixi run validate-skills` passes (for validation failures) or that a changie fragment exists (for changelog failures).
+
+            Open a pull request with the fix when complete.
