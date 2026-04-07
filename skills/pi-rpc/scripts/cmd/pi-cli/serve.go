@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -76,7 +77,7 @@ func runServe(portFlag, binaryFlag string) error {
 		<-sigCh
 		log.Println("shutting down — terminating all sessions")
 		mgr.GracefulShutdown()
-		srv.Close()
+		srv.Shutdown(context.Background()) //nolint:errcheck
 	}()
 
 	log.Printf("pi-server listening on %s", addr)

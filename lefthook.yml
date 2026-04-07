@@ -11,7 +11,7 @@ pre-commit:
     - name: go-format
       root: skills/pi-rpc/scripts/
       glob: "*.go"
-      run: gofmt -l {staged_files}
+      run: test -z "$(gofmt -l {staged_files})"
 
     - name: go-build
       root: skills/pi-rpc/scripts/
