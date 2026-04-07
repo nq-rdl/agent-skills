@@ -1,0 +1,2 @@
+kind: Fixed
+body: "[skill:pi-rpc] Fix missing API key error masking and default to openai-codex when authenticated via OAuth"

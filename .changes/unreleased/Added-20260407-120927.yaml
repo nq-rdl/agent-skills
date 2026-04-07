@@ -1,0 +1,2 @@
+kind: Added
+body: Add solution spec for pi-rpc provider mismatch and error masking issue (Issue #22)

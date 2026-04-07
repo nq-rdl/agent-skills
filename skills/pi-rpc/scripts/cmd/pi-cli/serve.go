@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -15,6 +17,30 @@ import (
 	"github.com/nq-rdl/agent-skills/skills/pi-rpc/scripts/handler"
 	"github.com/nq-rdl/agent-skills/skills/pi-rpc/scripts/session"
 )
+
+func autoDetectProvider() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "openai"
+	}
+
+	authFile := filepath.Join(home, ".pi", "agent", "auth.json")
+	data, err := os.ReadFile(authFile)
+	if err != nil {
+		return "openai"
+	}
+
+	var authData map[string]interface{}
+	if err := json.Unmarshal(data, &authData); err != nil {
+		return "openai"
+	}
+
+	if _, ok := authData["openai-codex"]; ok {
+		return "openai-codex"
+	}
+
+	return "openai"
+}
 
 func newServeCmd() *cobra.Command {
 	var (
@@ -35,7 +61,7 @@ on demand. Agents communicate with it via the session subcommands.
 Environment variables:
   PI_SERVER_PORT       Override the listening port (default: 4097)
   PI_BINARY            Path to the pi binary (default: pi)
-  PI_DEFAULT_PROVIDER  Fallback provider when Create omits it (default: openai)
+  PI_DEFAULT_PROVIDER  Fallback provider when Create omits it (default: auto-detected or openai)
   PI_DEFAULT_MODEL     Fallback model when Create omits it (default: gpt-4.1)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runServe(port, binary, defaultProvider, defaultModel)
@@ -44,7 +70,7 @@ Environment variables:
 
 	cmd.Flags().StringVar(&port, "port", "", "Listening port (overrides PI_SERVER_PORT, default: 4097)")
 	cmd.Flags().StringVar(&binary, "binary", "", "Path to pi binary (overrides PI_BINARY, default: pi)")
-	cmd.Flags().StringVar(&defaultProvider, "default-provider", "", "Fallback provider (overrides PI_DEFAULT_PROVIDER, default: openai)")
+	cmd.Flags().StringVar(&defaultProvider, "default-provider", "", "Fallback provider (overrides PI_DEFAULT_PROVIDER, default: auto-detected or openai)")
 	cmd.Flags().StringVar(&defaultModel, "default-model", "", "Fallback model (overrides PI_DEFAULT_MODEL, default: gpt-4.1)")
 
 	return cmd
@@ -72,7 +98,7 @@ func runServe(portFlag, binaryFlag, defaultProviderFlag, defaultModelFlag string
 		defaultProvider = os.Getenv("PI_DEFAULT_PROVIDER")
 	}
 	if defaultProvider == "" {
-		defaultProvider = "openai"
+		defaultProvider = autoDetectProvider()
 	}
 
 	defaultModel := defaultModelFlag
