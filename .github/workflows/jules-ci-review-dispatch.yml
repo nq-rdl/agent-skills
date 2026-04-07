@@ -38,7 +38,7 @@ jobs:
       - name: Invoke Jules — CI Failure Fix
         uses: nq-rdl/jules-action@d8ed19ed75a6c2a35fd4e06e5b2ca7cd68b27046  # pinned 2026-04-02
         with:
-          jules_api_key: ${{ secrets.RJS_JULES_API }}
+          jules_api_key: ${{ secrets.RJ_JULES_API }}
           starting_branch: ${{ github.event.workflow_run.head_branch }}
           include_commit_log: true
           require_plan_approval: false
