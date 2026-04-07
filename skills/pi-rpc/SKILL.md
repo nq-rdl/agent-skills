@@ -32,11 +32,18 @@ metadata:
 
 ## Build and Run
 
+You can start the server in the background using the provided wrapper script. It will automatically build the server if needed and wait until it's healthy.
+
+```bash
+./skills/pi-rpc/scripts/start.sh
+```
+
+Alternatively, manage it manually:
+
 ```bash
 cd skills/pi-rpc/scripts
-
 make generate   # Regenerate protobuf code (requires buf CLI)
-make build      # Build ./bin/pi-server
+make build      # Build ./bin/pi-server and ./bin/pi-cli
 make test       # Run all tests
 make serve      # Start on localhost:4097 (PI_SERVER_PORT to override)
 ```
@@ -51,13 +58,14 @@ curl -sf \
   "$PI_SERVER/pirpc.v1.SessionService/List" > /dev/null && echo "ready"
 ```
 
-If not running, start with `make serve` from `skills/pi-rpc/scripts/`.
+If not running, start with `./skills/pi-rpc/scripts/start.sh`.
 
 ## Provider and Model Selection
 
-**If the user has not specified a provider and model, ask them.** Do not assume a default. Use `pi --list-models` to show available options.
+If the user specifies a provider and model, pass them to the `Create` endpoint.
+If omitted, the server will apply default fallbacks (`PI_DEFAULT_PROVIDER` / `PI_DEFAULT_MODEL`, which themselves default to `openai` / `gpt-5.4`).
 
-Once known, validate the provider/model pair before creating sessions:
+If you are explicitly specifying a provider/model pair, validate them before creating sessions:
 
 ```bash
 pi --provider <PROVIDER> --model <MODEL> --mode json "Reply with OK."
@@ -100,10 +108,16 @@ Sessions are killed automatically after 60 seconds of inactivity while in `RUNNI
 ```bash
 PI_SERVER="${PI_SERVER_URL:-http://localhost:4097}"
 
-# Create a session
+# Create a session (with explicit provider/model)
 SESSION=$(curl -sf \
   -H 'Content-Type: application/json' \
   -d '{"provider":"<PROVIDER>","model":"<MODEL>","cwd":"/home/user/project"}' \
+  "$PI_SERVER/pirpc.v1.SessionService/Create" | jq -r .sessionId)
+
+# Alternatively, create a session using defaults
+SESSION=$(curl -sf \
+  -H 'Content-Type: application/json' \
+  -d '{"cwd":"/home/user/project"}' \
   "$PI_SERVER/pirpc.v1.SessionService/Create" | jq -r .sessionId)
 
 # Send a prompt (synchronous — waits up to 5 minutes)

@@ -1,0 +1,2 @@
+kind: Changed
+body: "pi-rpc: allow session creation with default models by making provider and model optional in CLI, and provide start.sh script to simplify background server startup"
