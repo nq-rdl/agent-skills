@@ -115,6 +115,7 @@ func newSessionCreateCmd(serverFlag *string) *cobra.Command {
 		model         string
 		cwd           string
 		thinkingLevel string
+		timeoutSeconds int32
 	)
 
 	cmd := &cobra.Command{
@@ -127,7 +128,7 @@ If --provider and --model are omitted, defaults (or PI_DEFAULT_PROVIDER/PI_DEFAU
 Tip: validate your provider/model pair before creating sessions:
   pi --provider <PROVIDER> --model <MODEL> --mode json "Reply with OK."`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runSessionCreate(cmd.Context(), serverURL(*serverFlag), provider, model, cwd, thinkingLevel)
+			return runSessionCreate(cmd.Context(), serverURL(*serverFlag), provider, model, cwd, thinkingLevel, timeoutSeconds)
 		},
 	}
 
@@ -135,16 +136,18 @@ Tip: validate your provider/model pair before creating sessions:
 	cmd.Flags().StringVar(&model, "model", "", "Model ID from pi --list-models")
 	cmd.Flags().StringVar(&cwd, "cwd", "", "Working directory for the agent (default: current directory)")
 	cmd.Flags().StringVar(&thinkingLevel, "thinking", "", "Thinking level: low, medium, high")
+	cmd.Flags().Int32Var(&timeoutSeconds, "timeout", 0, "Inactivity timeout in seconds (0 = server default)")
 
 	return cmd
 }
 
-func runSessionCreate(ctx context.Context, base, provider, model, cwd, thinkingLevel string) error {
-	req := map[string]string{
-		"provider":       provider,
-		"model":          model,
-		"cwd":            cwd,
-		"thinking_level": thinkingLevel,
+func runSessionCreate(ctx context.Context, base, provider, model, cwd, thinkingLevel string, timeoutSeconds int32) error {
+	req := map[string]any{
+		"provider":        provider,
+		"model":           model,
+		"cwd":             cwd,
+		"thinking_level":  thinkingLevel,
+		"timeout_seconds": timeoutSeconds,
 	}
 
 	var resp struct {
