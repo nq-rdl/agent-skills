@@ -1,0 +1,3 @@
+kind: Fixed
+body: Release workflow re-trigger loop when tag is force-pushed by release bot
+time: 2026-04-08T15:00:00.000000000+10:00
