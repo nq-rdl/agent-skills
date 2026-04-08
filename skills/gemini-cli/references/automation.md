@@ -15,15 +15,15 @@ gemini -p "Write a haiku about TypeScript" --output-format json | jq -r '.respon
 ```bash
 # File analysis
 cat error.log | gemini -p "What's causing these errors? Give me the top 3 causes." \
-  --approval-mode yolo --output-format json | jq -r '.response'
+  --yolo --output-format json | jq -r '.response'
 
 # Git diff review
 git diff --staged | gemini -p "Write a conventional commit message for these changes." \
-  --approval-mode yolo --output-format json | jq -r '.response'
+  --yolo --output-format json | jq -r '.response'
 
 # Command output analysis
 kubectl get events --sort-by='.lastTimestamp' | \
-  gemini -p "Are there any concerning events?" --approval-mode yolo
+  gemini -p "Are there any concerning events?" --yolo
 ```
 
 ## Extract Session ID (for multi-turn)
@@ -31,7 +31,7 @@ kubectl get events --sort-by='.lastTimestamp' | \
 ```bash
 # Use stream-json to get session ID
 OUTPUT=$(gemini -p "Explain transformer attention" \
-  --output-format stream-json --approval-mode yolo)
+  --output-format stream-json --yolo)
 
 SESSION_ID=$(echo "$OUTPUT" | jq -r 'select(.type == "init") | .sessionId' | head -1)
 RESPONSE=$(echo "$OUTPUT" | jq -r 'select(.type == "result") | .response' | head -1)
@@ -42,7 +42,7 @@ echo "Response: $RESPONSE"
 # Continue the session
 FOLLOW_UP=$(gemini -p "Compare to linear attention" \
   --resume "$SESSION_ID" \
-  --output-format stream-json --approval-mode yolo | \
+  --output-format stream-json --yolo | \
   jq -r 'select(.type == "result") | .response')
 ```
 
@@ -57,7 +57,7 @@ FOLLOW_UP=$(gemini -p "Compare to linear attention" \
 for file in *.py; do
   echo "Processing $file..."
   summary=$(cat "$file" | gemini -p "Summarize this Python module in 2 sentences." \
-    --approval-mode yolo --output-format json | jq -r '.response')
+    --yolo --output-format json | jq -r '.response')
   echo "## $file" >> summaries.md
   echo "$summary" >> summaries.md
   echo "" >> summaries.md
@@ -73,7 +73,7 @@ done
 process_file() {
   local file=$1
   local result=$(cat "$file" | gemini -p "Extract all TODO comments and their context." \
-    --approval-mode yolo --output-format json | jq -r '.response')
+    --yolo --output-format json | jq -r '.response')
   echo "### $file" >> todos.md
   echo "$result" >> todos.md
 }
@@ -94,7 +94,7 @@ find . -name "*.py" | xargs -P 4 -I{} bash -c 'process_file "$@"' _ {}
 gcommit() {
   local message=$(git diff --staged | \
     gemini -p "Write a conventional commit message. Return only the commit message, no commentary." \
-    --approval-mode yolo --output-format json | jq -r '.response')
+    --yolo --output-format json | jq -r '.response')
 
   echo "Generated: $message"
   read -p "Use this message? [y/N] " confirm
@@ -109,7 +109,7 @@ gcommit() {
 ```bash
 gsearch() {
   gemini -p "Search the web: $*. Return a concise answer with sources." \
-    --model flash --approval-mode yolo --output-format json | jq -r '.response'
+    --model flash --yolo --output-format json | jq -r '.response'
 }
 
 # Usage
@@ -123,7 +123,7 @@ greview() {
   local target=${1:-HEAD~1}
   git diff "$target" | gemini \
     -p "Review this diff. List: 1) Bugs, 2) Security issues, 3) Improvements. Be concise." \
-    --approval-mode yolo --output-format json | jq -r '.response'
+    --yolo --output-format json | jq -r '.response'
 }
 ```
 
@@ -140,7 +140,7 @@ Use `GEMINI_SYSTEM_MD` to set a system prompt — store prompts in `.gemini/prom
 
 GEMINI_SYSTEM_MD=.gemini/prompts/research-assistant.md \
   gemini -p "Find papers on diffusion transformers" \
-  --approval-mode yolo --output-format json
+  --yolo --output-format json
 ```
 
 ---
@@ -153,7 +153,7 @@ GEMINI_SYSTEM_MD=.gemini/prompts/research-assistant.md \
   run: |
     PR_BODY=$(git diff origin/main...HEAD | \
       gemini -p "Write a GitHub PR description. Include: summary, changes, testing notes." \
-      --approval-mode yolo --output-format json | jq -r '.response')
+      --yolo --output-format json | jq -r '.response')
     gh pr edit --body "$PR_BODY"
   env:
     GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -172,7 +172,7 @@ run_gemini() {
   local prompt=$1
   local output exit_code
 
-  output=$(gemini -p "$prompt" --output-format json --approval-mode yolo 2>/tmp/gemini-stderr)
+  output=$(gemini -p "$prompt" --output-format json --yolo 2>/tmp/gemini-stderr)
   exit_code=$?
 
   case $exit_code in

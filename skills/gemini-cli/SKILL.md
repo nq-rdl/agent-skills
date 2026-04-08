@@ -47,10 +47,10 @@ Headless mode activates when `--prompt` is provided. Gemini runs, returns a resp
 ```bash
 gemini --prompt "Summarize the key risks in this architecture" \
   --output-format json \
-  --approval-mode yolo
+  --yolo
 ```
 
-`--approval-mode yolo` is **required** for headless — without it, Gemini blocks waiting for interactive confirmation that can never arrive.
+`--yolo` is **required** for headless — without it, Gemini blocks waiting for interactive confirmation that can never arrive.
 
 ### Output format
 
@@ -76,7 +76,7 @@ Use `--output-format stream-json` if you need the `session_id` for multi-turn (t
 
 ```bash
 git diff HEAD~1 | gemini --prompt "Review this diff. Focus on security issues." \
-  --approval-mode yolo --output-format json
+  --yolo --output-format json
 ```
 
 ### Multi-turn via `--resume`
@@ -86,13 +86,13 @@ Save the `session_id` from a previous call and continue the conversation:
 ```bash
 # First turn — capture session ID
 OUTPUT=$(gemini --prompt "Explain transformer attention" \
-  --output-format stream-json --approval-mode yolo)
+  --output-format stream-json --yolo)
 SESSION_ID=$(echo "$OUTPUT" | jq -r 'select(.type=="init") | .sessionId' | head -1)
 
 # Continue the session
 gemini --prompt "Compare to linear attention" \
   --resume "$SESSION_ID" \
-  --output-format json --approval-mode yolo
+  --output-format json --yolo
 ```
 
 ### System context injection
@@ -102,7 +102,7 @@ Use `GEMINI_SYSTEM_MD` to override the system prompt for a single call:
 ```bash
 GEMINI_SYSTEM_MD=.gemini/prompts/research-assistant.md \
   gemini --prompt "Find papers on MoE architectures" \
-  --approval-mode yolo --output-format json
+  --yolo --output-format json
 ```
 
 ---
@@ -193,7 +193,7 @@ Store prompts in `.gemini/prompts/` so they're versioned, discoverable, and easy
 # Set persona + output format for one call
 GEMINI_SYSTEM_MD=.gemini/prompts/security-auditor.md \
   gemini --prompt "Review this code" \
-  --approval-mode yolo --output-format json
+  --yolo --output-format json
 ```
 
 Where `.gemini/prompts/security-auditor.md` contains:
@@ -224,7 +224,7 @@ EOF
 
 gemini --prompt "Find papers on MoE architectures" \
   --include-directories "$TMPDIR" \
-  --approval-mode yolo --output-format json
+  --yolo --output-format json
 
 rm -rf "$TMPDIR"
 ```
@@ -242,10 +242,10 @@ Fire multiple headless processes concurrently — each is independent:
 ```bash
 # Start all searches in parallel
 gemini --prompt "Search the web for: latest MoE architecture papers 2025" \
-  --approval-mode yolo --output-format json &
+  --yolo --output-format json &
 
 gemini --prompt "Search the web for: transformer scaling laws survey 2025" \
-  --approval-mode yolo --output-format json &
+  --yolo --output-format json &
 
 wait  # collect results when both finish
 ```
@@ -255,20 +255,20 @@ wait  # collect results when both finish
 ```bash
 git diff HEAD~1 | gemini \
   --prompt "Review this diff. Focus on security issues and edge cases. Be concise." \
-  --approval-mode yolo --output-format json | jq -r '.response'
+  --yolo --output-format json | jq -r '.response'
 ```
 
 ### Multi-turn research with `--resume`
 
 ```bash
 OUTPUT=$(gemini --prompt "Explain transformer attention complexity" \
-  --output-format stream-json --approval-mode yolo)
+  --output-format stream-json --yolo)
 SESSION=$(echo "$OUTPUT" | jq -r 'select(.type=="init") | .sessionId' | head -1)
 RESPONSE=$(echo "$OUTPUT" | jq -r 'select(.type=="result") | .response' | head -1)
 
 # Drill down in the same session
 gemini --prompt "Compare the top 3 approaches by memory efficiency" \
-  --resume "$SESSION" --output-format json --approval-mode yolo | jq -r '.response'
+  --resume "$SESSION" --output-format json --yolo | jq -r '.response'
 ```
 
 ### Large output to file
@@ -276,14 +276,14 @@ gemini --prompt "Compare the top 3 approaches by memory efficiency" \
 ```bash
 cat large-document.pdf | gemini \
   --prompt "Convert this document to structured JSON" \
-  --approval-mode yolo --output-format json > /tmp/output.json
+  --yolo --output-format json > /tmp/output.json
 ```
 
 ---
 
 ## Defaults and Safety
 
-- `--approval-mode yolo` is required for headless — `default` blocks waiting for TTY confirmation
+- `--yolo` is required for headless — `default` blocks waiting for TTY confirmation
 - `--sandbox` is optional — Gemini CLI's sandbox sets `HOME=/home/node` internally, which requires a specific system setup. Disable unless your system supports it.
 - Default timeout: 5 minutes. For long tasks (large files, deep research), increase or use background processes.
 

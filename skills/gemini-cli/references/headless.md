@@ -204,7 +204,7 @@ TypeScript/Node.js example:
 import { spawn } from 'child_process';
 
 async function runGemini(prompt: string): Promise<{ response: string; sessionId: string }> {
-  const proc = spawn('gemini', ['-p', prompt, '--output-format', 'stream-json', '--approval-mode', 'yolo', '--sandbox']);
+  const proc = spawn('gemini', ['-p', prompt, '--output-format', 'stream-json', '--yolo', '--sandbox']);
 
   let sessionId = '';
   let response = '';
