@@ -86,3 +86,13 @@ jobs:
         with:
           body_path: release-notes.md
           generate_release_notes: false
+
+      - name: Trigger agent-extensions sync
+        env:
+          TAG: ${{ github.ref_name }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh api repos/nq-rdl/agent-extensions/dispatches \
+            --method POST \
+            --field event_type=agent-skills-release \
+            --field 'client_payload[tag]='"$TAG"
