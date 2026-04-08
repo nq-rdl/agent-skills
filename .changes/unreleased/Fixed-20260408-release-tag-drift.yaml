@@ -1,0 +1,3 @@
+kind: Fixed
+body: Release workflow tag drift, shallow fetch, and missing unreleased changes guard
+time: 2026-04-08T12:00:00.000000000+10:00
