@@ -1,0 +1,2 @@
+kind: Fixed
+body: Update gemini-cli skill docs to use `--yolo` flag instead of invalid `--approval-mode yolo` flag

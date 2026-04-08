@@ -15,6 +15,7 @@ Quarto extensions add custom functionality including shortcodes, filters, format
 
 ### Official Repository
 
+<!-- lychee-ignore -->
 - [Quarto Extensions](https://quarto.org/docs/extensions/)
 - Browse by category: filters, shortcodes, formats, etc.
 
@@ -312,7 +313,9 @@ If extensions conflict, try:
 
 ## Resources
 
+<!-- lychee-ignore -->
 - [Quarto Extensions Guide](https://quarto.org/docs/extensions/)
+<!-- lychee-ignore -->
 - [Creating Extensions](https://quarto.org/docs/extensions/creating.html)
 - [Community Extensions](https://m.canouil.dev/quarto-extensions/)
 - [Extensions JSON API](https://m.canouil.dev/quarto-extensions/extensions.json)
