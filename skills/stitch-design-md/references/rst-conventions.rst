@@ -11,9 +11,9 @@ Headings are created by underlining (and optionally overlining) the title text.
 
 .. code-block:: rst
 
-   =============
+   ==============
    Document Title
-   =============
+   ==============
 
    Section Level 1
    ===============
@@ -29,7 +29,7 @@ Inline Markup
 
 *   Emphasis (italics): ``*text*``
 *   Strong emphasis (bold): ``**text**``
-*   Inline code/literals: ````text````
+*   Inline code/literals: ``text``
 
 Lists
 =====
