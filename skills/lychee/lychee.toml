@@ -20,6 +20,10 @@ max_retries = 3
 
 # Exclude common false-positive patterns
 exclude = [
+  # CI failing URLs
+  "^https?://quarto\\.org/docs/",
+  "^https?://quarto\\.org/docs/faq/rmarkdown\\.html#quarto-vs.-r-markdown",
+
   # Localhost/example URLs
   "^https?://localhost",
   "^https?://127\\.0\\.0\\.",

@@ -41,6 +41,18 @@ All `navset_*()` functions accept any number of `nav_panel()` items as their pri
 - **`navset_pill()`** — Horizontal rounded pill buttons. Use when you want a button-like appearance for navigation items.
 - **`navset_pill_list()`** — Vertical sidebar-style pill list. Use when you have many items (5+) or when vertical layout fits the design.
 
+### navset_underline()
+<a id="navset_underline"></a>
+
+### navset_tab()
+<a id="navset_tab"></a>
+
+### navset_pill()
+<a id="navset_pill"></a>
+
+### navset_pill_list()
+<a id="navset_pill_list"></a>
+
 ### navset_bar()
 
 Navigation bar style, similar to `page_navbar()` but without being a full page layout. Supports a `title` parameter and `nav_menu()` dropdowns.
