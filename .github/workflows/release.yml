@@ -38,19 +38,37 @@ jobs:
             exit 1
           fi
 
-      - name: Check for unreleased changes
+      - name: Detect changelog state
+        id: changelog
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
-          if [ -z "$(ls .changes/unreleased/ 2>/dev/null | grep -v .gitkeep)" ]; then
-            echo "::error::No unreleased changelog entries found. Nothing to release."
+          version="${TAG#v}"
+          has_unreleased=$(ls .changes/unreleased/ 2>/dev/null | grep -v .gitkeep | head -1)
+          has_batched=""
+          if [ -f ".changes/${version}.md" ]; then
+            has_batched="true"
+          fi
+
+          if [ -z "$has_unreleased" ] && [ -z "$has_batched" ]; then
+            echo "::error::No unreleased changelog entries or pre-batched version file found. Nothing to release."
             exit 1
           fi
 
+          if [ -n "$has_unreleased" ]; then
+            echo "needs_batch=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_batch=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install changie
+        if: steps.changelog.outputs.needs_batch == 'true'
         uses: miniscruff/changie-action@v2
         with:
           version: latest
 
       - name: Batch and merge changelog
+        if: steps.changelog.outputs.needs_batch == 'true'
         env:
           TAG: ${{ github.ref_name }}
         run: |
@@ -59,6 +77,7 @@ jobs:
           changie merge
 
       - name: Commit changelog updates
+        if: steps.changelog.outputs.needs_batch == 'true'
         env:
           TAG: ${{ github.ref_name }}
         run: |
@@ -69,6 +88,7 @@ jobs:
           git push origin HEAD:main
 
       - name: Move tag to include changelog commit
+        if: steps.changelog.outputs.needs_batch == 'true'
         env:
           TAG: ${{ github.ref_name }}
         run: |
