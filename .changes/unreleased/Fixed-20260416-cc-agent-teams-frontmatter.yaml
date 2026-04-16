@@ -1,0 +1,2 @@
+kind: Fixed
+body: Remove unexpected fields (argument-hint, user-invocable) from cc-agent-teams SKILL.md frontmatter
