@@ -36,6 +36,8 @@ exclude = [
   # "^https://github\\.com/your-org/"  # add org-specific exclusions here
   # Exclude conventional commits due to rate limiting / connection reset in CI
   "^https://www\\.conventionalcommits\\.org/",
+  "^https://quarto\\.org/docs$",
+  "^https://quarto\\.org/docs/$",
 ]
 
 # Exclude private/loopback IPs
