@@ -1,2 +1,0 @@
-kind: Fixed
-body: "Fix failing CI check-links job by adding missing quarto and shiny-bslib exceptions to lychee exclude rules"

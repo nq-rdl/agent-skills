@@ -133,8 +133,9 @@ if [ -z "$_commit_msg" ]; then
     _commit_msg="[Spec Kit] Auto-commit ${_phase} ${_command_name}"
 fi
 
-# Stage and commit
-_git_out=$(git add . 2>&1) || { echo "[specify] Error: git add failed: $_git_out" >&2; exit 1; }
+# Stage tracked changes and new files under .specify/ only
+_git_out=$(git add -u 2>&1) || { echo "[specify] Error: git add -u failed: $_git_out" >&2; exit 1; }
+_git_out=$(git add .specify/ 2>&1) || { echo "[specify] Error: git add .specify/ failed: $_git_out" >&2; exit 1; }
 _git_out=$(git commit -q -m "$_commit_msg" 2>&1) || { echo "[specify] Error: git commit failed: $_git_out" >&2; exit 1; }
 
 echo "✓ Changes committed ${_phase} ${_command_name}" >&2
