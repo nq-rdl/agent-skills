@@ -1,2 +1,0 @@
-kind: Added
-body: Add sops skill for encrypting and decrypting files using age and HashiCorp Vault.
