@@ -50,17 +50,11 @@ Full model IDs can also be passed directly:
 
 ### Approval Mode
 
-| Flag | Values | Default |
-|------|--------|---------|
-| `--approval-mode <mode>` | `default`, `auto_edit`, `yolo` | `default` |
+| Flag | Description |
+|------|-------------|
+| `--yolo`, `-y` | Auto-approves all tool actions — **required for headless** |
 
-| Mode | Behavior |
-|------|---------|
-| `default` | Requires confirmation for all tool actions — **BLOCKS** in headless (no TTY) |
-| `auto_edit` | Auto-approves file edits; prompts for shell/network actions |
-| `yolo` | Auto-approves all actions — **required for headless** |
-
-> ⚠️ Always use `--approval-mode yolo` in headless/automated contexts. Without it, Gemini CLI will block waiting for interactive confirmation that can never arrive.
+> ⚠️ Always use `--yolo` in headless/automated contexts. Without it, Gemini CLI will block waiting for interactive confirmation that can never arrive.
 
 ### Sandbox
 
@@ -68,7 +62,7 @@ Full model IDs can also be passed directly:
 |------|-------|-------------|
 | `--sandbox` | `-s` | Run tool execution in a sandboxed environment |
 
-Use `--sandbox` with `--approval-mode yolo` to auto-approve actions while limiting their blast radius. Recommended default for all headless calls.
+Use `--sandbox` with `--yolo` to auto-approve actions while limiting their blast radius. Recommended default for all headless calls.
 
 ### Session Continuation
 
@@ -124,7 +118,7 @@ gemini \
   --prompt "Search for recent papers on mixture-of-experts architectures" \
   --output-format stream-json \
   --model flash \
-  --approval-mode yolo \
+  --yolo \
   --sandbox \
   --include-directories /tmp/gemini-context-xyz
 ```
@@ -147,13 +141,13 @@ Gemini CLI reads stdin in headless mode, allowing you to pipe file contents or c
 
 ```bash
 # Pipe a git diff for review
-git diff HEAD~1 | gemini -p "Review this diff. Focus on security issues." --approval-mode yolo
+git diff HEAD~1 | gemini -p "Review this diff. Focus on security issues." --yolo
 
 # Pipe a log file
-tail -n 1000 app.log | gemini -p "What's causing these errors?" --approval-mode yolo
+tail -n 1000 app.log | gemini -p "What's causing these errors?" --yolo
 
 # Pipe command output
-kubectl describe pod my-pod | gemini -p "Is this pod healthy? What's wrong?" --approval-mode yolo
+kubectl describe pod my-pod | gemini -p "Is this pod healthy? What's wrong?" --yolo
 ```
 
 ---
@@ -163,7 +157,7 @@ kubectl describe pod my-pod | gemini -p "Is this pod healthy? What's wrong?" --a
 **Recommended:** Use `GEMINI_SYSTEM_MD` to override the system prompt per-call. Store prompts in `.gemini/prompts/`:
 
 ```bash
-GEMINI_SYSTEM_MD=.gemini/prompts/persona.md gemini -p "Review this code" --approval-mode yolo
+GEMINI_SYSTEM_MD=.gemini/prompts/persona.md gemini -p "Review this code" --yolo
 ```
 
 Gemini CLI also reads `GEMINI.md` files from the current working directory (and parent directories) as project context — analogous to Claude Code's `CLAUDE.md`.
