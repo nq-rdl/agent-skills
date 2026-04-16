@@ -76,8 +76,8 @@ Use a flex container with a horizontal layout for the main content, inside a car
 
 For more detailed examples and advanced usage, see the files in the `references/` directory:
 
-*   Read `references/format-overview.md` for a deep dive into the structural requirements.
-*   Read `references/examples.md` for additional concrete examples of `design.md` files.
+*   Read `references/format-overview.rst` for a deep dive into the structural requirements.
+*   Read `references/examples.rst` for additional concrete examples of `design.md` files.
 
 ## Official Documentation
 

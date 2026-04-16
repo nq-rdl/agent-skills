@@ -80,4 +80,4 @@ Refs: #123
 
 ## Further Guidance
 
-For comprehensive details on the specification, including rules, FAQs, and edge cases, see the [Conventional Commits Guidance](references/guidance.md).
+For comprehensive details on the specification, including rules, FAQs, and edge cases, see the [Conventional Commits Guidance](references/guidance.rst).

@@ -34,5 +34,5 @@ This skill teaches how to encrypt and decrypt files using [SOPS](https://github.
 
 ## Reference Guides
 
-- [Encrypting with Age](references/age.md)
-- [Encrypting with HashiCorp Vault](references/vault.md)
+- [Encrypting with Age](references/age.rst)
+- [Encrypting with HashiCorp Vault](references/vault.rst)
