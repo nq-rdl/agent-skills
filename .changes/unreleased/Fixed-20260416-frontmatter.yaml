@@ -1,0 +1,2 @@
+kind: Fixed
+body: Move `argument-hint` and `user-invocable` to the `metadata` block in `cc-agent-teams` skill to fix CI frontmatter validation failure.

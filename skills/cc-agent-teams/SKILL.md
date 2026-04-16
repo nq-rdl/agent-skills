@@ -9,11 +9,11 @@ description: >-
   SendMessage, teammate mode, team lead, agent coordination, parallel sessions,
   or 'can we parallelize this with agents?'. Helps with planning parallel
   execution strategies and structuring team-based work.
-argument-hint: "Describe the work to parallelize (e.g., 'review PR #42 for security and performance')"
 compatibility: >-
   Requires Claude Code v2.1.32+. Split-pane mode requires tmux or iTerm2.
-user-invocable: true
 metadata:
+  argument-hint: "Describe the work to parallelize (e.g., 'review PR #42 for security and performance')"
+  user-invocable: true
   repo: https://github.com/nq-rdl/agent-skills
 ---
 
