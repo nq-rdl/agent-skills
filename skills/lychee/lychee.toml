@@ -20,6 +20,7 @@ max_retries = 3
 
 # Exclude common false-positive patterns
 exclude = [
+  "^https?://quarto\\.org/docs/",
   # Localhost/example URLs
   "^https?://localhost",
   "^https?://127\\.0\\.0\\.",
