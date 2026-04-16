@@ -34,6 +34,7 @@ exclude = [
   "^mailto:",
   # Private GitHub repositories
   # "^https://github\\.com/your-org/"  # add org-specific exclusions here
+  "^https?://icons\\.getbootstrap\\.com",
 ]
 
 # Exclude private/loopback IPs
