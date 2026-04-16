@@ -6,10 +6,10 @@ This reference covers navigation patterns in bslib, including tabsets, multi-pag
 
 - [Core Concept](#core-concept)
 - [Navigation Containers](#navigation-containers)
-  - [navset_underline()](#navset_underline)
-  - [navset_tab()](#navset_tab)
-  - [navset_pill()](#navset_pill)
-  - [navset_pill_list()](#navset_pill_list)
+  - `navset_underline()`
+  - `navset_tab()`
+  - `navset_pill()`
+  - `navset_pill_list()`
   - [navset_bar()](#navset_bar)
   - [navset_hidden()](#navset_hidden)
 - [Card Navigation](#card-navigation)

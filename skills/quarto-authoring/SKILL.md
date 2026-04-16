@@ -318,7 +318,6 @@ format:
 
 <!-- lychee-ignore -->
 - [Quarto Documentation](https://quarto.org/)
-<!-- lychee-ignore -->
 - [Quarto Guide](https://quarto.org/docs/guide/)
 <!-- lychee-ignore -->
 - [Quarto Extensions](https://quarto.org/docs/extensions/)
