@@ -20,7 +20,10 @@ max_retries = 3
 
 # Exclude common false-positive patterns
 exclude = [
+  # CI failing URLs
   "^https?://quarto\\.org/docs/",
+  "^https?://quarto\\.org/docs/faq/rmarkdown\\.html#quarto-vs.-r-markdown",
+
   # Localhost/example URLs
   "^https?://localhost",
   "^https?://127\\.0\\.0\\.",
@@ -35,16 +38,11 @@ exclude = [
   "^mailto:",
   # Private GitHub repositories
   # "^https://github\\.com/your-org/"  # add org-specific exclusions here
+  # Exclude conventional commits due to rate limiting / connection reset in CI
+  "^https://www\\.conventionalcommits\\.org/",
   "^https?://icons\\.getbootstrap\\.com",
-
-  # Known external documentation issues (e.g., fragments that don't exist but the page does)
-  "^https?://quarto\\.org/docs/faq/rmarkdown\\.html#quarto-vs.-r-markdown",
-
-  # Quarto redirects their /docs/ page to another place which causes 404
+  "^https?://quarto\\.org/docs$",
   "^https?://quarto\\.org/docs/$",
-
-  # local shiny references that use the file protocol
-  "^file:///.+/skills/shiny-bslib/references/navigation\\.md",
 ]
 
 # Exclude private/loopback IPs
