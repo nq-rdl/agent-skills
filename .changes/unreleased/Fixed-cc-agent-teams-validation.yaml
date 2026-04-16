@@ -1,0 +1,2 @@
+kind: Fixed
+body: Fix validation of cc-agent-teams skill by moving argument-hint and user-invocable into metadata
