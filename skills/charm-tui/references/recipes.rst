@@ -22,7 +22,7 @@ Two text inputs with Tab navigation and Enter to submit.
    │                                                │
    │ Email >                                        │
    │                                                │
-   │ [Tab] next field  [Enter] submit  [Esc] cancel │
+   │ [Tab] next  [Enter] submit  [Esc] cancel       │
    ╰────────────────────────────────────────────────╯
 
 .. code:: go
@@ -171,7 +171,7 @@ Scrollable table with keyboard navigation.
    │  Bob          │ 25  │ bob@example.com          │
    │  Charlie      │ 35  │ charlie@example.com      │
    ├───────────────┴─────┴──────────────────────────┤
-   │ ↑/↓ navigate • q quit                          │
+   │ ↑/↓ navigate • enter select • q quit           │
    └────────────────────────────────────────────────┘
 
 .. code:: go
