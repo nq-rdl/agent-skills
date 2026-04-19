@@ -1,172 +1,232 @@
 # Contributing to agent-skills
 
-Thank you for contributing! This guide walks you through the process.
+Thank you for contributing! This guide gets you from fork to PR.
 
-## Getting Started
+## 1. Quick Start
 
-1. **Fork** the repository on GitHub.
-2. **Clone** your fork locally:
+Prerequisites: [pixi](https://pixi.sh), [lefthook](https://lefthook.dev), Go 1.25+
+(pinned in `.go-version`), and [changie](https://changie.dev).
 
-   ```bash
-   git clone git@github.com:<your-user>/agent-skills.git
-   cd agent-skills
-   ```
+```bash
+# 1. Fork + clone
+git clone git@github.com:<your-user>/agent-skills.git
+cd agent-skills
 
-3. **Install dependencies** (requires [pixi](https://pixi.sh)):
+# 2. Python deps (for Python skills + dev tooling)
+pixi install
 
-   ```bash
-   pixi install
-   ```
+# 3. Git hooks (runs on every commit + push)
+lefthook install
 
-4. **Install git hooks** (requires [lefthook](https://lefthook.dev)):
+# 4. Optional: build asctl for local skill validation
+cd tools/asctl && go build -o /usr/local/bin/asctl ./cmd/asctl/ && cd -
+```
 
-   ```bash
-   lefthook install
-   ```
+From here, `git commit` triggers pre-commit hooks and `git push` triggers
+pre-push tests automatically.
 
-   Hooks cover Go (vet, format, build) and Python (lint, typecheck, validate-skills)
-   on `pre-commit`, and all tests on `pre-push`.
+## 2. Repo Layout
 
-## Making Changes
+```
+agent-skills/
+├── skills/                   # The skills themselves (52 of them)
+│   ├── pi-rpc/               # Each skill = a directory with SKILL.md
+│   │   ├── SKILL.md          # Frontmatter + body; the public contract
+│   │   └── scripts/          # Per-skill runtime code (Go here: pi-server, pi-cli, pi-mcp)
+│   ├── jules/scripts/        # Go skill
+│   ├── csv/                  # Python skill (+ pyproject.toml for deps)
+│   └── ...
+├── tools/
+│   └── asctl/                # Go CLI for skill validation + prompt rendering
+│       ├── cmd/asctl/        # main package
+│       └── internal/         # validator, parser, prompt, repocheck, frontmatter
+├── src/skills/ref/           # Legacy Python validator (being replaced by asctl)
+├── docs/skill-creation/      # Authoring guides for skill contributors
+├── .changes/unreleased/      # Changie fragments (one YAML per PR)
+├── go.work                   # Go workspace spanning all Go modules
+├── lefthook.yml              # Hook config (Go + Python)
+├── .goreleaser.yaml          # Multi-binary release matrix
+└── pyproject.toml            # Python deps + per-skill pixi features
+```
 
-1. Create a feature branch from `main`:
+**Per-module `go.mod`** — each Go-bearing skill keeps its own module.
+`go.work` only unifies the dev loop; modules publish independently.
 
-   ```bash
-   git checkout -b feat/my-change main
-   ```
+## 3. Development Workflows
 
-2. Make your changes — skills live in `skills/`, Go tooling in `tools/` and skill
-   `scripts/` directories, Python tooling in `src/`.
+### Creating or editing a skill
 
-3. **Add a changie fragment** (required for every PR):
+Skills live in `skills/<name>/`. The required file is `SKILL.md` with YAML
+frontmatter (`name`, `description`, optional `license`, `metadata`). See
+`docs/skill-creation/` for the authoring guide.
 
-   ```bash
-   changie new
-   ```
+### Go skills and tools
 
-   This creates a YAML file in `.changes/unreleased/`. Pick the kind
-   (`Added`, `Changed`, `Deprecated`, `Removed`, or `Fixed`) and write a
-   short description of your change. See [Changie fragments](#changie-fragments)
-   below for details.
-
-4. Commit your work. Lefthook hooks will automatically run:
-   - **Go** — `go vet`, `gofmt`, `go build` for each module (pi-rpc, jules, asctl)
-   - **Skill validation** — checks `SKILL.md` frontmatter and structure
-   - **Ruff lint & format** — enforces Python code style
-   - **ty typecheck** — Python type checking via Astral ty
-   - **Lock-file check** — ensures `pixi.lock` stays in sync
-   - **Link check** — verifies URLs in skill files (requires [lychee](https://github.com/lycheeverse/lychee) on PATH)
-
-   If a hook fails, fix the issue and commit again.
-
-## Development Workflows
-
-### Go skills
-
-Each Go skill has its own module. Build and test independently:
+Each Go module (`skills/pi-rpc/scripts`, `skills/jules/scripts`, `tools/asctl`)
+has its own `go.mod` and is built/tested independently:
 
 ```bash
 cd skills/pi-rpc/scripts && make build && make test
-cd skills/jules/scripts  && make build && make test
 cd tools/asctl           && go build ./... && go test -race ./...
 ```
 
-The root `go.work` unifies all modules for IDE support and `go test ./...` from root.
+From the repo root, `go.work` lets you test everything at once:
+
+```bash
+go test ./...
+```
+
+Follow the modern-Go patterns documented in
+[`skills/modern-go-guidelines`](skills/modern-go-guidelines/) — `any` not
+`interface{}`, `slices.Contains` not manual loops, `wg.Go()` not
+`wg.Add(1)`/`wg.Done()`, `t.Context()` in tests, and so on.
 
 ### Python skills
 
-Each Python skill (`csv`, `docx`, `xlsx`, `pdf`) has its own pixi environment:
+The four file-format skills (`csv`, `docx`, `xlsx`, `pdf`) each have an
+isolated pixi environment:
 
 ```bash
-pixi run -e csv      test       # run csv skill tests
-pixi run -e csv      lint       # ruff lint csv skill
-pixi run -e csv      typecheck  # ty typecheck csv skill
-pixi run -e docx     test
-pixi run -e xlsx     test
-pixi run -e pdf      test
+pixi run -e csv  test       # pytest for csv skill only
+pixi run -e csv  lint       # ruff lint
+pixi run -e csv  typecheck  # ty typecheck
+pixi run -e docx test
+pixi run -e xlsx test
+pixi run -e pdf  test
 ```
 
-Global Python tooling (validation, testing `src/`):
+### MCP servers
+
+A skill that ships an MCP server lives as a Cobra subcommand in the skill's
+`scripts/cmd/<name>-mcp/` directory. `skills/pi-rpc/scripts/cmd/pi-mcp/` is
+the reference implementation — embeds the session manager directly, uses
+`mark3labs/mcp-go` over stdio. See
+[`docs/skill-creation/scripts-languages.mdx`](docs/skill-creation/scripts-languages.mdx)
+for the pattern.
+
+### TDD discipline
+
+For any non-trivial change, run the `/tdd` skill workflow: write a failing
+test first, implement until green, refactor. The `asctl` port from Python
+follows this — every Python test case became a Go test before implementation.
+
+Golden-file tests (see `tools/asctl/internal/prompt/`) are the preferred
+pattern when output format stability matters.
+
+### Using sibling skills during development
+
+This repo's own skills help you work on it:
+
+- `infra:lefthook` — hook config guidance
+- `swe:tdd` — test-first workflow
+- `swe:changie` — changelog fragments
+- `astral:ty`, `astral:ruff` — Python static analysis
+- `modern-go-guidelines:use-modern-go` — idiomatic Go by version
+- `mcp-server-dev:build-mcp-server` — MCP server patterns
+
+## 4. Validation & Testing
+
+### Pre-commit hooks (run on every commit)
+
+Lefthook runs these in parallel:
+
+| Hook | What it checks |
+|---|---|
+| `go-vet-*` / `go-format-*` / `go-build-*` | Per-module Go vet, gofmt, build (pi-rpc, jules, asctl) |
+| `ruff-lint` / `ruff-format` | Python style |
+| `typecheck` | Python type checking via `ty` |
+| `validate-skills` | SKILL.md frontmatter + structure |
+| `pixi-lock-check` | `pixi.lock` stays in sync with `pyproject.toml` |
+| `lychee-links` | URLs in skill `.md` files are reachable (optional — skips if `lychee` not on PATH) |
+
+### Pre-push hooks (run on `git push`)
+
+| Hook | What it checks |
+|---|---|
+| `go-test-*` | Full test suite per Go module, `-race -count=1` |
+| `python-test` | `pytest` |
+
+### Validating manually
 
 ```bash
-pixi run test            # pytest
-pixi run lint            # ruff check
-pixi run typecheck       # ty check src/ skills/
-pixi run validate-skills # validate all skill SKILL.md files
+# Full validation suite
+asctl repo-check               # validate all skills (Go binary, <2s)
+pixi run validate-skills       # same via legacy Python path (identical output)
+pixi run typecheck             # ty check src/ skills/
+pixi run lint                  # ruff check
+pixi run test                  # pytest
+
+# Run hook stages on demand
+lefthook run pre-commit
+lefthook run pre-push
 ```
 
-### TDD workflow
+**Note:** `asctl repo-check` and `pixi run validate-skills` currently both
+work and produce identical output. Once `src/skills/ref/` is retired in a
+follow-up PR, the pixi task will be dropped.
 
-Use the `/tdd` skill when modifying any skill. The cycle is:
+### What CI runs
 
-1. Write a failing test
-2. Implement until green
-3. Refactor
+Pull requests trigger:
 
-For Go: `go test -race -count=1 ./...` from the module directory.
-For Python: `pixi run -e <skill> test` from the repo root.
+- `.github/workflows/skills-validation.yml` — builds `asctl` and runs `asctl repo-check`
+- Per-module Go test workflows (matrix across Go versions where applicable)
+- Changelog check — fails the PR if no new fragment in `.changes/unreleased/`
 
-## Changie Fragments
+## 5. Submitting Changes
 
-We use [changie](https://changie.dev) to manage our changelog. Every PR
-**must** include at least one unreleased fragment file in
-`.changes/unreleased/`.
+### Branch + commit
 
-### Creating a fragment
+```bash
+git checkout -b feat/my-change main
+# ... make changes ...
+```
+
+Use [conventional commits](https://www.conventionalcommits.org/):
+`feat(pi-rpc): …`, `fix(asctl): …`, `chore: …`, `docs: …`.
+
+### Add a changie fragment (required)
+
+Every PR must include one YAML file in `.changes/unreleased/`:
 
 ```bash
 changie new
 ```
 
-If you don't have changie installed, you can create the file manually:
+If changie isn't installed, create manually:
 
 ```yaml
 # .changes/unreleased/<unique-name>.yaml
-kind: Added
+kind: Added  # or Changed, Deprecated, Removed, Fixed, Security
 body: Short description of what changed.
 ```
 
-Use one of these kinds: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`.
+CI fails the PR if no new fragment is found. For purely internal changes
+(CI config, typo fixes), add the `skip-changelog` label.
 
-### Why fragments?
-
-Each change gets its own file, so multiple PRs never conflict on the same
-changelog line. At release time the fragments are batched into `CHANGELOG.md`.
-
-### CI enforcement
-
-A GitHub Actions check will **fail your PR** if no new fragment is found in
-`.changes/unreleased/`. If your PR is purely internal (CI config, docs typo,
-etc.) and genuinely needs no changelog entry, add the `skip-changelog` label
-to the PR.
-
-## Submitting a Pull Request
-
-1. Push your branch to your fork:
-
-   ```bash
-   git push origin feat/my-change
-   ```
-
-2. Open a Pull Request against `main` on
-   [nq-rdl/agent-skills](https://github.com/nq-rdl/agent-skills).
-
-3. CI will run:
-   - **Skill validation** — same checks as pre-commit, on all skills
-   - **Go CI** — build + test for each Go module
-   - **Changelog check** — verifies a changie fragment exists
-
-4. Address any review feedback, then your PR will be merged.
-
-## Validating Locally
-
-Run the full validation suite before pushing:
+### Push + open PR
 
 ```bash
-pixi run validate-skills   # validate all skills
-pixi run lint               # ruff lint
-pixi run typecheck          # ty typecheck
-pixi run test               # pytest
-lefthook run pre-commit     # run all pre-commit hooks
-lefthook run pre-push       # run all pre-push hooks (includes tests)
+git push origin feat/my-change
+# then open PR against main at nq-rdl/agent-skills
 ```
+
+### Release process (maintainers)
+
+Tagging `v*` triggers `.github/workflows/release.yml`:
+
+1. Verifies the tag points to a commit on `main`
+2. Batches unreleased changie fragments into `.changes/<version>.md`
+3. Updates `CHANGELOG.md`, force-moves the tag to include the changelog commit
+4. Runs `goreleaser` — builds all binaries (pi-server, pi-cli, pi-mcp, jules,
+   asctl) for `linux/{amd64,arm64}` and `darwin/{amd64,arm64}`, uploads
+   archives + checksums + SBOM to the GitHub Release
+5. Dispatches `agent-skills-release` event to `agent-extensions` so the
+   downstream plugin registry can pull the new artifacts
+
+### Cross-repo note
+
+Go binaries released here are consumed by
+[`nq-rdl/agent-extensions`](https://github.com/nq-rdl/agent-extensions) via
+GitHub Release assets. If you change a binary's CLI surface, coordinate with
+the plugin manifest in `agent-extensions/plugins/dev-tools/`.
