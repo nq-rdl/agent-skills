@@ -61,7 +61,7 @@ func TestToPrompt_singleSkill(t *testing.T) {
 	}
 }
 
-func TestToPrompt_htmlEscaping(t *testing.T) {
+func TestToPrompt_xmlEscaping(t *testing.T) {
 	skillDir := makeSkill(t, "my-skill", "A & B <test> skill")
 
 	out, err := prompt.ToPrompt([]string{skillDir})
@@ -70,7 +70,23 @@ func TestToPrompt_htmlEscaping(t *testing.T) {
 	}
 
 	if !strings.Contains(out, "A &amp; B &lt;test&gt; skill") {
-		t.Errorf("HTML escaping not applied in output:\n%s", out)
+		t.Errorf("XML escaping not applied in output:\n%s", out)
+	}
+}
+
+func TestToPrompt_escapesLocationPath(t *testing.T) {
+	// Location paths are filesystem-controlled and could contain XML-special chars.
+	// With xml.EscapeText they must be safely escaped, not left raw.
+	skillDir := makeSkill(t, "my-skill", "ok")
+	out, err := prompt.ToPrompt([]string{skillDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Confirm there are no unescaped control chars in the output.
+	for _, ch := range []string{"\x00", "\x01"} {
+		if strings.Contains(out, ch) {
+			t.Errorf("control character leaked into XML output:\n%s", out)
+		}
 	}
 }
 

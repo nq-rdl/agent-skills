@@ -3,6 +3,7 @@ package validator
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -12,6 +13,7 @@ import (
 	"golang.org/x/text/unicode/norm"
 
 	"github.com/nq-rdl/agent-skills/tools/asctl/internal/frontmatter"
+	"github.com/nq-rdl/agent-skills/tools/asctl/internal/parser"
 )
 
 const (
@@ -37,15 +39,11 @@ var allowedFields = map[string]bool{
 func ValidateMetadata(metadata map[string]any, skillDir string) []string {
 	var errors []string
 
+	sortedAllowed := slices.Sorted(maps.Keys(allowedFields))
 	for field := range metadata {
 		if !allowedFields[field] {
-			sorted := make([]string, 0, len(allowedFields))
-			for f := range allowedFields {
-				sorted = append(sorted, f)
-			}
-			slices.Sort(sorted)
 			errors = append(errors, fmt.Sprintf(
-				"unexpected field %q in frontmatter; allowed fields: %v", field, sorted))
+				"unexpected field %q in frontmatter; allowed fields: %v", field, sortedAllowed))
 		}
 	}
 
@@ -79,7 +77,7 @@ func Validate(skillDir string) []string {
 		return []string{fmt.Sprintf("not a directory: %s", skillDir)}
 	}
 
-	skillMD := findSkillMD(skillDir)
+	skillMD := parser.FindSkillMD(skillDir)
 	if skillMD == "" {
 		return []string{"missing required file: SKILL.md"}
 	}
@@ -162,14 +160,4 @@ func validateCompatibility(compat string) []string {
 			MaxCompatibilityLength, len([]rune(compat)))}
 	}
 	return nil
-}
-
-func findSkillMD(skillDir string) string {
-	for _, name := range []string{"SKILL.md", "skill.md"} {
-		p := filepath.Join(skillDir, name)
-		if _, err := os.Stat(p); err == nil {
-			return p
-		}
-	}
-	return ""
 }

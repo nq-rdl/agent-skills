@@ -6,8 +6,10 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
+	"log/slog"
+	"math"
 	"os"
 
 	"connectrpc.com/connect"
@@ -22,10 +24,14 @@ import (
 var version = "dev"
 
 func main() {
-	binary := os.Getenv("PI_BINARY")
-	if binary == "" {
-		binary = "pi"
+	if err := run(); err != nil {
+		slog.Error("pi-mcp exited with error", "err", err)
+		os.Exit(1)
 	}
+}
+
+func run() error {
+	binary := cmp.Or(os.Getenv("PI_BINARY"), "pi")
 	defaults := handler.Defaults{
 		Provider: cmp.Or(os.Getenv("PI_DEFAULT_PROVIDER"), "openai"),
 		Model:    cmp.Or(os.Getenv("PI_DEFAULT_MODEL"), "gpt-4.1"),
@@ -54,7 +60,7 @@ func main() {
 				Provider:       stringArg(args, "provider"),
 				Model:          stringArg(args, "model"),
 				ThinkingLevel:  stringArg(args, "thinking_level"),
-				TimeoutSeconds: int32(numberArg(args, "timeout_seconds")),
+				TimeoutSeconds: safeInt32(numberArg(args, "timeout_seconds")),
 			}
 			resp, err := h.Create(ctx, connect.NewRequest(createReq))
 			if err != nil {
@@ -210,34 +216,106 @@ func main() {
 	)
 
 	if err := server.ServeStdio(s); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("serve stdio: %w", err)
 	}
+	return nil
 }
 
 func stringArg(args map[string]any, key string) string {
 	if v, ok := args[key]; ok {
+		if s, ok := v.(string); ok {
+			return s
+		}
 		return fmt.Sprintf("%v", v)
 	}
 	return ""
 }
 
+// numberArg accepts JSON numbers (float64) and integer-typed values that some
+// MCP clients emit. Non-numeric or missing keys return 0.
 func numberArg(args map[string]any, key string) float64 {
-	if v, ok := args[key]; ok {
-		if f, ok := v.(float64); ok {
-			return f
-		}
+	v, ok := args[key]
+	if !ok {
+		return 0
+	}
+	switch n := v.(type) {
+	case float64:
+		return n
+	case float32:
+		return float64(n)
+	case int:
+		return float64(n)
+	case int32:
+		return float64(n)
+	case int64:
+		return float64(n)
 	}
 	return 0
+}
+
+// safeInt32 clamps a float64 into the int32 range, rejecting NaN.
+// Untrusted MCP client input must never overflow the protobuf int32 field.
+func safeInt32(n float64) int32 {
+	if math.IsNaN(n) || n < 0 {
+		return 0
+	}
+	if n > math.MaxInt32 {
+		return math.MaxInt32
+	}
+	return int32(n)
 }
 
 func jsonResult(v any) (*mcp.CallToolResult, error) {
 	data, err := json.Marshal(v)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("marshal tool result: %w", err)
 	}
 	return mcp.NewToolResultText(string(data)), nil
 }
 
+// connectErrToMCP sanitises a ConnectRPC error before it crosses the MCP
+// stdio boundary to the host agent. The host may relay errors into LLM prompts,
+// so raw upstream error text (which can contain paths, model IDs, credentials,
+// or internal state) never escapes. The full error is logged to stderr for
+// local operators via slog.
 func connectErrToMCP(err error) error {
-	return fmt.Errorf("pi-rpc: %w", err)
+	if err == nil {
+		return nil
+	}
+	slog.Error("pi-rpc call failed", "err", err)
+
+	var cerr *connect.Error
+	if errors.As(err, &cerr) {
+		return fmt.Errorf("pi-rpc: %s", sanitizedMessageFor(cerr.Code()))
+	}
+	return errors.New("pi-rpc: internal error")
+}
+
+func sanitizedMessageFor(code connect.Code) string {
+	switch code {
+	case connect.CodeNotFound:
+		return "session not found"
+	case connect.CodeInvalidArgument:
+		return "invalid argument"
+	case connect.CodePermissionDenied:
+		return "permission denied"
+	case connect.CodeUnauthenticated:
+		return "authentication required"
+	case connect.CodeDeadlineExceeded:
+		return "deadline exceeded"
+	case connect.CodeCanceled:
+		return "canceled"
+	case connect.CodeUnavailable:
+		return "service unavailable"
+	case connect.CodeFailedPrecondition:
+		return "failed precondition"
+	case connect.CodeAlreadyExists:
+		return "already exists"
+	case connect.CodeResourceExhausted:
+		return "resource exhausted"
+	case connect.CodeInternal:
+		return "internal error"
+	default:
+		return "request failed"
+	}
 }

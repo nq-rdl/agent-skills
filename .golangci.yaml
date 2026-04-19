@@ -3,18 +3,25 @@ version: "2"
 linters:
   enable:
     - bodyclose
+    - errcheck
     - gocritic
+    - gosec
     - ineffassign
     - revive
     - staticcheck
     - unconvert
     - unparam
+    - unused
 
 linters-settings:
   gocritic:
     enabled-tags:
       - diagnostic
       - performance
+  gosec:
+    # G304 fires on os.ReadFile(cliPath) in asctl — paths come from trusted CLI args.
+    excludes:
+      - G304
   revive:
     rules:
       - name: exported
@@ -23,6 +30,10 @@ linters-settings:
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
+  exclude-rules:
+    # Cobra RunE receivers often don't use `cmd` or `args`.
+    - linters: [unparam, revive]
+      text: "cmd \\*cobra.Command"
 
 run:
   timeout: 5m

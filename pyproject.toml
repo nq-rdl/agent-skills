@@ -33,12 +33,32 @@ python-version = "3.13"
 
 [tool.ty.src]
 include = ["src/**/*.py", "skills/**/*.py"]
+# Legacy Python validator is being replaced by tools/asctl; excluded until deletion.
+exclude = ["src/skills/ref/**/*.py"]
 
 [[tool.ty.overrides]]
 include = ["**/test_*.py", "**/tests/**/*.py"]
 
 [tool.ty.overrides.rules]
 possibly-unresolved-reference = "warn"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+# Per-skill scripts are linted in their own pixi env (see [tool.pixi.feature.*.tasks]);
+# exclude them from the default workspace lint. src/skills/ref/ is legacy code
+# being replaced by tools/asctl.
+extend-exclude = ["src/skills/ref", "skills/csv", "skills/docx", "skills/xlsx", "skills/pdf"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]  # line-length enforced above; let formatter handle
+
+[tool.ruff.lint.per-file-ignores]
+# Per-skill CLI scripts use typer/click idioms (function-call defaults, nested
+# ifs for exit-code clarity). Enforce E/F/I globally but relax the opinionated
+# modernization/simplification rules for script-style code.
+"skills/**/*.py" = ["B006", "B007", "B008", "B904", "SIM102", "SIM103", "SIM105", "SIM108", "SIM114", "SIM201", "UP015", "UP017"]
 
 [tool.pixi.workspace]
 channels = ["conda-forge"]
@@ -51,7 +71,9 @@ agent_skills = { path = ".", editable = true }
 format = "ruff format ."
 lint = "ruff check ."
 test = "pytest"
-typecheck = "ty check src/ skills/"
+# Per-skill scripts are typechecked in their own pixi env (csv/docx/xlsx/pdf)
+# which has the feature's runtime dependencies installed.
+typecheck = "ty check src/"
 validate-skills = "python -m skills.ref.repo_check"
 
 [tool.pixi.dependencies]

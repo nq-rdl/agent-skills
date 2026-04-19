@@ -550,7 +550,7 @@ packages:
 - pypi: ./
   name: agent-skills
   version: 0.1.0
-  sha256: 95e038570fbebac071841fd3584e8e2cf3f39351655e619eb9f8040b71ceb932
+  sha256: 9f93eb907092bff86ec7184b96c1fbbd71d8f9546d9cbedd6f5881d1271f1ab2
   requires_dist:
   - click>=8.0
   - strictyaml>=1.7.3

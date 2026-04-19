@@ -72,15 +72,15 @@ func TestRunSessionCreate(t *testing.T) {
 	}
 }
 
-func TestRunSessionCreateMissingRequiredFields(t *testing.T) {
-	// The cobra command enforces --provider and --model as required flags,
-	// but we also guard in the RunE function.
-	cmd := newSessionCreateCmd(ptrString(""))
-	cmd.SetArgs([]string{}) // no flags
-
-	err := cmd.Execute()
+func TestRunSessionCreateUnreachableServer(t *testing.T) {
+	// Documented behavior: provider/model are optional and fall through to
+	// PI_DEFAULT_PROVIDER / PI_DEFAULT_MODEL on the server side. What MUST
+	// surface to the CLI user is an RPC error when the server is not reachable.
+	err := runSessionCreate(context.Background(),
+		"http://127.0.0.1:1", // reserved port; connection must fail fast
+		"", "", "/tmp", "", 0)
 	if err == nil {
-		t.Error("expected error when provider/model not set")
+		t.Error("expected error when server is unreachable")
 	}
 }
 
@@ -258,6 +258,3 @@ func TestSessionSubcommands(t *testing.T) {
 		}
 	}
 }
-
-// ptrString is a helper for passing flag pointers to subcommand constructors in tests.
-func ptrString(s string) *string { return &s }

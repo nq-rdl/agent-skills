@@ -2,15 +2,17 @@
 package prompt
 
 import (
+	"bytes"
+	"encoding/xml"
 	"fmt"
-	"html"
 	"strings"
 
 	"github.com/nq-rdl/agent-skills/tools/asctl/internal/parser"
 )
 
 // ToPrompt generates the <available_skills> XML block.
-// Output format is byte-for-byte equivalent to the Python prompt.to_prompt() function.
+// All text nodes are escaped via encoding/xml so skill metadata containing <, >,
+// & or control characters produces well-formed XML.
 func ToPrompt(skillDirs []string) (string, error) {
 	if len(skillDirs) == 0 {
 		return "<available_skills>\n</available_skills>", nil
@@ -29,13 +31,13 @@ func ToPrompt(skillDirs []string) (string, error) {
 		lines = append(lines,
 			"<skill>",
 			"<name>",
-			html.EscapeString(props.Name),
+			escapeXML(props.Name),
 			"</name>",
 			"<description>",
-			html.EscapeString(props.Description),
+			escapeXML(props.Description),
 			"</description>",
 			"<location>",
-			skillMD,
+			escapeXML(skillMD),
 			"</location>",
 			"</skill>",
 		)
@@ -43,4 +45,13 @@ func ToPrompt(skillDirs []string) (string, error) {
 
 	lines = append(lines, "</available_skills>")
 	return strings.Join(lines, "\n"), nil
+}
+
+func escapeXML(s string) string {
+	var buf bytes.Buffer
+	if err := xml.EscapeText(&buf, []byte(s)); err != nil {
+		// EscapeText only fails on writer errors; bytes.Buffer never errors.
+		return s
+	}
+	return buf.String()
 }

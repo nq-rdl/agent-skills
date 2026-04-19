@@ -3,7 +3,7 @@ go 1.25.0
 toolchain go1.25.0
 
 use (
-	./skills/pi-rpc/scripts
 	./skills/jules/scripts
+	./skills/pi-rpc/scripts
 	./tools/asctl
 )
