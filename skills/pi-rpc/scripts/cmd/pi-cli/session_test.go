@@ -89,10 +89,13 @@ func TestRunSessionCreateDefaultsAccepted(t *testing.T) {
 	// can apply PI_DEFAULT_PROVIDER / PI_DEFAULT_MODEL. The CLI must not
 	// reject or mutate empty values.
 	var receivedProvider, receivedModel string
+	done := make(chan struct{})
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer close(done)
 		var req map[string]any
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Errorf("decode request body: %v", err)
+			return
 		}
 		receivedProvider, _ = req["provider"].(string)
 		receivedModel, _ = req["model"].(string)
@@ -104,9 +107,10 @@ func TestRunSessionCreateDefaultsAccepted(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	if err := runSessionCreate(context.Background(), srv.URL, "", "", "/tmp", "", 0); err != nil {
+	if err := runSessionCreate(context.Background(), srv.URL, "", "", t.TempDir(), "", 0); err != nil {
 		t.Fatalf("runSessionCreate with empty provider/model failed: %v", err)
 	}
+	<-done
 	if receivedProvider != "" {
 		t.Errorf("provider forwarded to server = %q, want empty string", receivedProvider)
 	}
