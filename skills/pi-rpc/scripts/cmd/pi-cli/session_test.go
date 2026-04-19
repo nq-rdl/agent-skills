@@ -72,15 +72,20 @@ func TestRunSessionCreate(t *testing.T) {
 	}
 }
 
-func TestRunSessionCreateMissingRequiredFields(t *testing.T) {
-	// The cobra command enforces --provider and --model as required flags,
-	// but we also guard in the RunE function.
-	cmd := newSessionCreateCmd(ptrString(""))
-	cmd.SetArgs([]string{}) // no flags
+func TestRunSessionCreateDefaultsAccepted(t *testing.T) {
+	// Provider and model are optional at the CLI — when empty they fall
+	// through to PI_DEFAULT_PROVIDER / PI_DEFAULT_MODEL on the server. Verify
+	// that an empty provider/model does not trigger a client-side error.
+	srv := newTestServer(t, map[string]any{
+		"/pirpc.v1.SessionService/Create": map[string]string{
+			"sessionId": "defaults-abc",
+			"state":     "SESSION_STATE_IDLE",
+		},
+	})
+	defer srv.Close()
 
-	err := cmd.Execute()
-	if err == nil {
-		t.Error("expected error when provider/model not set")
+	if err := runSessionCreate(context.Background(), srv.URL, "", "", "/tmp", "", 0); err != nil {
+		t.Errorf("runSessionCreate with empty provider/model failed: %v", err)
 	}
 }
 
@@ -258,6 +263,3 @@ func TestSessionSubcommands(t *testing.T) {
 		}
 	}
 }
-
-// ptrString is a helper for passing flag pointers to subcommand constructors in tests.
-func ptrString(s string) *string { return &s }
