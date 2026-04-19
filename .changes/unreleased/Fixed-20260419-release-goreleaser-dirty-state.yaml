@@ -1,0 +1,2 @@
+kind: Fixed
+body: Write release notes to $RUNNER_TEMP so goreleaser's dirty-state check does not fail on the untracked release-notes.md file
