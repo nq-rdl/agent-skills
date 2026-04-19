@@ -1,0 +1,3 @@
+kind: Fixed
+body: Fixes pi-rpc passing --thinking-level to pi subprocess — correct flag is --thinking (#65)
+time: 2026-04-19T08:15:50.909191119+10:00

@@ -47,7 +47,7 @@ func (m *Manager) Create(ctx context.Context, provider, model, cwd, thinkingLeve
 		args = append(args, "--mode", "rpc", "--no-session",
 			"--provider", provider, "--model", model)
 		if thinkingLevel != "" {
-			args = append(args, "--thinking-level", thinkingLevel)
+			args = append(args, "--thinking", thinkingLevel)
 		}
 	}
 

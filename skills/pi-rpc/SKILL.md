@@ -95,7 +95,7 @@ All endpoints accept `Content-Type: application/json` POST requests.
 
 | Endpoint | Purpose | Key Fields |
 |----------|---------|------------|
-| `pirpc.v1.SessionService/Create` | Spawn a pi.dev subprocess | `provider` (optional), `model` (optional), `cwd`, `thinking_level` |
+| `pirpc.v1.SessionService/Create` | Spawn a pi.dev subprocess | `provider` (optional), `model` (optional), `cwd`, `thinking_level` (maps to pi's `--thinking` flag; alternatively use `model:suffix` notation, e.g. `"model":"gpt-5.4:xhigh"`) |
 | `pirpc.v1.SessionService/Prompt` | Send prompt, wait for completion | `session_id`, `message` |
 | `pirpc.v1.SessionService/PromptAsync` | Send prompt, return immediately | `session_id`, `message` |
 | `pirpc.v1.SessionService/StreamEvents` | Server-streaming events | `session_id`, optional `filter` |
@@ -162,7 +162,8 @@ curl -sf \
 | `agent_start` | Agent begins processing |
 | `agent_end` | Agent completes processing |
 | `turn_start` / `turn_end` | Conversation turn boundaries |
-| `message_update` | Incremental message content |
+| `message_update` | Incremental streaming delta (use `StreamEvents` for live output) |
+| `message_end` | Complete message with `role`, `content`, `is_error` — source for `GetMessages` |
 | `tool_execution_start` / `tool_execution_end` | Tool invocation lifecycle |
 | `compaction` | Context window compacted |
 | `retry` | Retrying after transient error |
