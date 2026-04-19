@@ -1,6 +1,7 @@
 package frontmatter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/nq-rdl/agent-skills/tools/asctl/internal/frontmatter"
@@ -47,6 +48,41 @@ func TestParse_invalidYAML(t *testing.T) {
 	_, _, err := frontmatter.Parse("---\n: invalid: yaml:\n---\n")
 	if err == nil {
 		t.Fatal("expected error for invalid YAML")
+	}
+}
+
+func TestParse_horizontalRuleInBody(t *testing.T) {
+	// A markdown horizontal rule "---" in the body must not be mistaken for
+	// the closing frontmatter delimiter.
+	content := "---\nname: x\ndescription: y\n---\n# Heading\n\nIntro.\n\n---\n\nMore body.\n"
+	meta, body, err := frontmatter.Parse(content)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if meta["name"] != "x" {
+		t.Errorf("name = %q, want %q", meta["name"], "x")
+	}
+	if !strings.Contains(body, "---") {
+		t.Errorf("body lost its horizontal rule: %q", body)
+	}
+	if !strings.Contains(body, "More body.") {
+		t.Errorf("body truncated before horizontal rule: %q", body)
+	}
+}
+
+func TestParse_tripleDashInYAMLValue(t *testing.T) {
+	// A literal-block scalar that contains "---" inside it (not at line start)
+	// must not be treated as a delimiter.
+	content := "---\nname: x\ndescription: \"note with --- inside\"\n---\nbody\n"
+	meta, body, err := frontmatter.Parse(content)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if meta["description"] != "note with --- inside" {
+		t.Errorf("description = %q, want %q", meta["description"], "note with --- inside")
+	}
+	if body != "body" {
+		t.Errorf("body = %q, want %q", body, "body")
 	}
 }
 

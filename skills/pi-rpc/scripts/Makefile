@@ -33,15 +33,18 @@ build-mcp:
 # cross-compile builds the pi-server binary for all target platforms.
 # Output: $(DESTDIR)/pi-server-<os>-<arch>
 # Usage:  make cross-compile DESTDIR=/path/to/out
+# Shell loop (not $(foreach)) so an individual build failure exits non-zero.
 cross-compile:
 	@mkdir -p $(DESTDIR)
-	$(foreach target,$(TARGETS), \
-		$(eval GOOS=$(word 1,$(subst /, ,$(target)))) \
-		$(eval GOARCH=$(word 2,$(subst /, ,$(target)))) \
-		CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build \
+	@for target in $(TARGETS); do \
+		os=$${target%/*}; \
+		arch=$${target#*/}; \
+		echo "Building for $$os/$$arch..."; \
+		CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build \
 			-trimpath -ldflags "$(LDFLAGS)" \
-			-o $(DESTDIR)/pi-server-$(GOOS)-$(GOARCH) \
-			$(SERVER_PKG);)
+			-o $(DESTDIR)/pi-server-$$os-$$arch \
+			$(SERVER_PKG) || exit 1; \
+	done
 
 test:
 	go test -race ./...

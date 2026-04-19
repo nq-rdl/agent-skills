@@ -20,6 +20,16 @@ type SkillProperties struct {
 	Metadata      map[string]string `json:"metadata,omitempty"`
 }
 
+// trimmedString renders a YAML-parsed value as a trimmed string, treating an
+// explicit nil (from `name:` or `name: null`) as an empty string rather than
+// the literal "<nil>" that fmt.Sprintf would produce.
+func trimmedString(v any) string {
+	if v == nil {
+		return ""
+	}
+	return strings.TrimSpace(fmt.Sprintf("%v", v))
+}
+
 // FindSkillMD returns the path to the SKILL.md file in skillDir.
 // Prefers SKILL.md (uppercase), falls back to skill.md. Returns "" if not found.
 func FindSkillMD(skillDir string) string {
@@ -60,8 +70,8 @@ func ReadProperties(skillDir string) (*SkillProperties, error) {
 		return nil, fmt.Errorf("missing required field in frontmatter: description")
 	}
 
-	name := strings.TrimSpace(fmt.Sprintf("%v", nameAny))
-	desc := strings.TrimSpace(fmt.Sprintf("%v", descAny))
+	name := trimmedString(nameAny)
+	desc := trimmedString(descAny)
 
 	if name == "" {
 		return nil, fmt.Errorf("field 'name' must be a non-empty string")
@@ -73,10 +83,10 @@ func ReadProperties(skillDir string) (*SkillProperties, error) {
 	props := &SkillProperties{Name: name, Description: desc}
 
 	if lic, ok := meta["license"]; ok {
-		props.License = strings.TrimSpace(fmt.Sprintf("%v", lic))
+		props.License = trimmedString(lic)
 	}
 	if compat, ok := meta["compatibility"]; ok {
-		props.Compatibility = strings.TrimSpace(fmt.Sprintf("%v", compat))
+		props.Compatibility = trimmedString(compat)
 	}
 	if tools, ok := meta["allowed-tools"]; ok {
 		props.AllowedTools = tools

@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'pi-rpc cross-compile target now exits non-zero on first failed arch build (PR #69 review)'
+time: 2026-04-19T19:54:55.503978231+10:00

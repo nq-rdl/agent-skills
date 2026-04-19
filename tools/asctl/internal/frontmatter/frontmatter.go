@@ -10,20 +10,32 @@ import (
 
 // Parse extracts YAML frontmatter and body from SKILL.md content.
 // Returns the metadata map, the markdown body, and any parse error.
+//
+// Delimiters are recognised only when "---" occupies a whole line, so markdown
+// horizontal rules or YAML block scalars containing "---" inside the body do
+// not prematurely terminate the frontmatter.
 func Parse(content string) (map[string]any, string, error) {
-	if !strings.HasPrefix(content, "---") {
+	lines := strings.Split(content, "\n")
+	if len(lines) == 0 || strings.TrimRight(lines[0], "\r") != "---" {
 		return nil, "", fmt.Errorf("SKILL.md must start with YAML frontmatter (---)")
 	}
 
-	parts := strings.SplitN(content, "---", 3)
-	if len(parts) < 3 {
+	closeIdx := -1
+	for i := 1; i < len(lines); i++ {
+		if strings.TrimRight(lines[i], "\r") == "---" {
+			closeIdx = i
+			break
+		}
+	}
+	if closeIdx < 0 {
 		return nil, "", fmt.Errorf("SKILL.md frontmatter not properly closed with ---")
 	}
 
-	body := strings.TrimSpace(parts[2])
+	yamlPart := strings.Join(lines[1:closeIdx], "\n")
+	body := strings.TrimSpace(strings.Join(lines[closeIdx+1:], "\n"))
 
 	var metadata map[string]any
-	if err := yaml.Unmarshal([]byte(parts[1]), &metadata); err != nil {
+	if err := yaml.Unmarshal([]byte(yamlPart), &metadata); err != nil {
 		return nil, "", fmt.Errorf("invalid YAML in frontmatter: %w", err)
 	}
 

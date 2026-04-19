@@ -3,6 +3,7 @@ package parser_test
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/nq-rdl/agent-skills/tools/asctl/internal/parser"
@@ -48,6 +49,32 @@ func TestReadProperties_missingName(t *testing.T) {
 	_, err := parser.ReadProperties(dir)
 	if err == nil {
 		t.Fatal("expected error for missing name")
+	}
+}
+
+func TestReadProperties_explicitNilName(t *testing.T) {
+	// `name:` with no value parses as nil. It must fail the non-empty check
+	// rather than sneaking through as the literal string "<nil>".
+	dir := t.TempDir()
+	writeSkillMD(t, dir, "---\nname:\ndescription: desc\n---\n")
+	_, err := parser.ReadProperties(dir)
+	if err == nil {
+		t.Fatal("expected error for null name")
+	}
+	if !strings.Contains(err.Error(), "non-empty") {
+		t.Errorf("error = %q, want non-empty-string error", err.Error())
+	}
+}
+
+func TestReadProperties_explicitNilDescription(t *testing.T) {
+	dir := t.TempDir()
+	writeSkillMD(t, dir, "---\nname: x\ndescription: ~\n---\n")
+	_, err := parser.ReadProperties(dir)
+	if err == nil {
+		t.Fatal("expected error for null description")
+	}
+	if !strings.Contains(err.Error(), "non-empty") {
+		t.Errorf("error = %q, want non-empty-string error", err.Error())
 	}
 }
 
