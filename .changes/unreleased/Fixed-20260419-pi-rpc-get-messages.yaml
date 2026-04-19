@@ -1,3 +1,0 @@
-kind: Fixed
-body: Fixes GetMessages returning only timestampMs — now parses message_end events (#66)
-time: 2026-04-19T08:15:38.647807144+10:00

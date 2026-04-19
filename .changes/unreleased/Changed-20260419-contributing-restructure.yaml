@@ -1,7 +1,0 @@
-kind: Changed
-body: >-
-  Restructured CONTRIBUTING.md into five sections (Quick Start, Repo Layout,
-  Development Workflows, Validation & Testing, Submitting Changes) covering
-  the new asctl CLI, MCP server pattern, per-skill pixi environments, TDD
-  discipline, and the goreleaser-driven release flow.
-time: 2026-04-19T00:00:00Z

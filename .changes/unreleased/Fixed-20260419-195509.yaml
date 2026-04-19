@@ -1,3 +1,0 @@
-kind: Fixed
-body: 'asctl frontmatter parse now matches `---` only on line boundaries so body content cannot truncate it (PR #69 review)'
-time: 2026-04-19T19:55:09.371802549+10:00
