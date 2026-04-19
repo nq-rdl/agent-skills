@@ -28,11 +28,15 @@ cd "$REPO"
 pixi install
 
 echo "==> Installing lefthook git hooks"
+# If the host side previously ran `lefthook install`, .git/config holds an
+# absolute host path in core.hooksPath that doesn't exist inside the container.
+# Clear it so lefthook re-writes a container-valid path.
+git config --local --unset core.hooksPath 2>/dev/null || true
 lefthook install
 
 echo "==> Building asctl → $LOCAL_BIN/asctl"
 cd "$REPO/tools/asctl"
-go build -o "$LOCAL_BIN/asctl" .
+go build -o "$LOCAL_BIN/asctl" ./cmd/asctl
 
 case ":$PATH:" in
   *":$LOCAL_BIN:"*) ;;

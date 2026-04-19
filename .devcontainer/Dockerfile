@@ -66,10 +66,11 @@ RUN ARCH=$(dpkg --print-architecture) && \
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV GOTOOLCHAIN=local
 
-# Install lefthook + changie as prebuilt binaries (pre-commit and changelog fragments).
+# Install changie as a prebuilt binary (changelog fragments).
+# lefthook is installed later via npm alongside claude-code to sidestep the
+# lefthook release asset's Linux_x86_64/Linux_arm64 naming (which doesn't
+# match dpkg's amd64/arm64).
 RUN ARCH=$(dpkg --print-architecture) && \
-  wget -qO /usr/local/bin/lefthook "https://github.com/evilmartians/lefthook/releases/download/v${LEFTHOOK_VERSION}/lefthook_${LEFTHOOK_VERSION}_Linux_${ARCH}" && \
-  chmod +x /usr/local/bin/lefthook && \
   wget -qO /tmp/changie.tar.gz "https://github.com/miniscruff/changie/releases/download/v${CHANGIE_VERSION}/changie_${CHANGIE_VERSION}_linux_${ARCH}.tar.gz" && \
   tar -C /usr/local/bin -xzf /tmp/changie.tar.gz changie && \
   chmod +x /usr/local/bin/changie && \
@@ -103,8 +104,9 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH="/home/node/.pixi/bin:$PATH"
 
-# Install Claude
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
+# Install Claude + lefthook (both via npm; lefthook@${LEFTHOOK_VERSION} matches
+# the pinned binary we'd otherwise fetch from GitHub releases).
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} lefthook@${LEFTHOOK_VERSION}
 
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
