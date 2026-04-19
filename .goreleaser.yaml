@@ -1,0 +1,101 @@
+version: 2
+
+before:
+  hooks:
+    - go work sync
+
+builds:
+  - id: pi-server
+    dir: skills/pi-rpc/scripts
+    main: ./cmd/pi-server/
+    binary: pi-server
+    env:
+      - CGO_ENABLED=0
+      - GOWORK=off
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}}
+
+  - id: pi-cli
+    dir: skills/pi-rpc/scripts
+    main: ./cmd/pi-cli/
+    binary: pi-cli
+    env:
+      - CGO_ENABLED=0
+      - GOWORK=off
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}}
+
+  - id: pi-mcp
+    dir: skills/pi-rpc/scripts
+    main: ./cmd/pi-mcp/
+    binary: pi-mcp
+    env:
+      - CGO_ENABLED=0
+      - GOWORK=off
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}}
+
+  - id: jules
+    dir: skills/jules/scripts
+    main: ./cmd/jules/
+    binary: jules
+    env:
+      - CGO_ENABLED=0
+      - GOWORK=off
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X github.com/nq-rdl/agent-skills/skills/jules/scripts/internal/cli.version={{.Version}}
+
+  - id: asctl
+    dir: tools/asctl
+    main: ./cmd/asctl/
+    binary: asctl
+    env:
+      - CGO_ENABLED=0
+      - GOWORK=off
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}}
+
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .Binary }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    files:
+      - none*
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+sboms:
+  - artifacts: archive
+    args: ["$artifact", "--output", "cyclonedx-json=$document"]
+    documents:
+      - "{{ .ArtifactName }}.sbom.json"
+
+release:
+  prerelease: auto
+  footer: |
+    ## Installation
+
+    Download the binary for your platform, verify the checksum, and add to PATH:
+
+    ```bash
+    # Example for asctl on Linux amd64
+    curl -Lo asctl.tar.gz https://github.com/nq-rdl/agent-skills/releases/download/{{ .Tag }}/asctl-{{ .Tag }}-linux-amd64.tar.gz
+    sha256sum -c checksums.txt --ignore-missing
+    tar xf asctl.tar.gz
+    ```

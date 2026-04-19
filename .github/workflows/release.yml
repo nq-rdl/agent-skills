@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
@@ -102,11 +103,19 @@ jobs:
           version="${TAG#v}"
           cp ".changes/${version}.md" release-notes.md
 
-      - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          body_path: release-notes.md
-          generate_release_notes: false
+          go-version-file: .go-version
+          cache: true
+
+      - name: Run goreleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          args: release --clean --release-notes release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Trigger agent-extensions sync
         env:

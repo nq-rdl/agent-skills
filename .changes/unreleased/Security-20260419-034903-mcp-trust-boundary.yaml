@@ -1,0 +1,11 @@
+kind: Security
+body: >-
+  Harden the pi-mcp / asctl trust boundary to the host LLM. pi-mcp now maps
+  ConnectRPC errors to a fixed set of sanitised messages (no paths, tokens, or
+  upstream error text cross the stdio wall) and logs the raw error via slog for
+  local operators. asctl's <available_skills> generator now escapes every text
+  node with encoding/xml.EscapeText (replacing html.EscapeString) so skill
+  metadata and filesystem-controlled <location> paths can never inject XML
+  control characters into the system prompt. Untrusted MCP numeric inputs are
+  clamped to int32 range to prevent protobuf overflow.
+time: 2026-04-19T00:00:00Z

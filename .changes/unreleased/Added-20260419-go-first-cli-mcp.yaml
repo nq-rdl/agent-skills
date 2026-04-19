@@ -1,0 +1,7 @@
+kind: Added
+body: >-
+  Go-first CLI/MCP unification: asctl Go binary replaces Python ref CLI,
+  pi-mcp MCP server wraps pi-rpc session service, goreleaser multi-binary
+  releases, go.work workspace, lefthook unified hooks, per-skill pixi
+  environments for Python skills (csv/docx/xlsx/pdf), and ty type checking.
+time: 2026-04-19T00:00:00Z

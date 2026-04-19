@@ -1,0 +1,7 @@
+kind: Removed
+body: >-
+  Remove stale bootstrap artifacts: pi-rpc Makefile `setup-mcp-dep` target and
+  the corresponding `go get` comment at the top of cmd/pi-mcp/main.go. The
+  mcp-go dependency is declared in go.mod; the setup instructions are no
+  longer needed.
+time: 2026-04-19T00:00:00Z

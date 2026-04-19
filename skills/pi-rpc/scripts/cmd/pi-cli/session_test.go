@@ -85,7 +85,7 @@ func TestRunSessionCreateUnreachableServer(t *testing.T) {
 }
 
 func TestRunSessionCreateDefaultsAccepted(t *testing.T) {
-	// Empty provider/model must be forwarded verbatim so the server
+	// Issue #70: empty provider/model must be forwarded verbatim so the server
 	// can apply PI_DEFAULT_PROVIDER / PI_DEFAULT_MODEL. The CLI must not
 	// reject or mutate empty values.
 	var receivedProvider, receivedModel string
@@ -293,6 +293,3 @@ func TestSessionSubcommands(t *testing.T) {
 		}
 	}
 }
-
-// ptrString is a helper for passing flag pointers to subcommand constructors in tests.
-func ptrString(s string) *string { return &s }

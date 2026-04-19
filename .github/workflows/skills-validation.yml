@@ -12,10 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: prefix-dev/setup-pixi@v0.9.5
+      - uses: actions/setup-go@v5
         with:
-          manifest-path: pyproject.toml
-          locked: true
+          go-version-file: .go-version
           cache: true
 
-      - run: pixi run validate-skills
+      - name: Build asctl
+        working-directory: tools/asctl
+        run: CGO_ENABLED=0 go build -o /usr/local/bin/asctl ./cmd/asctl/
+
+      - name: Validate all skills
+        run: asctl repo-check
