@@ -56,6 +56,15 @@ jobs:
             exit 1
           fi
 
+          if [ -n "$has_unreleased" ] && [ -n "$has_batched" ]; then
+            echo "::error::Both unreleased fragments and a pre-batched .changes/${version}.md exist. Refusing to re-batch and overwrite the existing file."
+            echo "::error::This typically happens on a release retry when a fix PR added a new changie fragment."
+            echo "::error::Resolve by picking one:"
+            echo "::error::  (a) If the fragments belong in ${TAG}: merge their content into .changes/${version}.md and CHANGELOG.md, then delete the fragment files."
+            echo "::error::  (b) If the fragments should not ship here (e.g. internal CI plumbing): delete the fragment files. For future retry PRs, apply the 'skip-changelog' label so changelog-check does not require a fragment."
+            exit 1
+          fi
+
           if [ -n "$has_unreleased" ]; then
             echo "needs_batch=true" >> "$GITHUB_OUTPUT"
           else
