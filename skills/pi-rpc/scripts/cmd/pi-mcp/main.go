@@ -1,7 +1,5 @@
 // Command pi-mcp exposes the pi-rpc session service as an MCP server over stdio.
 // It embeds the session manager directly — no running pi-server required.
-//
-// Setup: cd skills/pi-rpc/scripts && go get github.com/mark3labs/mcp-go@v0.32.0
 package main
 
 import (

@@ -55,8 +55,5 @@ generate:
 serve: build-server
 	PI_SERVER_PORT=$(PORT) ./$(SERVER_BIN)
 
-setup-mcp-dep:
-	go get github.com/mark3labs/mcp-go@v0.32.0
-
 clean:
 	rm -rf bin/
