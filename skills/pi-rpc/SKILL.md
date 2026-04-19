@@ -8,7 +8,7 @@ description: >-
   orchestration pipelines that need full session lifecycle control (create,
   prompt, stream events, abort, delete).
 compatibility: >-
-  Requires Go 1.24+, pi CLI (pi.dev binary in PATH), buf CLI (for protobuf
+  Requires Go 1.25+, pi CLI (pi.dev binary in PATH), buf CLI (for protobuf
   regeneration only)
 metadata:
   repo: https://github.com/nq-rdl/agent-skills

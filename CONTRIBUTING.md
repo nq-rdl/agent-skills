@@ -18,11 +18,14 @@ Thank you for contributing! This guide walks you through the process.
    pixi install
    ```
 
-4. **Install pre-commit hooks**:
+4. **Install git hooks** (requires [lefthook](https://lefthook.dev)):
 
    ```bash
-   pixi run hooks-install
+   lefthook install
    ```
+
+   Hooks cover Go (vet, format, build) and Python (lint, typecheck, validate-skills)
+   on `pre-commit`, and all tests on `pre-push`.
 
 ## Making Changes
 
@@ -32,7 +35,8 @@ Thank you for contributing! This guide walks you through the process.
    git checkout -b feat/my-change main
    ```
 
-2. Make your changes — skills live in `skills/`, tooling in `src/`.
+2. Make your changes — skills live in `skills/`, Go tooling in `tools/` and skill
+   `scripts/` directories, Python tooling in `src/`.
 
 3. **Add a changie fragment** (required for every PR):
 
@@ -45,13 +49,62 @@ Thank you for contributing! This guide walks you through the process.
    short description of your change. See [Changie fragments](#changie-fragments)
    below for details.
 
-4. Commit your work. Pre-commit hooks will automatically run:
+4. Commit your work. Lefthook hooks will automatically run:
+   - **Go** — `go vet`, `gofmt`, `go build` for each module (pi-rpc, jules, asctl)
    - **Skill validation** — checks `SKILL.md` frontmatter and structure
    - **Ruff lint & format** — enforces Python code style
+   - **ty typecheck** — Python type checking via Astral ty
    - **Lock-file check** — ensures `pixi.lock` stays in sync
-   - **Link check** — verifies URLs in skill files are reachable (requires [lychee](https://github.com/lycheeverse/lychee) on PATH)
+   - **Link check** — verifies URLs in skill files (requires [lychee](https://github.com/lycheeverse/lychee) on PATH)
 
    If a hook fails, fix the issue and commit again.
+
+## Development Workflows
+
+### Go skills
+
+Each Go skill has its own module. Build and test independently:
+
+```bash
+cd skills/pi-rpc/scripts && make build && make test
+cd skills/jules/scripts  && make build && make test
+cd tools/asctl           && go build ./... && go test -race ./...
+```
+
+The root `go.work` unifies all modules for IDE support and `go test ./...` from root.
+
+### Python skills
+
+Each Python skill (`csv`, `docx`, `xlsx`, `pdf`) has its own pixi environment:
+
+```bash
+pixi run -e csv      test       # run csv skill tests
+pixi run -e csv      lint       # ruff lint csv skill
+pixi run -e csv      typecheck  # ty typecheck csv skill
+pixi run -e docx     test
+pixi run -e xlsx     test
+pixi run -e pdf      test
+```
+
+Global Python tooling (validation, testing `src/`):
+
+```bash
+pixi run test            # pytest
+pixi run lint            # ruff check
+pixi run typecheck       # ty check src/ skills/
+pixi run validate-skills # validate all skill SKILL.md files
+```
+
+### TDD workflow
+
+Use the `/tdd` skill when modifying any skill. The cycle is:
+
+1. Write a failing test
+2. Implement until green
+3. Refactor
+
+For Go: `go test -race -count=1 ./...` from the module directory.
+For Python: `pixi run -e <skill> test` from the repo root.
 
 ## Changie Fragments
 
@@ -100,6 +153,7 @@ to the PR.
 
 3. CI will run:
    - **Skill validation** — same checks as pre-commit, on all skills
+   - **Go CI** — build + test for each Go module
    - **Changelog check** — verifies a changie fragment exists
 
 4. Address any review feedback, then your PR will be merged.
@@ -111,6 +165,8 @@ Run the full validation suite before pushing:
 ```bash
 pixi run validate-skills   # validate all skills
 pixi run lint               # ruff lint
+pixi run typecheck          # ty typecheck
 pixi run test               # pytest
-pixi run hooks-run          # run all pre-commit hooks
+lefthook run pre-commit     # run all pre-commit hooks
+lefthook run pre-push       # run all pre-push hooks (includes tests)
 ```

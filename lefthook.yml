@@ -3,24 +3,97 @@ min_version: 1.9.0
 pre-commit:
   parallel: true
   jobs:
-    - name: go-vet
+    # --- Go: pi-rpc ---
+    - name: go-vet-pi-rpc
       root: skills/pi-rpc/scripts/
       glob: "*.go"
       run: go vet ./...
 
-    - name: go-format
+    - name: go-format-pi-rpc
       root: skills/pi-rpc/scripts/
       glob: "*.go"
       run: test -z "$(gofmt -l {staged_files})"
 
-    - name: go-build
+    - name: go-build-pi-rpc
       root: skills/pi-rpc/scripts/
       glob: "*.go"
       run: CGO_ENABLED=0 go build ./...
 
+    # --- Go: jules ---
+    - name: go-vet-jules
+      root: skills/jules/scripts/
+      glob: "*.go"
+      run: go vet ./...
+
+    - name: go-format-jules
+      root: skills/jules/scripts/
+      glob: "*.go"
+      run: test -z "$(gofmt -l {staged_files})"
+
+    - name: go-build-jules
+      root: skills/jules/scripts/
+      glob: "*.go"
+      run: CGO_ENABLED=0 go build ./...
+
+    # --- Go: asctl ---
+    - name: go-vet-asctl
+      root: tools/asctl/
+      glob: "*.go"
+      run: go vet ./...
+
+    - name: go-format-asctl
+      root: tools/asctl/
+      glob: "*.go"
+      run: test -z "$(gofmt -l {staged_files})"
+
+    - name: go-build-asctl
+      root: tools/asctl/
+      glob: "*.go"
+      run: CGO_ENABLED=0 go build ./...
+
+    # --- Python ---
+    - name: ruff-lint
+      glob: "*.py"
+      run: pixi run lint
+
+    - name: ruff-format
+      glob: "*.py"
+      run: pixi run -- ruff format --check .
+
+    - name: typecheck
+      glob: "*.py"
+      run: pixi run typecheck
+
+    - name: validate-skills
+      glob: "skills/**"
+      run: pixi run validate-skills
+
+    - name: pixi-lock-check
+      glob: "{pyproject.toml,pixi.lock}"
+      run: pixi install --locked
+
+    - name: lychee-links
+      glob: "skills/**/*.md"
+      run: command -v lychee >/dev/null 2>&1 && skills/lychee/scripts/check-links.sh {staged_files} || true
+
 pre-push:
+  parallel: true
   jobs:
-    - name: go-test
+    - name: go-test-pi-rpc
       root: skills/pi-rpc/scripts/
       glob: "*.go"
       run: go test -race -count=1 ./...
+
+    - name: go-test-jules
+      root: skills/jules/scripts/
+      glob: "*.go"
+      run: go test -race -count=1 ./...
+
+    - name: go-test-asctl
+      root: tools/asctl/
+      glob: "*.go"
+      run: go test -race -count=1 ./...
+
+    - name: python-test
+      glob: "*.py"
+      run: pixi run test

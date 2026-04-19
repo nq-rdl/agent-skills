@@ -25,10 +25,12 @@ Use for lightweight glue scripts, environment setup, and simple automation.
 
 Use for data processing, PDF/document handling, CLI tools, and anything needing the PyPI ecosystem.
 
-- Minimum version: **Python 3.11+**
+- Minimum version: **Python 3.13+**
 - Dependency management: `requirements.txt` + `ensure-deps.sh` (auto-detects pixi > uv > mamba > conda > pip)
+  - End-users should prefer `uv` for installing skill deps: `uv pip install -r requirements.txt`
 - CLI framework: `typer` (preferred) or `click`
 - Do not commit virtual environments or `.pixi/` directories
+- Dev loop: `pixi run -e <skill> test` / `pixi run -e <skill> typecheck` (see per-skill pixi features in `pyproject.toml`)
 
 ### TypeScript (Bun)
 
@@ -39,17 +41,71 @@ Use for MCP servers, Claude SDK integrations, and scripts that benefit from the 
 - Test runner: `bun:test`
 - Do not commit `node_modules/`
 
-> **Note on MCP servers:** MCP wiring (server.ts, .mcp.json) is platform-specific and belongs in `agent-extensions`, not in portable skills. Skills ship the runtime; extensions ship the MCP bridge.
+> **Note on MCP servers:** Go is now the preferred language for new MCP servers in this repo (see below). TypeScript MCP servers are still supported but the Go pattern is canonical.
 
 ### Go
 
-Use for long-running services, ConnectRPC/gRPC servers, CLI binaries, and performance-sensitive tooling.
+Use for long-running services, ConnectRPC/gRPC servers, CLI binaries, MCP servers, and performance-sensitive tooling.
 
-- Minimum version: **Go 1.25+**
+- Minimum version: **Go 1.25+** (pinned in `/.go-version`)
 - Each skill with Go scripts has its own `go.mod` inside `scripts/` — no shared module
+- The root `go.work` unifies all Go modules for dev (`go test ./...`, IDE support)
 - Build tool: standard `go build` + `Makefile` (no pixi required)
 - Code generation (protobuf): use `buf` with a `buf.gen.yaml`; commit generated code under `gen/`
 - Do not commit `bin/` directories or compiled binaries
+- Release binaries are distributed via GitHub Releases (goreleaser); see `.goreleaser.yaml`
+
+#### Adding a Go MCP server to a skill
+
+To expose a skill's logic as an MCP server (stdio transport):
+
+1. Add `cmd/<skill-name>-mcp/main.go` inside the skill's `scripts/` directory.
+2. Import `github.com/mark3labs/mcp-go` — the community Go MCP SDK.
+3. Follow the `pi-mcp` pattern in `skills/pi-rpc/scripts/cmd/pi-mcp/`:
+   - Create an `mcp.Server`, register one tool per action (`session_create`, `session_list`, etc.)
+   - Call `server.ServeStdio(s)` — the agent-extensions launcher handles process lifetime
+4. Add a `build-mcp` target to the skill's `Makefile`.
+5. Add the binary to `.goreleaser.yaml` under `builds:`.
+
+Example skeleton:
+
+```go
+package main
+
+import (
+    "context"
+    "encoding/json"
+    "log"
+    "os"
+
+    "github.com/mark3labs/mcp-go/mcp"
+    "github.com/mark3labs/mcp-go/server"
+)
+
+var version = "dev"
+
+func main() {
+    s := server.NewMCPServer("my-skill-mcp", version,
+        server.WithToolCapabilities(true))
+
+    s.AddTool(
+        mcp.NewTool("my_action",
+            mcp.WithDescription("Does something useful"),
+            mcp.WithString("param", mcp.Required(), mcp.Description("Input parameter")),
+        ),
+        func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+            param := req.Params.Arguments["param"].(string)
+            result := map[string]string{"result": param}
+            data, _ := json.Marshal(result)
+            return mcp.NewToolResultText(string(data)), nil
+        },
+    )
+
+    if err := server.ServeStdio(s); err != nil {
+        log.Fatal(err)
+    }
+}
+```
 
 ## Choosing a Language
 
@@ -57,7 +113,7 @@ Use for long-running services, ConnectRPC/gRPC servers, CLI binaries, and perfor
 |-----------|-------------------|
 | Simple file operations, env setup | Bash |
 | Data extraction, document processing, PyPI dependency | Python |
-| MCP server, Claude SDK wrapper, npm ecosystem | TypeScript (Bun) |
+| MCP server, Claude SDK wrapper, npm ecosystem | Go (preferred) or TypeScript (Bun) |
 | Long-running service, ConnectRPC, CLI binary | Go |
 
 ## No Windows-specific code

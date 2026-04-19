@@ -52,12 +52,12 @@ func (m *Manager) Create(ctx context.Context, provider, model, cwd, thinkingLeve
 	}
 
 	s, err := NewSession(sessionCtx, Config{
-		Binary:        m.binary,
-		Args:          args,
-		Provider:      provider,
-		Model:         model,
-		Cwd:           cwd,
-		ThinkingLevel: thinkingLevel,
+		Binary:            m.binary,
+		Args:              args,
+		Provider:          provider,
+		Model:             model,
+		Cwd:               cwd,
+		ThinkingLevel:     thinkingLevel,
 		InactivityTimeout: time.Duration(timeoutSeconds) * time.Second,
 	})
 	if err != nil {

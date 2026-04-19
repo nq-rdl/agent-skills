@@ -5,7 +5,7 @@ dependencies = [
     "strictyaml>=1.7.3",
 ]
 name = "agent-skills"
-requires-python = ">= 3.11"
+requires-python = ">=3.13,<3.14"
 version = "0.1.0"
 
 [project.scripts]
@@ -20,13 +20,25 @@ packages = ["src/skills"]
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.0",
     "pytest>=7.0",
     "ruff>=0.8.0",
+    "ty>=0.0.1a9",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ty.environment]
+python-version = "3.13"
+
+[tool.ty.src]
+include = ["src/**/*.py", "skills/**/*.py"]
+
+[[tool.ty.overrides]]
+include = ["**/test_*.py", "**/tests/**/*.py"]
+
+[tool.ty.overrides.rules]
+possibly-unresolved-reference = "warn"
 
 [tool.pixi.workspace]
 channels = ["conda-forge"]
@@ -37,15 +49,69 @@ agent_skills = { path = ".", editable = true }
 
 [tool.pixi.tasks]
 format = "ruff format ."
-hooks-install = "pre-commit install"
-hooks-run = "pre-commit run --all-files"
 lint = "ruff check ."
 test = "pytest"
+typecheck = "ty check src/ skills/"
 validate-skills = "python -m skills.ref.repo_check"
 
 [tool.pixi.dependencies]
-pre-commit = ">=4.0"
 pytest = ">=7.0"
 ruff = ">=0.8.0"
+ty = ">=0.0.1a9"
 zensical = ">=0.0.31,<0.0.32"
 pandoc = ">=3.9.0.2,<4"
+
+# --- Per-skill pixi features ---
+
+[tool.pixi.feature.csv.pypi-dependencies]
+pyarrow = ">=21.0.0"
+openpyxl = ">=3.1.5,<4"
+typer = ">=0.9.0,<1"
+rich = ">=13.0.0,<14"
+
+[tool.pixi.feature.csv.tasks]
+test = "pytest skills/csv/tests/"
+lint = "ruff check skills/csv/"
+typecheck = "ty check skills/csv/"
+
+[tool.pixi.feature.docx.pypi-dependencies]
+defusedxml = ">=0.7.1"
+lxml = ">=5.0.0"
+
+[tool.pixi.feature.docx.tasks]
+test = "pytest skills/docx/tests/"
+lint = "ruff check skills/docx/"
+typecheck = "ty check skills/docx/"
+
+[tool.pixi.feature.xlsx.pypi-dependencies]
+defusedxml = ">=0.7.1"
+lxml = ">=5.0.0"
+openpyxl = ">=3.1.5,<4"
+pandas = ">=2.2.0,<3"
+
+[tool.pixi.feature.xlsx.tasks]
+test = "pytest skills/xlsx/tests/"
+lint = "ruff check skills/xlsx/"
+typecheck = "ty check skills/xlsx/"
+
+[tool.pixi.feature.pdf.pypi-dependencies]
+pymupdf4llm = ">=0.0.17"
+pdfplumber = ">=0.11.9,<0.12"
+pdfminer-six = ">=20231228"
+pandas = ">=2.2.0,<3"
+typer = ">=0.9.0,<1"
+rich = ">=13.0.0,<14"
+tabulate = ">=0.9.0"
+docling = ">=2.0.0"
+
+[tool.pixi.feature.pdf.tasks]
+test = "pytest skills/pdf/tests/"
+lint = "ruff check skills/pdf/"
+typecheck = "ty check skills/pdf/"
+
+[tool.pixi.environments]
+default = { features = [], solve-group = "default" }
+csv = { features = ["csv"], solve-group = "csv" }
+docx = { features = ["docx"], solve-group = "docx" }
+xlsx = { features = ["xlsx"], solve-group = "xlsx" }
+pdf = { features = ["pdf"], solve-group = "pdf" }
