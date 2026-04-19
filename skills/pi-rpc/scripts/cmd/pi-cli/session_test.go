@@ -84,6 +84,37 @@ func TestRunSessionCreateUnreachableServer(t *testing.T) {
 	}
 }
 
+func TestRunSessionCreateDefaultsAccepted(t *testing.T) {
+	// Issue #70: empty provider/model must be forwarded verbatim so the server
+	// can apply PI_DEFAULT_PROVIDER / PI_DEFAULT_MODEL. The CLI must not
+	// reject or mutate empty values.
+	var receivedProvider, receivedModel string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Errorf("decode request body: %v", err)
+		}
+		receivedProvider, _ = req["provider"].(string)
+		receivedModel, _ = req["model"].(string)
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"sessionId": "defaults-abc",
+			"state":     "SESSION_STATE_IDLE",
+		})
+	}))
+	defer srv.Close()
+
+	if err := runSessionCreate(context.Background(), srv.URL, "", "", "/tmp", "", 0); err != nil {
+		t.Fatalf("runSessionCreate with empty provider/model failed: %v", err)
+	}
+	if receivedProvider != "" {
+		t.Errorf("provider forwarded to server = %q, want empty string", receivedProvider)
+	}
+	if receivedModel != "" {
+		t.Errorf("model forwarded to server = %q, want empty string", receivedModel)
+	}
+}
+
 func TestRunSessionList(t *testing.T) {
 	srv := newTestServer(t, map[string]any{
 		"/pirpc.v1.SessionService/List": map[string]any{
