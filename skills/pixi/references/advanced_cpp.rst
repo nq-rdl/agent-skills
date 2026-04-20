@@ -5,7 +5,7 @@ Advanced Building Using rattler-build
 
 In this tutorial, we will show you how to build the same C++ package as
 from `Building a C++ Package <../cpp/>`__ tutorial using
-```rattler-build`` <https://rattler.build>`__. In this tutorial we
+``rattler-build`` <https://rattler.build>`__. In this tutorial we
 assume that you've read the `Building a C++ Package <../cpp/>`__
 tutorial. If you haven't read it yet, we recommend you to do so before
 continuing. You might also want to check out the
@@ -19,7 +19,7 @@ build system exists. Another reason to use it is when you would like to
 have more control over the build process.
 
 To illustrate this, we will use the same C++ package as in the previous
-tutorial, but this time we will use ``rattler-build`` to build it. This
+tutorial, but this time we will use `rattler-build` to build it. This
 will unveil the hidden complexity of the build process, and give you a
 better grasp of how backends work.
 
@@ -81,8 +81,8 @@ The ``recipe.yaml`` file\ `# <#the-recipeyaml-file>`__
 ------------------------------------------------------
 
 Next lets add the ``recipe.yaml`` file that describes how
-``rattler-build`` builds the package. You can find the reference on the
-``rattler-build`` documentation `web
+`rattler-build` builds the package. You can find the reference on the
+`rattler-build` documentation `web
 page <https://rattler.build/latest/reference/recipe_file/>`__.
 
 .. container:: language-yaml highlight
@@ -122,7 +122,7 @@ page <https://rattler.build/latest/reference/recipe_file/>`__.
           - nanobind
 
 #. Because we are specifying the current directory as the source
-   directory, ``rattler-build`` may skip files that are not tracked by
+   directory, `rattler-build` may skip files that are not tracked by
    git. If your files are already tracked by git, you can remove this
    configuration.
 #. This build script configures and builds a ``CMake`` project using the
@@ -167,7 +167,7 @@ This command builds the bindings, installs them and then runs the
 Conclusion\ `# <#conclusion>`__
 -------------------------------
 
-In this tutorial, we created a Pixi package using ``rattler-build`` and
+In this tutorial, we created a Pixi package using `rattler-build` and
 a ``recipe.yaml`` file. Using this approach, we had more control over
 the build process. For example, we could changed the build type to
 ``Debug`` using ``CMAKE_BUILD_TYPE``, use ``Make`` instead of ``Ninja``

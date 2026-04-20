@@ -18,7 +18,7 @@ Basic Usage\ `# <#basic-usage>`__
 ---------------------------------
 
 Running the following command installs
-```rattler-build`` <https://prefix-dev.github.io/rattler-build/latest/>`__
+``rattler-build`` <https://prefix-dev.github.io/rattler-build/latest/>`__
 on your system.
 
 .. container:: language-bash highlight
