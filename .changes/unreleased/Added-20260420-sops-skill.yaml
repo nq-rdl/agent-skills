@@ -1,3 +1,0 @@
-kind: Added
-body: New `sops` skill for encrypting `.env`, YAML, JSON, and INI secrets with Age or HashiCorp Vault transit
-time: 2026-04-20T10:57:27.449259794+10:00
