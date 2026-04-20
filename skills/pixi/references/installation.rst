@@ -9,7 +9,7 @@ To install ``pixi`` you can run the following command in your terminal:
 
    .. container:: tabbed-labels
 
-      Linux & macOSWindows
+      Linux & macOS Windows
 
    .. container:: tabbed-content
 
@@ -193,7 +193,7 @@ Installer Script Options\ `# <#installer-script-options>`__
 
    .. container:: tabbed-labels
 
-      Linux & macOSWindows
+      Linux & macOS Windows
 
    .. container:: tabbed-content
 
