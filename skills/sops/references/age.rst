@@ -10,6 +10,7 @@ Generate an age identity (private + public key pair) with:
 
 .. code-block:: bash
 
+   mkdir -p "$HOME/.config/sops/age"
    age-keygen -o "$HOME/.config/sops/age/keys.txt"
 
 The **public key** is printed to stderr — copy it into ``--age`` flags or ``.sops.yaml``. The private key is written to ``keys.txt`` and must be kept secret. Only the public key is shared with others.

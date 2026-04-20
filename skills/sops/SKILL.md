@@ -4,7 +4,7 @@ license: MIT
 description: >-
   Use when encrypting or decrypting `.env`, `.yaml`, `.json`, or `.ini` secrets
   — even if the user does not say "SOPS" explicitly. Triggers on: storing
-  secrets in Git safely, Age encryption, HashiCorp Vault transit, `sops_age_key_file`,
+  secrets in Git safely, Age encryption, HashiCorp Vault transit, `SOPS_AGE_KEY_FILE`,
   `SOPS_AGE_RECIPIENTS`, `VAULT_ADDR`, or any request to keep config files
   secret while keeping diffs reviewable. Covers key generation, `.sops.yaml`
   creation rules, in-place editing, multi-recipient setups, and key rotation
@@ -29,7 +29,7 @@ Encrypt and decrypt secrets with [SOPS](https://github.com/getsops/sops) (Secret
 | Operation | Command | Reference |
 |-----------|---------|-----------|
 | Encrypt (Age) | `sops encrypt --age <pubkey> file.yaml > file.enc.yaml` | [age.rst](references/age.rst) |
-| Encrypt (Vault) | `sops encrypt --hc-vault-transit $VAULT_ADDR/v1/sops/keys/mykey file.yaml` | [vault.rst](references/vault.rst) |
+| Encrypt (Vault) | `sops encrypt --hc-vault-transit $VAULT_ADDR/v1/sops/keys/mykey file.yaml > file.enc.yaml` | [vault.rst](references/vault.rst) |
 | Decrypt to stdout | `sops decrypt file.enc.yaml` | [age.rst](references/age.rst) |
 | Edit in place | `sops edit file.enc.yaml` | [age.rst](references/age.rst) |
 | Rotate recipients | `sops updatekeys file.enc.yaml` | [age.rst](references/age.rst) / [vault.rst](references/vault.rst) |
@@ -49,6 +49,7 @@ Encrypt and decrypt secrets with [SOPS](https://github.com/getsops/sops) (Secret
 ## Generating an Age Key
 
 ```bash
+mkdir -p "$HOME/.config/sops/age"
 age-keygen -o "$HOME/.config/sops/age/keys.txt"
 ```
 

@@ -49,14 +49,18 @@ The ``VAULT_ADDR``, ``VAULT_TOKEN``, and any TLS-related environment variables (
 Encrypting via CLI
 ------------------
 
-You can encrypt a file using the HashiCorp Vault transit engine directly from the CLI:
+You can encrypt a file using the HashiCorp Vault transit engine directly from the CLI. ``sops encrypt`` writes to **stdout** by default — redirect to a file or use ``-i`` to overwrite the source in place:
 
 .. code-block:: bash
 
    export VAULT_ADDR=http://127.0.0.1:8200
    export VAULT_TOKEN=... # Only needed if not already logged in
 
-   sops encrypt --hc-vault-transit $VAULT_ADDR/v1/sops/keys/firstkey vault_example.yml
+   # Redirect to a new file (recommended — keeps the original):
+   sops encrypt --hc-vault-transit $VAULT_ADDR/v1/sops/keys/firstkey vault_example.yml > vault_example.enc.yml
+
+   # Or encrypt in place:
+   sops encrypt -i --hc-vault-transit $VAULT_ADDR/v1/sops/keys/firstkey vault_example.yml
 
 Using .sops.yaml
 ----------------
