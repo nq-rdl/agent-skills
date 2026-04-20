@@ -54,7 +54,7 @@ bwc() {
     return 1
   fi
   local notes
-  notes="$(awk '/^export /{ print } !/^export /{ print "export " $0 }' "$envfile")"
+  notes="$(awk '/^[[:space:]]*#/ || /^[[:space:]]*$/ { print; next } /^export / { print; next } { print "export " $0 }' "$envfile")"
   bw get template item \
     | jq --arg n "$notes" --arg name "$name" \
          '.type = 2 | .secureNote.type = 0 | .notes = $n | .name = $name' \
@@ -85,7 +85,7 @@ bwu() {
     return 1
   fi
   local notes
-  notes="$(awk '/^export /{ print } !/^export /{ print "export " $0 }' "$envfile")"
+  notes="$(awk '/^[[:space:]]*#/ || /^[[:space:]]*$/ { print; next } /^export / { print; next } { print "export " $0 }' "$envfile")"
   bw get item "$id" --session "$BW_SESSION" \
     | jq --arg n "$notes" '.notes = $n' \
     | bw encode | bw edit item "$id" --session "$BW_SESSION"
@@ -150,7 +150,7 @@ bwunload() {
   fi
   bwss
   local vars
-  vars="$(bw get notes "$1" --session "$BW_SESSION" | grep -oP '(?<=export )\w+')"
+  vars="$(bw get notes "$1" --session "$BW_SESSION" | sed -n 's/^export \([a-zA-Z_][a-zA-Z0-9_]*\)=.*/\1/p')"
   for v in $vars; do
     unset "$v"
   done

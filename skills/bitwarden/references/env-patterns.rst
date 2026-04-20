@@ -142,12 +142,7 @@ values without parsing.
      bwss
      local item
      item="$(bw get item "aws-credentials" --session "$BW_SESSION")"
-     while IFS= read -r line; do
-       local name value
-       name="$(echo "$line" | jq -r '.name')"
-       value="$(echo "$line" | jq -r '.value')"
-       export "$name"="$value"
-     done < <(echo "$item" | jq -c '.fields[]')
+     eval "$(echo "$item" | jq -r '.fields[] | "export \(.name)=\(.value | @sh)"')"
      >&2 echo "AWS credentials loaded"
    }
 
