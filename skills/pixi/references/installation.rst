@@ -9,7 +9,8 @@ To install ``pixi`` you can run the following command in your terminal:
 
    .. container:: tabbed-labels
 
-      Linux & macOS Windows
+      Linux & macOS
+      Windows
 
    .. container:: tabbed-content
 
@@ -193,7 +194,8 @@ Installer Script Options\ `# <#installer-script-options>`__
 
    .. container:: tabbed-labels
 
-      Linux & macOS Windows
+      Linux & macOS
+      Windows
 
    .. container:: tabbed-content
 
@@ -408,7 +410,12 @@ Afterwards, restart the shell or source the shell config file.
 
    .. container:: tabbed-labels
 
-      BashZshPowerShellFishNushellElvish
+      Bash
+      Zsh
+      PowerShell
+      Fish
+      Nushell
+      Elvish
 
    .. container:: tabbed-content
 

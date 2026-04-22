@@ -12,30 +12,26 @@ backend from Pixi and it's manifest specification.
 Available Backends\ `# <#available-backends>`__
 -----------------------------------------------
 
-+----------------------------------+----------------------------------+
-| Backend                          | Use Case                         |
-+==================================+==================================+
-| ``pixi-buil                     | Projects using CMake             |
-| d-cmake`` <pixi-build-cmake/>`__ |                                  |
-+----------------------------------+----------------------------------+
-| ``pixi-build-                   | Building Python packages         |
-| python`` <pixi-build-python/>`__ |                                  |
-+----------------------------------+----------------------------------+
-| pixi-build-rattler-build     | Direct ``recipe.yaml`` builds    |
-| <pixi-build-rattler-build/>`__ | with full control                |
-+----------------------------------+----------------------------------+
-| ``pixi-                         | ROS (Robot Operating System)     |
-| build-ros`` <pixi-build-ros/>`__ | packages                         |
-+----------------------------------+----------------------------------+
-| ``p                             | R packages using                 |
-| ixi-build-r`` <pixi-build-r/>`__ | ``R CMD INSTALL``                |
-+----------------------------------+----------------------------------+
-| ``pixi-bu                       | Cargo-based Rust applications    |
-| ild-rust`` <pixi-build-rust/>`__ | and libraries                    |
-+----------------------------------+----------------------------------+
-| ``pixi-bu                       | Mojo applications and packages   |
-| ild-mojo`` <pixi-build-mojo/>`__ |                                  |
-+----------------------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Backend
+     - Use Case
+   * - `pixi-build-cmake <pixi-build-cmake/>`__
+     - Projects using CMake
+   * - `pixi-build-python <pixi-build-python/>`__
+     - Building Python packages
+   * - `pixi-build-rattler-build <pixi-build-rattler-build/>`__
+     - Direct ``recipe.yaml`` builds with full control
+   * - `pixi-build-ros <pixi-build-ros/>`__
+     - ROS (Robot Operating System) packages
+   * - `pixi-build-r <pixi-build-r/>`__
+     - R packages using ``R CMD INSTALL``
+   * - `pixi-build-rust <pixi-build-rust/>`__
+     - Cargo-based Rust applications and libraries
+   * - `pixi-build-mojo <pixi-build-mojo/>`__
+     - Mojo applications and packages
 
 All backends are available through the
 `conda-forge <https://prefix.dev/channels/conda-forge>`__ conda channel

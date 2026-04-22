@@ -32,7 +32,7 @@ package in its own environment, exposing only the necessary entry
 points. This means you don't have to worry about removing a package and
 accidentally breaking seemingly unrelated packages. This behavior is
 quite similar to that of
-```pipx`` <https://pipx.pypa.io/latest/installation/>`__.
+`pipx`` <https://pipx.pypa.io/latest/installation/>`__.
 
 However, there are times when you may want multiple dependencies in the
 same environment. For instance, while ``ipython`` is really useful on
@@ -191,7 +191,7 @@ First install a tool with ``pixi global``:
       pixi global install git
 
 The completions can be found under
-```$PIXI_HOME`` <../../reference/environment_variables/>`__\ ``/completions``.
+`$PIXI_HOME`` <../../reference/environment_variables/>`__\ ``/completions``.
 
 You can then load the completions in the startup script of your shell:
 
