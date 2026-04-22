@@ -24,6 +24,8 @@ For **remote files**, prepend the necessary `LOAD` and `CREATE SECRET` statement
 
 For **local files**, no prefix is needed.
 
+The SQLite branch of the `read_any` macro intentionally reads only the first table returned by `sqlite_master(file_name)`. If the user needs a specific SQLite table, list the tables first and then switch to an explicit call such as `sqlite_scan(file_name, '<table_name>')`.
+
 ```bash
 duckdb -csv -c "
 CREATE OR REPLACE MACRO read_any(file_name) AS TABLE
