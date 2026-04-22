@@ -1,0 +1,112 @@
+name: Check DuckDB Upstream
+
+on:
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: duckdb-upstream-check
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Load pinned DuckDB upstream metadata
+        id: pinned
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          data = json.loads(Path("skills/duckdb/upstream.json").read_text())
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              for key in ("repo", "ref", "commit"):
+                  fh.write(f"{key}={data[key]}\n")
+          PY
+
+      - name: Fetch latest upstream commit
+        id: upstream
+        run: |
+          latest=$(git ls-remote "${{ steps.pinned.outputs.repo }}" "${{ steps.pinned.outputs.ref }}" | cut -f1)
+          if [ -z "$latest" ]; then
+            echo "::error::Failed to resolve duckdb-skills upstream HEAD"
+            exit 1
+          fi
+          echo "commit=$latest" >> "$GITHUB_OUTPUT"
+
+      - name: Open or close tracking issue
+        uses: actions/github-script@v7
+        env:
+          PINNED_COMMIT: ${{ steps.pinned.outputs.commit }}
+          LATEST_COMMIT: ${{ steps.upstream.outputs.commit }}
+          UPSTREAM_REPO: ${{ steps.pinned.outputs.repo }}
+        with:
+          script: |
+            const title = 'duckdb-skills upstream update available';
+            const pinned = process.env.PINNED_COMMIT;
+            const latest = process.env.LATEST_COMMIT;
+            const repoUrl = process.env.UPSTREAM_REPO.replace(/\.git$/, '');
+            const compareUrl = `${repoUrl}/compare/${pinned}...${latest}`;
+            const {owner, repo} = context.repo;
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => issue.title === title);
+
+            if (pinned === latest) {
+              core.info(`DuckDB upstream unchanged at ${pinned}.`);
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: existing.number,
+                  body: `Pinned DuckDB upstream commit now matches \`${latest}\`. Closing this tracker.`,
+                });
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: existing.number,
+                  state: 'closed',
+                });
+              }
+              return;
+            }
+
+            const body = [
+              'DuckDB upstream changed since the last pinned sync.',
+              '',
+              `- Pinned commit: \`${pinned}\``,
+              `- Latest commit: \`${latest}\``,
+              `- Compare: ${compareUrl}`,
+              '',
+              'Review the upstream diff and update the vendored content under `skills/duckdb/` if the new behavior should be adopted.',
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+              });
+            }
