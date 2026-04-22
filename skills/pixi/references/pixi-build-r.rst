@@ -90,7 +90,7 @@ fields of the ``DESCRIPTION`` file are automatically converted to conda
 packages and added to the recipe.
 
 You can add additional dependencies to your
-`host-dependencies`` <https://pixi.sh/latest/build/dependency_types/>`__
+`host-dependencies <https://pixi.sh/latest/build/dependency_types/>`__
 if needed:
 
 .. container:: language-toml highlight

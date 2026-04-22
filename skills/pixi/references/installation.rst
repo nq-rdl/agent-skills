@@ -233,7 +233,7 @@ Installer Script Options\ `# <#installer-script-options>`__
          |                      | it.                  |                      |
          +----------------------+----------------------+----------------------+
          | `                    | Overrides the        | GitHub releases,     |
-         | `PIXI_DOWNLOAD_URL`` | download URL for the | e.g.                 |
+         | ``PIXI_DOWNLOAD_URL`` | download URL for the | e.g.                |
          |                      | Pixi binary (useful  | `linux-64 <h         |
          |                      | for mirrors or       | ttps://github.com/pr |
          |                      | custom builds).      | efix-dev/pixi/releas |
@@ -359,7 +359,7 @@ Installer Script Options\ `# <#installer-script-options>`__
          |                      | ``pixi`` to it.      |                      |
          +----------------------+----------------------+----------------------+
          | `                    | Overrides the        | GitHub releases,     |
-         | `PIXI_DOWNLOAD_URL`` | download URL for the | e.g.                 |
+         | ``PIXI_DOWNLOAD_URL`` | download URL for the | e.g.                |
          |                      | Pixi binary (useful  | `win                 |
          |                      | for mirrors or       | -64 <https://github. |
          |                      | custom builds).      | com/prefix-dev/pixi/ |

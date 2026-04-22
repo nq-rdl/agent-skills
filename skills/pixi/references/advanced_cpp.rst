@@ -5,7 +5,7 @@ Advanced Building Using rattler-build
 
 In this tutorial, we will show you how to build the same C++ package as
 from `Building a C++ Package <../cpp/>`__ tutorial using
-``rattler-build`` <https://rattler.build>`__. In this tutorial we
+`rattler-build <https://rattler.build>`__. In this tutorial we
 assume that you've read the `Building a C++ Package <../cpp/>`__
 tutorial. If you haven't read it yet, we recommend you to do so before
 continuing. You might also want to check out the
