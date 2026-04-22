@@ -77,18 +77,18 @@ Overriding the Build Backend\ `# <#overriding-the-build-backend>`__
 
 Sometimes you want to override the build backend that is used by pixi.
 Meaning overriding the backend that is specified in the
-`[package.build]`` <../../reference/pixi_manifest/#build-table>`__. We
+`[package.build] <../../reference/pixi_manifest/#build-table>`__. We
 currently have two environment variables that allow for this:
 
 #. ``PIXI_BUILD_BACKEND_OVERRIDE``: This environment variable allows for
    overriding of one or multiple backends. Use ``{name}={path}`` to
    specify a backend name mapped to a path and ``,`` to separate
    multiple backends. For example:
-   `pixi-build-cmake=/path/to/bin,pixi-build-python`` will:
+   ``pixi-build-cmake=/path/to/bin,pixi-build-python`` will:
 
-   #. override the `pixi-build-cmake`` backend with the executable
+   #. override the ``pixi-build-cmake`` backend with the executable
       located at ``/path/to/bin``
-   #. and will use the `pixi-build-python`` backend from the ``PATH``.
+   #. and will use the ``pixi-build-python`` backend from the ``PATH``.
 
 #. ``PIXI_BUILD_BACKEND_OVERRIDE_ALL``: If this environment variable is
    set to *some* value e.g ``1`` or ``true``, it will not install any

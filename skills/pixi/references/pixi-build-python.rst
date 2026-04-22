@@ -34,7 +34,7 @@ by:
    standards including ``pyproject.toml``
 -  **PyPI-to-conda mapping** (opt-in): Maps ``project.dependencies`` and
    ``build-system.requires`` from ``pyproject.toml`` to conda packages
-   (see `ignore-pypi-mapping`` <#ignore-pypi-mapping>`__)
+   (see `ignore-pypi-mapping <#ignore-pypi-mapping>`__)
 -  **Automatic compiler detection**: Detects build tools like
    ``maturin`` or ``setuptools-rust`` and automatically adds required
    compilers
@@ -70,7 +70,7 @@ The backend automatically includes the following build tools:
 -  ``pip`` - Python package installer (or ``uv`` if specified)
 
 You can add these to your
-`host-dependencies`` <https://pixi.sh/latest/build/dependency_types/>`__
+`host-dependencies <https://pixi.sh/latest/build/dependency_types/>`__
 if you need specific versions:
 
 .. container:: language-toml highlight
@@ -630,7 +630,7 @@ default variants:
 -  ``cxx_compiler``: ``vs2022`` - Visual Studio 2022 C++ compiler
 
 These variants are used when you specify compilers in your
-`[package.build.config.compilers]`` <#compilers>`__ configuration.
+`[package.build.config.compilers] <#compilers>`__ configuration.
 Note that setting these default variants does not automatically add
 compilers to your build - you still need to explicitly configure which
 compilers to use.
@@ -642,7 +642,7 @@ The ``vs2022`` compiler is more widely supported on modern GitHub
 runners and build environments.
 
 You can override these defaults by explicitly setting variants using
-`[workspace.build-variants]`` <https://pixi.sh/latest/reference/pixi_manifest/#build-variants-optional>`__
+`[workspace.build-variants] <https://pixi.sh/latest/reference/pixi_manifest/#build-variants-optional>`__
 in your ``pixi.toml``:
 
 .. container:: language-toml highlight

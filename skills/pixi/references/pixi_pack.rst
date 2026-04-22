@@ -3,7 +3,7 @@
 Pixi Pack
 =========
 
-`pixi-pack`` <https://github.com/quantco/pixi-pack>`__ is a simple
+`pixi-pack <https://github.com/quantco/pixi-pack>`__ is a simple
 tool that takes an environment and packs it into a compressed archive
 that can be shipped to the target machine. The corresponding
 ``pixi-unpack`` tool can be used to unpack the archive and recreate an

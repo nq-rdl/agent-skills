@@ -69,7 +69,7 @@ The backend automatically includes the following build tools:
    ``clang_osx-64``)
 
 You can add these to your
-`build-dependencies`` <https://pixi.sh/latest/build/dependency_types/>`__
+`build-dependencies <https://pixi.sh/latest/build/dependency_types/>`__
 if you need specific versions:
 
 .. container:: language-toml highlight
@@ -290,7 +290,7 @@ default variants:
 -  ``cxx_compiler``: ``vs2022`` - Visual Studio 2022 C++ compiler
 
 These variants are used when you specify compilers in your
-`[package.build.config.compilers]`` <#compilers>`__ configuration.
+`[package.build.config.compilers] <#compilers>`__ configuration.
 Only ``cxx_compiler`` will be installed by default, the ``c_compiler``
 is set to help when you would add that compiler.
 
@@ -301,7 +301,7 @@ The ``vs2022`` compiler is more widely supported on modern GitHub
 runners and build environments.
 
 You can override these defaults by explicitly setting variants using
-`[workspace.build-variants]`` <https://pixi.sh/latest/reference/pixi_manifest/#build-variants-optional>`__
+`[workspace.build-variants] <https://pixi.sh/latest/reference/pixi_manifest/#build-variants-optional>`__
 in your ``pixi.toml``:
 
 .. container:: language-toml highlight
