@@ -454,7 +454,7 @@ Resolution cutoffs (``exclude-newer``)\ `# <#resolution-cutoffs-exclude-newer>`_
 
 If you use uv's ``exclude-newer`` setting to ignore packages uploaded
 after a given date, the Pixi equivalent is
-```[workspace].exclude-newer`` <../../reference/pixi_manifest/#exclude-newer-optional>`__:
+`[workspace].exclude-newer`` <../../reference/pixi_manifest/#exclude-newer-optional>`__:
 
 .. container:: tabbed-set tabbed-alternate
 
@@ -485,7 +485,7 @@ after a given date, the Pixi equivalent is
 Pixi applies this cutoff across both conda and PyPI resolution.
 
 If you want to override the cutoff for a specific package, uv uses
-```exclude-newer-package`` <https://docs.astral.sh/uv/reference/settings/#exclude-newer-package>`__:
+`exclude-newer-package`` <https://docs.astral.sh/uv/reference/settings/#exclude-newer-package>`__:
 
 .. container:: language-toml highlight
 
@@ -500,9 +500,9 @@ In Pixi, the equivalent depends on which ecosystem the package comes
 from:
 
 -  For a conda package, set it in
-   ```[exclude-newer]`` <../../reference/pixi_manifest/#exclude-newer-optional>`__.
+   `[exclude-newer]`` <../../reference/pixi_manifest/#exclude-newer-optional>`__.
 -  For a PyPI package, set it in
-   ```[pypi-exclude-newer]`` <../../reference/pixi_manifest/#exclude-newer-optional>`__.
+   `[pypi-exclude-newer]`` <../../reference/pixi_manifest/#exclude-newer-optional>`__.
 
 For example, a conda package can combine a channel pin with a
 package-specific ``exclude-newer`` override:
@@ -667,9 +667,9 @@ CI with GitHub Actions\ `# <#ci-with-github-actions>`__
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 uv provides
-```astral-sh/setup-uv`` <https://github.com/astral-sh/setup-uv>`__ for
+`astral-sh/setup-uv`` <https://github.com/astral-sh/setup-uv>`__ for
 GitHub Actions. Pixi has
-```prefix-dev/setup-pixi`` <https://github.com/prefix-dev/setup-pixi>`__,
+`prefix-dev/setup-pixi`` <https://github.com/prefix-dev/setup-pixi>`__,
 which installs Pixi, sets up caching, and runs ``pixi install`` in your
 workflow:
 

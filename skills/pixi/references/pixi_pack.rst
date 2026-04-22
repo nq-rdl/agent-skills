@@ -3,7 +3,7 @@
 Pixi Pack
 =========
 
-```pixi-pack`` <https://github.com/quantco/pixi-pack>`__ is a simple
+`pixi-pack`` <https://github.com/quantco/pixi-pack>`__ is a simple
 tool that takes an environment and packs it into a compressed archive
 that can be shipped to the target machine. The corresponding
 ``pixi-unpack`` tool can be used to unpack the archive and recreate an
@@ -122,7 +122,8 @@ have ``pixi-unpack`` installed.
 
    .. container:: tabbed-labels
 
-      Linux & macOSWindows
+      Linux & macOS
+      Windows
 
    .. container:: tabbed-content
 
@@ -340,7 +341,7 @@ environment using ``conda`` or ``micromamba``:
    Note
 
    Both ``conda`` and ``mamba`` are always installing pip as a side
-   effect when they install python, see ```conda``'s
+   effect when they install python, see `conda``'s
    documentation <https://docs.conda.io/projects/conda/en/25.1.x/user-guide/configuration/settings.html#add-pip-as-python-dependency-add-pip-as-python-dependency>`__.
    This is different from how ``pixi`` works and can lead to solver
    errors when using ``pixi-pack``'s compatibility mode since ``pixi``
