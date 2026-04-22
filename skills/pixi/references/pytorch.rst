@@ -57,7 +57,8 @@ together.
 
    .. container:: tabbed-labels
 
-      ``pixi.toml``\ ``pyproject.toml``
+      ``pixi.toml``
+      ``pyproject.toml``
 
    .. container:: tabbed-content
 
@@ -111,7 +112,8 @@ of dependencies is resolved correctly.
 
    .. container:: tabbed-labels
 
-      ``pixi.toml``\ ``pyproject.toml``
+      ``pixi.toml``
+      ``pyproject.toml``
 
    .. container:: tabbed-content
 
@@ -145,7 +147,8 @@ machines and one for non-CUDA machines.
 
    .. container:: tabbed-labels
 
-      ``pixi.toml``\ ``pyproject.toml``
+      ``pixi.toml``
+      ``pyproject.toml``
 
    .. container:: tabbed-content
 
@@ -262,7 +265,8 @@ Best to do this per dependency to force the index to be used.
 
    .. container:: tabbed-labels
 
-      ``pixi.toml``\ ``pyproject.toml``
+      ``pixi.toml``
+      ``pyproject.toml``
 
    .. container:: tabbed-content
 
@@ -323,7 +327,8 @@ of PyTorch, either ``cpu`` or ``gpu``.
 
    .. container:: tabbed-labels
 
-      ``pixi.toml``\ ``pyproject.toml``
+      ``pixi.toml``
+      ``pyproject.toml``
 
    .. container:: tabbed-content
 
@@ -445,7 +450,8 @@ Installing from PyTorch channel\ `# <#installing-from-pytorch-channel>`__
 
    .. container:: tabbed-labels
 
-      ``pixi.toml``\ ``pyproject.toml``
+      ``pixi.toml``
+      ``pyproject.toml``
 
    .. container:: tabbed-content
 

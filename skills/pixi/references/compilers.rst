@@ -212,45 +212,36 @@ Only certain ``pixi-build`` backends support the ``compilers``
 configuration option. Each supporting backend has sensible defaults
 based on the typical requirements for that language ecosystem:
 
-+----------------+----------------+----------------+----------------+
-| Backend        | Compiler       | Default        | Rationale      |
-|                | Support        | Compilers      |                |
-+================+================+================+================+
-| `pixi-bui      | ✅             | ``["cxx"]``    | Most CMake     |
-| ld-cmake <../. | **Supported**  |                | projects are   |
-| ./backends/pix |                |                | C++            |
-| i-build-cmake/ |                |                |                |
-| #compilers>`__ |                |                |                |
-+----------------+----------------+----------------+----------------+
-| `pixi-b        | ✅             | ``["rust"]``   | Rust projects  |
-| uild-rust <../ | **Supported**  |                | need the Rust  |
-| ../backends/pi |                |                | compiler       |
-| xi-build-rust/ |                |                |                |
-| #compilers>`__ |                |                |                |
-+----------------+----------------+----------------+----------------+
-| `pixi-build    | ✅             | ``[]``         | Pure Python    |
-| -python <../.. | **Supported**  |                | packages       |
-| /backends/pixi |                |                | typically      |
-| -build-python/ |                |                | don't need     |
-| #compilers>`__ |                |                | compilers      |
-+----------------+----------------+----------------+----------------+
-| `pixi-b        | ✅             | ``[]``         | ``m            |
-| uild-mojo <../ | **Supported**  |                | ojo-compiler`` |
-| ../backends/pi |                |                | must be        |
-| xi-build-mojo/ |                |                | specified in   |
-| #compilers>`__ |                |                | the            |
-|                |                |                | ``package.*-   |
-|                |                |                | dependencies`` |
-|                |                |                | manually.      |
-+----------------+----------------+----------------+----------------+
-| **pixi-build-r | ❌ **Not       | N/A            | Uses direct    |
-| attler-build** | Supported**    |                |                |
-|                |                |                | ``recipe.yaml``|
-|                |                |                | - configure    |
-|                |                |                | compilers      |
-|                |                |                | directly in    |
-|                |                |                | recipe         |
-+----------------+----------------+----------------+----------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 18 18 36
+
+   * - Backend
+     - Compiler Support
+     - Default Compilers
+     - Rationale
+   * - `pixi-build-cmake <../backends/pixi-build-cmake/#compilers>`__
+     - **Supported**
+     - ``["cxx"]``
+     - Most CMake projects are C++.
+   * - `pixi-build-rust <../backends/pixi-build-rust/#compilers>`__
+     - **Supported**
+     - ``["rust"]``
+     - Rust projects need the Rust compiler.
+   * - `pixi-build-python <../backends/pixi-build-python/#compilers>`__
+     - **Supported**
+     - ``[]``
+     - Pure Python packages typically don't need compilers.
+   * - `pixi-build-mojo <../backends/pixi-build-mojo/#compilers>`__
+     - **Supported**
+     - ``[]``
+     - ``mojo-compiler`` must be specified in the
+       ``package.*-dependencies`` manually.
+   * - **pixi-build-rattler-build**
+     - **Not Supported**
+     - N/A
+     - Uses direct ``recipe.yaml`` configuration, so compilers are set
+       in the recipe itself.
 
 .. admonition::
 

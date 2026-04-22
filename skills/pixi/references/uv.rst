@@ -47,81 +47,72 @@ advantages:
 Quick look at the differences\ `# <#quick-look-at-the-differences>`__
 ---------------------------------------------------------------------
 
-+----------------------+----------------------+----------------------+
-| Task                 | uv                   | Pixi                 |
-+======================+======================+======================+
-| Creating a project   | `                    | ``p                  |
-|                      | `uv init myproject`` | ixi init myproject`` |
-+----------------------+----------------------+----------------------+
-| Adding a dependency  | ``uv add numpy``     | ``pixi add numpy``   |
-|                      |                      | (conda) or           |
-|                      |                      | ``pix                |
-|                      |                      | i add --pypi numpy`` |
-|                      |                      | (PyPI)               |
-+----------------------+----------------------+----------------------+
-| Removing a           | ``uv remove numpy``  | `                    |
-| dependency           |                      | `pixi remove numpy`` |
-|                      |                      | (conda) or           |
-|                      |                      | ``pixi r             |
-|                      |                      | emove --pypi numpy`` |
-|                      |                      | (PyPI)               |
-+----------------------+----------------------+----------------------+
-| Installing/syncing   | ``uv sync``          | ``pixi install``     |
-+----------------------+----------------------+----------------------+
-| Running a command    | ``uv                 | ``pixi               |
-|                      | run python main.py`` | run python main.py`` |
-+----------------------+----------------------+----------------------+
-| Running a standalone | ``uv run script.py`` | ``pixi exec`` via    |
-| script               | (PEP 723)            | `shebang <../../a    |
-|                      |                      | dvanced/shebang/>`__ |
-+----------------------+----------------------+----------------------+
-| Running a task       | *(no built-in task   | ``pixi run my_task`` |
-|                      | runner)*             |                      |
-+----------------------+----------------------+----------------------+
-| Locking dependencies | ``uv lock``          | ``pixi lock`` (also  |
-|                      |                      | runs automatically   |
-|                      |                      | on ``pixi add`` /    |
-|                      |                      | ``pixi install``)    |
-+----------------------+----------------------+----------------------+
-| Installing Python    | ``uv p               | ``pi                 |
-|                      | ython install 3.12`` | xi add python=3.12`` |
-|                      |                      | (managed as a        |
-|                      |                      | regular dependency)  |
-+----------------------+----------------------+----------------------+
-| Ephemeral tool       | ``uvx ruff check``   | ``pi                 |
-| execution            |                      | xi exec ruff check`` |
-+----------------------+----------------------+----------------------+
-| Global tool install  | ``uv                 | ``pixi g             |
-|                      |  tool install ruff`` | lobal install ruff`` |
-+----------------------+----------------------+----------------------+
-| Building a package   | ``uv build``         | Supported via        |
-|                      |                      | `pixi-build          |
-|                      |                      | ba                   |
-|                      |                      | ckends <../../build/ |
-|                      |                      | getting_started/>`__ |
-+----------------------+----------------------+----------------------+
-| Publishing a package | ``uv publish``       | Upload to a          |
-|                      |                      | `prefix.dev          |
-|                      |                      | channel <../../de    |
-|                      |                      | ployment/prefix/>`__ |
-+----------------------+----------------------+----------------------+
-| Exporting a lockfile | ``uv export``        | ``p                  |
-|                      |                      | ixi workspace export |
-|                      |                      |  conda-environment`` |
-+----------------------+----------------------+----------------------+
-| Virtual environments | ``.venv/``           | ``.pixi/envs/``      |
-|                      | (automatic)          | (automatic, supports |
-|                      |                      | multiple             |
-|                      |                      | environments)        |
-+----------------------+----------------------+----------------------+
-| Cache management     | ``uv cache clean``   | ``pixi clean cache`` |
-+----------------------+----------------------+----------------------+
-| Updating             | `                    | ``pixi update``      |
-| dependencies         | `uv lock --upgrade`` |                      |
-+----------------------+----------------------+----------------------+
-| GitHub Actions       | ``                   | ``pre                |
-|                      | astral-sh/setup-uv`` | fix-dev/setup-pixi`` |
-+----------------------+----------------------+----------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 28 48
+
+   * - Task
+     - uv
+     - Pixi
+   * - Creating a project
+     - ``uv init myproject``
+     - ``pixi init myproject``
+   * - Adding a dependency
+     - ``uv add numpy``
+     - ``pixi add numpy`` (conda) or ``pixi add --pypi numpy`` (PyPI)
+   * - Removing a dependency
+     - ``uv remove numpy``
+     - ``pixi remove numpy`` (conda) or ``pixi remove --pypi numpy``
+       (PyPI)
+   * - Installing/syncing
+     - ``uv sync``
+     - ``pixi install``
+   * - Running a command
+     - ``uv run python main.py``
+     - ``pixi run python main.py``
+   * - Running a standalone script
+     - ``uv run script.py`` (PEP 723)
+     - ``pixi exec`` via
+       `shebang <../../advanced/shebang/>`__
+   * - Running a task
+     - *(no built-in task runner)*
+     - ``pixi run my_task``
+   * - Locking dependencies
+     - ``uv lock``
+     - ``pixi lock`` (also runs automatically on ``pixi add`` /
+       ``pixi install``)
+   * - Installing Python
+     - ``uv python install 3.12``
+     - ``pixi add python=3.12`` (managed as a regular dependency)
+   * - Ephemeral tool execution
+     - ``uvx ruff check``
+     - ``pixi exec ruff check``
+   * - Global tool install
+     - ``uv tool install ruff``
+     - ``pixi global install ruff``
+   * - Building a package
+     - ``uv build``
+     - Supported via
+       `pixi-build backends <../../build/getting_started/>`__
+   * - Publishing a package
+     - ``uv publish``
+     - Upload to a
+       `prefix.dev channel <../../deployment/prefix/>`__
+   * - Exporting a lockfile
+     - ``uv export``
+     - ``pixi workspace export conda-environment``
+   * - Virtual environments
+     - ``.venv/`` (automatic)
+     - ``.pixi/envs/`` (automatic, supports multiple environments)
+   * - Cache management
+     - ``uv cache clean``
+     - ``pixi clean cache``
+   * - Updating dependencies
+     - ``uv lock --upgrade``
+     - ``pixi update``
+   * - GitHub Actions
+     - ``astral-sh/setup-uv``
+     - ``prefix-dev/setup-pixi``
 
 Project configuration\ `# <#project-configuration>`__
 -----------------------------------------------------
@@ -136,7 +127,9 @@ for tool-level settings.
 
    .. container:: tabbed-labels
 
-      uv (pyproject.toml)Pixi (pixi.toml)Pixi (pyproject.toml)
+      uv (pyproject.toml)
+      Pixi (pixi.toml)
+      Pixi (pyproject.toml)
 
    .. container:: tabbed-content
 
@@ -265,20 +258,20 @@ groups <https://peps.python.org/pep-0735/>`__ and optional dependencies
 (extras) to organize dependencies. Pixi uses **features**, composable
 sets of dependencies that map to environments:
 
-+----------------------------------+----------------------------------+
-| uv                               | Pixi                             |
-+==================================+==================================+
-| ``[dependency-groups]``          | `                                |
-|                                  | `[feature.<name>.dependencies]`` |
-+----------------------------------+----------------------------------+
-| ``[                              | `                                |
-| project.optional-dependencies]`` | `[feature.<name>.dependencies]`` |
-|                                  | mapped to environments           |
-+----------------------------------+----------------------------------+
-| ``uv sync --group dev``          | ``pixi install -e dev``          |
-+----------------------------------+----------------------------------+
-| ``uv sync --all-groups``         | ``pixi install --all``           |
-+----------------------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - uv
+     - Pixi
+   * - ``[dependency-groups]``
+     - ``[feature.<name>.dependencies]``
+   * - ``[project.optional-dependencies]``
+     - ``[feature.<name>.dependencies]`` mapped to environments
+   * - ``uv sync --group dev``
+     - ``pixi install -e dev``
+   * - ``uv sync --all-groups``
+     - ``pixi install --all``
 
 Features are more flexible than dependency groups: they can include
 conda dependencies, platform-specific packages, system requirements, and
@@ -389,17 +382,18 @@ Ephemeral tool execution (``uvx`` vs ``pixi exec``)\ `# <#ephemeral-tool-executi
 environment without installing it permanently. ``pixi exec`` does the
 same thing:
 
-+----------------------------------+----------------------------------+
-| uv                               | Pixi                             |
-+==================================+==================================+
-| ``uvx ruff check``               | ``pixi exec ruff check``         |
-+----------------------------------+----------------------------------+
-| ``uvx                            | ``pixi exec                      |
-|  --from 'ruff>=0.5' ruff check`` |  --spec 'ruff>=0.5' ruff check`` |
-+----------------------------------+----------------------------------+
-| ``uvx --with numpy ruff check``  | ``pix                            |
-|                                  | i exec --with numpy ruff check`` |
-+----------------------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - uv
+     - Pixi
+   * - ``uvx ruff check``
+     - ``pixi exec ruff check``
+   * - ``uvx --from 'ruff>=0.5' ruff check``
+     - ``pixi exec --spec 'ruff>=0.5' ruff check``
+   * - ``uvx --with numpy ruff check``
+     - ``pixi exec --with numpy ruff check``
 
 Global tools (``uv tool`` vs ``pixi global``)\ `# <#global-tools-uv-tool-vs-pixi-global>`__
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -460,7 +454,8 @@ after a given date, the Pixi equivalent is
 
    .. container:: tabbed-labels
 
-      pixi.tomlpyproject.toml
+      pixi.toml
+      pyproject.toml
 
    .. container:: tabbed-content
 
@@ -511,7 +506,8 @@ package-specific ``exclude-newer`` override:
 
    .. container:: tabbed-labels
 
-      pixi.tomlpyproject.toml
+      pixi.toml
+      pyproject.toml
 
    .. container:: tabbed-content
 
@@ -553,7 +549,8 @@ And a PyPI package uses the same pattern, but with PyPI-specific tables:
 
    .. container:: tabbed-labels
 
-      pixi.tomlpyproject.toml
+      pixi.toml
+      pyproject.toml
 
    .. container:: tabbed-content
 
@@ -596,7 +593,8 @@ level:
 
    .. container:: tabbed-labels
 
-      pixi.tomlpyproject.toml
+      pixi.toml
+      pyproject.toml
 
    .. container:: tabbed-content
 
@@ -774,7 +772,8 @@ your project directory:
 
    .. container:: tabbed-labels
 
-      pixi.tomlpyproject.toml
+      pixi.toml
+      pyproject.toml
 
    .. container:: tabbed-content
 
