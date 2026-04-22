@@ -1,5 +1,6 @@
 ---
 name: query
+license: CC-BY-4.0
 description: Run SQL against an attached DuckDB database or ad-hoc against files, including natural-language requests that need SQL generation. Use when the user asks a data question, provides DuckDB SQL, or wants to query files with DuckDB.
 ---
 

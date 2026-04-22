@@ -1,5 +1,6 @@
 ---
 name: spatial
+license: CC-BY-4.0
 description: Answer spatial-data questions with DuckDB, including coordinate work, distance calculations, spatial joins, containment checks, density analysis, and geographic format conversion. Use when the user mentions maps, locations, coordinates, nearby places, GeoJSON, Shapefile, GeoPackage, GPX, GeoParquet, or Overture Maps data.
 ---
 

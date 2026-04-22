@@ -1,11 +1,11 @@
 ---
 name: pixi
+license: CC-BY-4.0
 description: >-
   Use this skill to help agents manage Python projects, dependencies, environments,
   and builds using the `pixi` package manager. Covers installation, project creation
   (pyproject.toml, workspaces, cross-compilation), managing dependencies, security,
   and migrating from other tools like uv.
-license: MIT
 metadata:
   repo: https://github.com/nq-rdl/agent-skills
 ---

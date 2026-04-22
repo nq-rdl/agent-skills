@@ -1,5 +1,6 @@
 ---
 name: attach-db
+license: CC-BY-4.0
 description: Attach a DuckDB database file, inspect its tables and schema, and append an `ATTACH` entry to the shared DuckDB state file used by the sibling query workflow. Use when the user wants to open a `.duckdb` file or make a database available for repeated DuckDB queries.
 ---
 

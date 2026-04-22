@@ -1,5 +1,6 @@
 ---
 name: duckdb
+license: CC-BY-4.0
 description: >-
   Work with DuckDB from the CLI: install or update DuckDB and extensions,
   attach database files, query local or remote data, convert formats, explore
