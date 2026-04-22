@@ -117,7 +117,7 @@ The backend automatically includes the following build tools:
 -  ``cargo`` - Rust's package manager (included with rust)
 
 You can add these to your
-```build-dependencies`` <https://pixi.sh/latest/build/dependency_types/>`__
+`build-dependencies <https://pixi.sh/latest/build/dependency_types/>`__
 if you need specific versions:
 
 .. container:: language-toml highlight
@@ -385,7 +385,7 @@ The Rust backend follows this build process:
    -  ``--no-track``: Don't track installation metadata
    -  ``--force``: Force installation even if already installed
    -  ``--bin <name>`` (optional, repeated): Added for each entry in
-      ```[package.build.config.binaries]`` <#binaries>`__
+      `[package.build.config.binaries] <#binaries>`__
 
 #. **Cache Statistics**: Displays ``sccache`` statistics if available
 
@@ -399,7 +399,7 @@ default variants:
 -  ``cxx_compiler``: ``vs2022`` - Visual Studio 2022 C++ compiler
 
 These variants are used when you specify compilers in your
-```[package.build.config.compilers]`` <#compilers>`__ configuration.
+`[package.build.config.compilers] <#compilers>`__ configuration.
 Note that setting these default variants does not automatically add
 compilers to your build - you still need to explicitly configure which
 compilers to use.
@@ -411,7 +411,7 @@ The ``vs2022`` compiler is more widely supported on modern GitHub
 runners and build environments.
 
 You can override these defaults by explicitly setting variants using
-```[workspace.build-variants]`` <https://pixi.sh/latest/reference/pixi_manifest/#build-variants-optional>`__
+`[workspace.build-variants] <https://pixi.sh/latest/reference/pixi_manifest/#build-variants-optional>`__
 in your ``pixi.toml``:
 
 .. container:: language-toml highlight

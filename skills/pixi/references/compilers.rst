@@ -244,8 +244,8 @@ based on the typical requirements for that language ecosystem:
 |                |                |                | manually.      |
 +----------------+----------------+----------------+----------------+
 | **pixi-build-r | ❌ **Not       | N/A            | Uses direct    |
-| attler-build** | Supported**    |                | `              |
-|                |                |                | `recipe.yaml`` |
+| attler-build** | Supported**    |                |                |
+|                |                |                | ``recipe.yaml``|
 |                |                |                | - configure    |
 |                |                |                | compilers      |
 |                |                |                | directly in    |

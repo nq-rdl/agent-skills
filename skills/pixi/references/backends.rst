@@ -12,30 +12,26 @@ backend from Pixi and it's manifest specification.
 Available Backends\ `# <#available-backends>`__
 -----------------------------------------------
 
-+----------------------------------+----------------------------------+
-| Backend                          | Use Case                         |
-+==================================+==================================+
-| ``pixi-buil                     | Projects using CMake             |
-| d-cmake`` <pixi-build-cmake/>`__ |                                  |
-+----------------------------------+----------------------------------+
-| ``pixi-build-                   | Building Python packages         |
-| python`` <pixi-build-python/>`__ |                                  |
-+----------------------------------+----------------------------------+
-| pixi-build-rattler-build     | Direct ``recipe.yaml`` builds    |
-| <pixi-build-rattler-build/>`__ | with full control                |
-+----------------------------------+----------------------------------+
-| ``pixi-                         | ROS (Robot Operating System)     |
-| build-ros`` <pixi-build-ros/>`__ | packages                         |
-+----------------------------------+----------------------------------+
-| ``p                             | R packages using                 |
-| ixi-build-r`` <pixi-build-r/>`__ | ``R CMD INSTALL``                |
-+----------------------------------+----------------------------------+
-| ``pixi-bu                       | Cargo-based Rust applications    |
-| ild-rust`` <pixi-build-rust/>`__ | and libraries                    |
-+----------------------------------+----------------------------------+
-| ``pixi-bu                       | Mojo applications and packages   |
-| ild-mojo`` <pixi-build-mojo/>`__ |                                  |
-+----------------------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Backend
+     - Use Case
+   * - `pixi-build-cmake <pixi-build-cmake/>`__
+     - Projects using CMake
+   * - `pixi-build-python <pixi-build-python/>`__
+     - Building Python packages
+   * - `pixi-build-rattler-build <pixi-build-rattler-build/>`__
+     - Direct ``recipe.yaml`` builds with full control
+   * - `pixi-build-ros <pixi-build-ros/>`__
+     - ROS (Robot Operating System) packages
+   * - `pixi-build-r <pixi-build-r/>`__
+     - R packages using ``R CMD INSTALL``
+   * - `pixi-build-rust <pixi-build-rust/>`__
+     - Cargo-based Rust applications and libraries
+   * - `pixi-build-mojo <pixi-build-mojo/>`__
+     - Mojo applications and packages
 
 All backends are available through the
 `conda-forge <https://prefix.dev/channels/conda-forge>`__ conda channel
@@ -81,18 +77,18 @@ Overriding the Build Backend\ `# <#overriding-the-build-backend>`__
 
 Sometimes you want to override the build backend that is used by pixi.
 Meaning overriding the backend that is specified in the
-`[package.build]`` <../../reference/pixi_manifest/#build-table>`__. We
+`[package.build] <../../reference/pixi_manifest/#build-table>`__. We
 currently have two environment variables that allow for this:
 
 #. ``PIXI_BUILD_BACKEND_OVERRIDE``: This environment variable allows for
    overriding of one or multiple backends. Use ``{name}={path}`` to
    specify a backend name mapped to a path and ``,`` to separate
    multiple backends. For example:
-   `pixi-build-cmake=/path/to/bin,pixi-build-python`` will:
+   ``pixi-build-cmake=/path/to/bin,pixi-build-python`` will:
 
-   #. override the `pixi-build-cmake`` backend with the executable
+   #. override the ``pixi-build-cmake`` backend with the executable
       located at ``/path/to/bin``
-   #. and will use the `pixi-build-python`` backend from the ``PATH``.
+   #. and will use the ``pixi-build-python`` backend from the ``PATH``.
 
 #. ``PIXI_BUILD_BACKEND_OVERRIDE_ALL``: If this environment variable is
    set to *some* value e.g ``1`` or ``true``, it will not install any

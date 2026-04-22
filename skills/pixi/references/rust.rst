@@ -102,7 +102,7 @@ your ``pixi`` workspace.
 ``pixi run`` is Pixi's way to run commands in an environment. It will
 make sure that the environment is activated for the command to run. It
 runs its own cross-platform shell, if you want more information checkout
-the ```tasks`` documentation <../../workspace/advanced_tasks/>`__. You
+the `tasks documentation <../../workspace/advanced_tasks/>`__. You
 can also activate the environment in a shell by running ``pixi shell``,
 after that you don't need ``pixi run`` anymore.
 
