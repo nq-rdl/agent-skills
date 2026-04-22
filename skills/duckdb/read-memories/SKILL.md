@@ -1,5 +1,6 @@
 ---
 name: read-memories
+license: CC-BY-4.0
 description: Search prior agent session logs stored as JSONL to recover decisions, patterns, or unresolved work. Use when the user references past conversations, asks what was done before, or wants context recovered from local transcript files.
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: read-file
+license: CC-BY-4.0
 description: Read data files or remote URLs with DuckDB, including CSV, JSON, Parquet, Avro, Excel, spatial formats, and SQLite files. Use when the user asks what is in a dataset, wants a schema or sample, or needs quick profiling of a data file. Not for source code.
 ---
 

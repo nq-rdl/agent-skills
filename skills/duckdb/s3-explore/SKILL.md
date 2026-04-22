@@ -1,5 +1,6 @@
 ---
 name: s3-explore
+license: CC-BY-4.0
 description: Explore and query data on S3, Cloudflare R2, GCS, MinIO, or compatible object storage with DuckDB. Use when the user mentions `s3://`, `r2://`, `gs://`, or `gcs://` URLs, asks what is in a bucket, or wants schema, size, sample, or query results from remote data without downloading it first.
 ---
 

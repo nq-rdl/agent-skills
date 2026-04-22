@@ -1,5 +1,6 @@
 ---
 name: install-duckdb
+license: CC-BY-4.0
 description: Install or update DuckDB extensions, or update the DuckDB CLI itself when needed. Use when DuckDB is missing, an extension needs to be installed or refreshed, or another DuckDB workflow reports a missing extension.
 ---
 

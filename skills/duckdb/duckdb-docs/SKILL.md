@@ -1,5 +1,6 @@
 ---
 name: duckdb-docs
+license: CC-BY-4.0
 description: Search DuckDB and DuckLake documentation and blog posts with a locally cached full-text index. Use when the user asks how DuckDB works, needs official syntax or behavior details, or wants DuckLake-specific documentation.
 ---
 

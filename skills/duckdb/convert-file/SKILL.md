@@ -1,5 +1,6 @@
 ---
 name: convert-file
+license: CC-BY-4.0
 description: Convert data files between CSV, Parquet, JSON, Excel, GeoJSON, and related formats with DuckDB. Use when the user asks to convert a file, export a dataset, save results in another format, or write binary outputs such as Parquet or XLSX.
 ---
 
