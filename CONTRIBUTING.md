@@ -29,7 +29,7 @@ pre-push tests automatically.
 
 ```
 agent-skills/
-├── skills/                   # The skills themselves (52 of them)
+├── skills/                   # The skills themselves
 │   ├── pi-rpc/               # Each skill = a directory with SKILL.md
 │   │   ├── SKILL.md          # Frontmatter + body; the public contract
 │   │   └── scripts/          # Per-skill runtime code (Go here: pi-server, pi-cli, pi-mcp)

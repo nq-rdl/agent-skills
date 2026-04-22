@@ -30,6 +30,7 @@ RDL uses [nq-rdl/agent-extensions](https://github.com/nq-rdl/agent-extensions) t
 
 | Skill | Description |
 |-------|-------------|
+| [duckdb](../skills/duckdb/) | DuckDB CLI workflows bundled under one skill: attach databases, query files and tables, convert formats, inspect object storage, search docs, and run spatial analysis. |
 | [starrocks](../skills/starrocks/) | StarRocks analytical data warehouse — SQL authoring, table design, partitioning, materialized views, external catalogs. |
 
 ### Developer Workflow
