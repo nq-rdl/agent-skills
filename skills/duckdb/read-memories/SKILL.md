@@ -19,6 +19,13 @@ First resolve a compatible log root:
 
 Once you have a log root, query it with DuckDB:
 
+Before constructing the SQL, escape any single quotes in the search term by doubling them:
+
+```bash
+KEYWORD="<KEYWORD>"
+SQL_KEYWORD=${KEYWORD//\'/\'\'}
+```
+
 ```bash
 duckdb :memory: -c "
 SELECT
@@ -27,7 +34,7 @@ SELECT
   message.role AS role,
   left(message.content::VARCHAR, 500) AS content
 FROM read_ndjson('<SEARCH_PATH>', auto_detect=true, ignore_errors=true, filename=true)
-WHERE message::VARCHAR ILIKE '%<KEYWORD>%'
+WHERE message::VARCHAR ILIKE '%<SQL_KEYWORD>%'
   AND message.role IS NOT NULL
 ORDER BY timestamp
 LIMIT 40;
@@ -39,7 +46,7 @@ Common search paths:
 - All Claude Code projects: `$HOME/.claude/projects/*/*.jsonl`
 - Current Claude Code project with `--here`: `$HOME/.claude/projects/$(echo "$PWD" | sed 's|[/_]|-|g')/*.jsonl`
 
-Replace `<SEARCH_PATH>` and `<KEYWORD>` before running.
+Replace `<SEARCH_PATH>` and `<SQL_KEYWORD>` before running. Use the escaped `SQL_KEYWORD`, not the raw keyword, anywhere the term is interpolated into SQL.
 
 ## Step 2 - Internalize
 

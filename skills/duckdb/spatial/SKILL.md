@@ -55,14 +55,14 @@ ST_Point(ST_X(geometry), ST_Y(geometry))::POINT_2D
 
 **CSV with lat/lng needs conversion**: Use `ST_Point(longitude, latitude)`, with longitude first.
 
-Run the query in a single shell call:
+Run the query in a single shell call. Prefer a heredoc for multi-line SQL so shell quoting does not break complex spatial queries:
 
 ```bash
-duckdb -c "
+duckdb <<'SQL'
 LOAD spatial;
 <ADDITIONAL_SETUP>
 <YOUR_QUERY>
-"
+SQL
 ```
 
 ## Step 3 - Present Results

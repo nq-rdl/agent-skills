@@ -12,7 +12,8 @@ Treat the first user-supplied path as the input file. If the user supplied a sec
 **Input**: If the user gave a bare filename with no `/`, resolve it to a full path with:
 
 ```bash
-find "$PWD" -name "$0" -not -path '*/.git/*' 2>/dev/null | head -1
+INPUT_FILENAME="<INPUT_FILENAME>"
+find "$PWD" -name "$INPUT_FILENAME" -not -path '*/.git/*' 2>/dev/null | head -1
 ```
 
 **Output**: If the user supplied an explicit output path, use it. Otherwise default to the same stem as the input with a `.parquet` extension, for example `data.csv` -> `data.parquet`.
