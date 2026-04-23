@@ -1,2 +1,0 @@
-kind: Fixed
-body: Fixes RST syntax in `pixi` skill references — merged tab labels, broken grid table, and malformed inline hyperlinks (#82)
