@@ -35,7 +35,7 @@ func NewManager(binary string) *Manager {
 }
 
 // Create spawns a new session subprocess and adds it to the manager.
-func (m *Manager) Create(ctx context.Context, provider, model, cwd, thinkingLevel string, timeoutSeconds int32) (string, error) {
+func (m *Manager) Create(ctx context.Context, provider, model, cwd, thinkingLevel string, timeoutSeconds int32, systemPrompt string, appendSystemPrompts []string) (string, error) {
 	sessionCtx := context.Background()
 	if ctx != nil {
 		sessionCtx = context.WithoutCancel(ctx)
@@ -48,6 +48,17 @@ func (m *Manager) Create(ctx context.Context, provider, model, cwd, thinkingLeve
 			"--provider", provider, "--model", model)
 		if thinkingLevel != "" {
 			args = append(args, "--thinking", thinkingLevel)
+		}
+	}
+
+	// System-prompt flags are forwarded unconditionally (outside the binary guard)
+	// so that fake-pi can capture them in tests via the capture_args scenario.
+	if systemPrompt != "" || len(appendSystemPrompts) > 0 {
+		if systemPrompt != "" {
+			args = append(args, "--system-prompt", systemPrompt)
+		}
+		for _, s := range appendSystemPrompts {
+			args = append(args, "--append-system-prompt", s)
 		}
 	}
 

@@ -4,10 +4,12 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"connectrpc.com/connect"
 	pirpcv1 "github.com/nq-rdl/agent-skills/skills/pi-rpc/scripts/gen/pirpc/v1"
@@ -468,4 +470,64 @@ func TestHandlerPromptReturnsMessages(t *testing.T) {
 	if msgsResp.Msg.Messages[0].Content == "" {
 		t.Error("bug 2: GetMessages first message content is empty; text not extracted from nested content array")
 	}
+}
+
+func TestHandlerCreateForwardsSystemPrompts(t *testing.T) {
+	// Arrange: capture_args scenario writes argv to FAKE_PI_ARGS_FILE
+	argsFile := filepath.Join(t.TempDir(), "pi-args.txt")
+	t.Setenv("FAKE_PI_ARGS_FILE", argsFile)
+	t.Setenv("FAKE_PI_SCENARIO", "capture_args")
+
+	client, cleanup := setupTestServer(t)
+	defer cleanup()
+
+	// Act: create a session with system-prompt fields set
+	_, err := client.Create(context.Background(), connect.NewRequest(&pirpcv1.CreateRequest{
+		Provider:           "anthropic",
+		Model:              "claude-sonnet",
+		Cwd:                t.TempDir(),
+		SystemPrompt:       "You are a SQL reviewer.",
+		AppendSystemPrompt: []string{"Use modern SQL.", "Cite sources."},
+	}))
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+
+	// Assert: wait up to 500ms for the subprocess to write the args file
+	var argv []string
+	deadline := time.Now().Add(500 * time.Millisecond)
+	for time.Now().Before(deadline) {
+		data, readErr := os.ReadFile(argsFile)
+		if readErr == nil && len(data) > 0 {
+			for _, line := range strings.Split(strings.TrimRight(string(data), "\n"), "\n") {
+				if line != "" {
+					argv = append(argv, line)
+				}
+			}
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+
+	if len(argv) == 0 {
+		t.Fatal("args file was not written by fake-pi subprocess; subprocess may not have received the flags")
+	}
+
+	// --system-prompt must appear as a consecutive pair
+	assertArgPair(t, argv, "--system-prompt", "You are a SQL reviewer.")
+
+	// Each --append-system-prompt entry must appear in order
+	assertArgPair(t, argv, "--append-system-prompt", "Use modern SQL.")
+	assertArgPair(t, argv, "--append-system-prompt", "Cite sources.")
+}
+
+// assertArgPair checks that flag and value appear consecutively in argv.
+func assertArgPair(t *testing.T, argv []string, flag, value string) {
+	t.Helper()
+	for i := 0; i < len(argv)-1; i++ {
+		if argv[i] == flag && argv[i+1] == value {
+			return
+		}
+	}
+	t.Errorf("argv does not contain consecutive pair %q %q\nfull argv: %v", flag, value, argv)
 }

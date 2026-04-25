@@ -72,6 +72,15 @@ case "$SCENARIO" in
     done
     ;;
 
+  capture_args)
+    # Write all argv to FAKE_PI_ARGS_FILE (one arg per line) then stay alive.
+    # Used to assert that flags like --system-prompt are forwarded by the handler.
+    if [ -n "${FAKE_PI_ARGS_FILE:-}" ]; then
+      printf '%s\n' "$@" > "$FAKE_PI_ARGS_FILE"
+    fi
+    cat
+    ;;
+
   *)
     echo "Unknown scenario: $SCENARIO" >&2
     exit 1
