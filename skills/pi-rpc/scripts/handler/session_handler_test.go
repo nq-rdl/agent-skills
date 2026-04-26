@@ -404,3 +404,68 @@ func TestHandlerCreateExplicitOverridesDefaults(t *testing.T) {
 		t.Errorf("model = %q, want %q", stateResp.Msg.Model, "explicit-model")
 	}
 }
+
+// TestHandlerPromptReturnsMessages tests both bugs from issue #80:
+//
+//  1. Prompt must populate PromptResponse.Messages (bug 1: currently always empty).
+//  2. GetMessages must parse the real pi --mode rpc wire format, where the message
+//     is nested under a "message" key, not at the top level (bug 2: flat-struct
+//     parser silently produces empty fields and the empty-skip drops every message).
+//
+// The real_shape fake-pi scenario emits event shapes that exactly match the upstream
+// AgentEvent union (packages/agent/src/types.ts):
+//
+//	message_update: {"type":"message_update","message":{...AgentMessage...},"assistantMessageEvent":{...}}
+//	message_end:    {"type":"message_end","message":{...AgentMessage...}}
+//	agent_end:      {"type":"agent_end","messages":[...AgentMessage...]}
+func TestHandlerPromptReturnsMessages(t *testing.T) {
+	// Arrange
+	t.Setenv("FAKE_PI_SCENARIO", "real_shape")
+	client, cleanup := setupTestServerWithBinary(t, fakePi(t))
+	defer cleanup()
+
+	createResp, err := client.Create(context.Background(), connect.NewRequest(&pirpcv1.CreateRequest{
+		Provider: "anthropic",
+		Model:    "claude-sonnet-4-5",
+		Cwd:      t.TempDir(),
+	}))
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	sid := createResp.Msg.SessionId
+
+	// Act — synchronous Prompt waits for agent_end before returning
+	promptResp, err := client.Prompt(context.Background(), connect.NewRequest(&pirpcv1.PromptRequest{
+		SessionId: sid,
+		Message:   "hello",
+	}))
+	if err != nil {
+		t.Fatalf("Prompt failed: %v", err)
+	}
+
+	// Assert bug 1: PromptResponse.Messages must be populated
+	if len(promptResp.Msg.Messages) == 0 {
+		t.Fatal("bug 1: PromptResponse.Messages is empty; Prompt handler never populates messages")
+	}
+	gotRole := promptResp.Msg.Messages[0].Role
+	if gotRole != pirpcv1.MessageRole_MESSAGE_ROLE_ASSISTANT {
+		t.Errorf("bug 1: first message role = %v, want ASSISTANT", gotRole)
+	}
+	if promptResp.Msg.Messages[0].Content == "" {
+		t.Error("bug 1: first message content is empty")
+	}
+
+	// Assert bug 2: GetMessages must parse the nested message shape
+	msgsResp, err := client.GetMessages(context.Background(), connect.NewRequest(&pirpcv1.GetMessagesRequest{
+		SessionId: sid,
+	}))
+	if err != nil {
+		t.Fatalf("GetMessages failed: %v", err)
+	}
+	if len(msgsResp.Msg.Messages) == 0 {
+		t.Fatal("bug 2: GetMessages returned no messages; nested message shape not parsed")
+	}
+	if msgsResp.Msg.Messages[0].Content == "" {
+		t.Error("bug 2: GetMessages first message content is empty; text not extracted from nested content array")
+	}
+}
