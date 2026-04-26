@@ -72,6 +72,17 @@ case "$SCENARIO" in
     done
     ;;
 
+  capture_args)
+    # Write all argv to FAKE_PI_ARGS_FILE (null-byte separated) then stay alive.
+    # Null bytes preserve any embedded newlines inside individual arguments
+    # (e.g. multi-line system prompts).
+    # Used to assert that flags like --system-prompt are forwarded by the handler.
+    if [ -n "${FAKE_PI_ARGS_FILE:-}" ]; then
+      printf '%s\000' "$@" > "$FAKE_PI_ARGS_FILE"
+    fi
+    cat
+    ;;
+
   *)
     echo "Unknown scenario: $SCENARIO" >&2
     exit 1
