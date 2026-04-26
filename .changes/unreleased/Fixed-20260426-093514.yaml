@@ -1,3 +1,0 @@
-kind: Fixed
-body: skill:pi-rpc — `Prompt` now populates `PromptResponse.Messages` and `GetMessages` parses the real `pi --mode rpc` nested message wire format, so the rpc layer can return assistant output (#80).
-time: 2026-04-26T09:35:14.254841377+10:00

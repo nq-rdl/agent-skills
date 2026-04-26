@@ -1,3 +1,0 @@
-kind: Added
-body: skill:pi-rpc — `CreateRequest` now accepts `system_prompt` and `append_system_prompt` (repeated) fields, forwarded as `--system-prompt` and `--append-system-prompt` flags to the spawned `pi` subprocess (#92).
-time: 2026-04-26T09:43:07.161664616+10:00
