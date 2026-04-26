@@ -59,3 +59,10 @@ Validate a single skill:
 ```bash
 ref validate skills/<skill-name>
 ```
+
+## License
+
+This repo is **scope-licensed** (not an `OR` dual-license — the license depends on the file, not the user's choice):
+
+- **Software** — `SPDX-License-Identifier: MIT`. Applies to reference tooling and tests (`src/`, `tests/`), repo scripts, build/validation configuration, and any executable code shipped inside a skill (`skills/*/scripts/`). Full text: [LICENSE](LICENSE).
+- **Media** — `SPDX-License-Identifier: CC-BY-4.0`. Applies to skill content (`SKILL.md` and other prose/assets under `skills/`) and authoring documentation (`docs/`). Full text: [LICENSE-CC-BY-4.0](LICENSE-CC-BY-4.0).
