@@ -493,15 +493,17 @@ func TestHandlerCreateForwardsSystemPrompts(t *testing.T) {
 		t.Fatalf("Create failed: %v", err)
 	}
 
-	// Assert: wait up to 500ms for the subprocess to write the args file
+	// Assert: wait up to 2s for the subprocess to write the args file.
+	// Generous deadline to avoid CI flakiness under -race / cold caches.
+	// Args are null-byte separated so values containing newlines round-trip.
 	var argv []string
-	deadline := time.Now().Add(500 * time.Millisecond)
+	deadline := time.Now().Add(2 * time.Second)
 	for time.Now().Before(deadline) {
 		data, readErr := os.ReadFile(argsFile)
 		if readErr == nil && len(data) > 0 {
-			for _, line := range strings.Split(strings.TrimRight(string(data), "\n"), "\n") {
-				if line != "" {
-					argv = append(argv, line)
+			for _, arg := range strings.Split(string(data), "\x00") {
+				if arg != "" {
+					argv = append(argv, arg)
 				}
 			}
 			break

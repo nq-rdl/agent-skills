@@ -51,7 +51,15 @@ func (h *SessionHandler) Create(ctx context.Context, req *connect.Request[pirpcv
 	if req.Msg.TimeoutSeconds < 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("timeout_seconds must be non-negative, got %d", req.Msg.TimeoutSeconds))
 	}
-	id, err := h.mgr.Create(ctx, provider, model, req.Msg.Cwd, req.Msg.ThinkingLevel, req.Msg.TimeoutSeconds, req.Msg.SystemPrompt, req.Msg.AppendSystemPrompt)
+	id, err := h.mgr.Create(ctx, session.CreateOpts{
+		Provider:            provider,
+		Model:               model,
+		Cwd:                 req.Msg.Cwd,
+		ThinkingLevel:       req.Msg.ThinkingLevel,
+		TimeoutSeconds:      req.Msg.TimeoutSeconds,
+		SystemPrompt:        req.Msg.SystemPrompt,
+		AppendSystemPrompts: req.Msg.AppendSystemPrompt,
+	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("create session: %w", err))
 	}
