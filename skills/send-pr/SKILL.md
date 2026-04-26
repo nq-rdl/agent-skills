@@ -69,7 +69,7 @@ Use this template for the PR body:
 4. Commit with the crafted message
 5. Push the branch with `git push -u origin HEAD`
 6. Determine the target branch - `develop`, `main`, or `master` in that order of priority.
-6. Create the PR using `gh pr create --base <target branch> --title "<commit first line>" --body "<PR body>"`
+7. Create the PR using `gh pr create --base <target branch> --title "<commit first line>" --body "<PR body>"`
 
 ## Important Notes
 
