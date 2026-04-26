@@ -187,9 +187,10 @@ func parseMessages(events []session.Event) []*pirpcv1.Message {
 		}
 		var envelope struct {
 			Message struct {
-				Role    string `json:"role"`
-				IsError bool   `json:"is_error"`
-				Content []struct {
+				Role       string `json:"role"`
+				IsError    bool   `json:"is_error"`
+				ToolCallID string `json:"tool_call_id"`
+				Content    []struct {
 					Type string `json:"type"`
 					Text string `json:"text"`
 				} `json:"content"`
@@ -199,7 +200,7 @@ func parseMessages(events []session.Event) []*pirpcv1.Message {
 			continue
 		}
 		msg := envelope.Message
-		if msg.Role == "" {
+		if msg.Role == "" && msg.ToolCallID == "" {
 			continue
 		}
 		var content string
@@ -212,6 +213,7 @@ func parseMessages(events []session.Event) []*pirpcv1.Message {
 			Role:        messageRoleToProto(msg.Role),
 			Content:     content,
 			IsError:     msg.IsError,
+			ToolCallId:  msg.ToolCallID,
 			TimestampMs: evt.Timestamp.UnixMilli(),
 		})
 	}

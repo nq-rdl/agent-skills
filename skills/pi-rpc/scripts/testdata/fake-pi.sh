@@ -30,7 +30,7 @@ case "$SCENARIO" in
     # message_end uses the nested wire shape matching real pi --mode rpc output.
     echo '{"type":"agent_start"}'
     while IFS= read -r line; do
-      MSG=$(echo "$line" | grep -o '"message":"[^"]*"' | sed 's/"message":"//;s/"//')
+      MSG=$(echo "$line" | sed -n 's/.*"message":"\([^"]*\)".*/\1/p')
       echo "{\"type\":\"message_update\",\"delta\":{\"type\":\"text_delta\",\"text\":\"echo: $MSG\"}}"
       echo "{\"type\":\"message_end\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"echo: $MSG\"}],\"is_error\":false}}"
       echo '{"type":"agent_end"}'
@@ -63,7 +63,7 @@ case "$SCENARIO" in
     #     usage: {...}, stopReason, timestamp }
     echo '{"type":"agent_start"}'
     while IFS= read -r line; do
-      MSG=$(echo "$line" | grep -o '"message":"[^"]*"' | sed 's/"message":"//;s/"//')
+      MSG=$(echo "$line" | sed -n 's/.*"message":"\([^"]*\)".*/\1/p')
       # streaming delta: message_update with nested message + assistantMessageEvent
       echo "{\"type\":\"message_update\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"echo: $MSG\"}],\"api\":\"anthropic-messages\",\"provider\":\"anthropic\",\"model\":\"claude-sonnet-4-5\",\"usage\":{\"input\":10,\"output\":5,\"cacheRead\":0,\"cacheWrite\":0,\"totalTokens\":15,\"cost\":{\"input\":0.001,\"output\":0.002,\"cacheRead\":0,\"cacheWrite\":0,\"total\":0.003}},\"stopReason\":\"stop\",\"timestamp\":1700000000000},\"assistantMessageEvent\":{\"type\":\"text_delta\",\"contentIndex\":0,\"delta\":\"echo: $MSG\",\"partial\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"echo: $MSG\"}],\"api\":\"anthropic-messages\",\"provider\":\"anthropic\",\"model\":\"claude-sonnet-4-5\",\"usage\":{\"input\":10,\"output\":5,\"cacheRead\":0,\"cacheWrite\":0,\"totalTokens\":15,\"cost\":{\"input\":0.001,\"output\":0.002,\"cacheRead\":0,\"cacheWrite\":0,\"total\":0.003}},\"stopReason\":\"stop\",\"timestamp\":1700000000000}}}"
       # final message_end: nested message, no flat role/content at top level
