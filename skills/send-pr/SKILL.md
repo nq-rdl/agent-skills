@@ -40,7 +40,7 @@ Use Conventional Commits format:
 - First line must be **50 characters or fewer** to avoid GitHub truncation
 - Description should be lowercase, imperative mood ("add feature" not "added feature")
 - Body (if needed) should be wrapped at 72 characters
-- Determine the target branch by checking which of the following exists on the remote, in priority order: `develop`, `main`, `master`. Use the first one found.
+- Determine the target branch by running `gh repo view --json defaultBranchRef -q .defaultBranchRef.name` (or `git symbolic-ref refs/remotes/origin/HEAD` as a fallback), and only resort to checking `develop`, `main`, `master` in that order if both commands fail
 
 ## Pull Request Format
 
@@ -70,7 +70,7 @@ Use this template for the PR body:
 3. Stage all changes with `git add -A`
 4. Commit with the crafted message
 5. Push the branch with `git push -u origin HEAD`
-6. Determine the target branch by checking remote branches (`git branch -r`) for `develop`, `main`, or `master` in that order of priority.
+6. Determine the target (base) branch by running `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; if that fails, try `git symbolic-ref refs/remotes/origin/HEAD`; only fall back to checking remote branches (`git branch -r`) for `develop`, `main`, or `master` (in that order) if both commands fail.
 7. Create the PR by writing the multi-line PR body to a temporary file (or piping it on stdin) and using `gh pr create --base <target branch> --title "<commit first line>" --body-file <path to PR body file>`
 
 ## Important Notes
