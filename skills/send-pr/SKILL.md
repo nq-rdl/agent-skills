@@ -3,9 +3,7 @@ name: send-pr
 license: CC-BY-4.0
 description: >-
   Commits, pushes and raises a PR. Use this skill when the user asks to "ship", "commit, push and raise PR", or similar commands.
-license: CC-BY-4.0
 metadata:
-  repo: REPO
   repo: https://github.com/nq-rdl/agent-skills
   disable-model-invocation: true
 ---
