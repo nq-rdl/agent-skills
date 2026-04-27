@@ -1,3 +1,3 @@
 kind: Added
 time: 2026-04-26T00:00:00Z
-body: Adds new `send-pr` skill that delivers on single command for commit, push and raise PR
+body: Adds new `send-pr` skill that delivers a single command to commit, push, and raise a PR
