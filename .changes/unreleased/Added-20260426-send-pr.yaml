@@ -1,2 +1,2 @@
 kind: Added
-body: Add new `send-pr` skill that delivers on single command for commit, push and raise PR.
+body: Adds new `send-pr` skill that delivers on single command for commit, push and raise PR

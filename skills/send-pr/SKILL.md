@@ -1,8 +1,10 @@
 ---
 name: send-pr
+license: CC-BY-4.0
 description: >-
   Commits, pushes and raises a PR. Use this skill when the user asks to "ship", "commit, push and raise PR", or similar commands.
 metadata:
+  repo: https://github.com/nq-rdl/agent-skills
   disable-model-invocation: true
 ---
 
@@ -27,12 +29,12 @@ Use Conventional Commits format:
 ```
 
 ### Types
-- `feat:` - new functionality
-- `fix:` - bug fixes
-- `refactor:` - code restructuring without behaviour change
-- `docs:` - documentation only
-- `test:` - adding or updating tests
-- `chore:` - maintenance tasks, dependency updates
+- `feat` - new functionality
+- `fix` - bug fixes
+- `refactor` - code restructuring without behaviour change
+- `docs` - documentation only
+- `test` - adding or updating tests
+- `chore` - maintenance tasks, dependency updates
 
 ### Rules
 - First line must be **50 characters or fewer** to avoid GitHub truncation
@@ -63,12 +65,12 @@ Use this template for the PR body:
 
 ## Execution Steps
 
-1. Run `git status` and `git diff` to understand all pending changes
+1. Run `git status`, `git diff`, and `git diff --staged` to understand all pending changes
 2. Analyse the changes to determine the appropriate commit type and craft a meaningful message
 3. Stage all changes with `git add -A`
 4. Commit with the crafted message
 5. Push the branch with `git push -u origin HEAD`
-6. Determine the target branch - `develop`, `main`, or `master` in that order of priority.
+6. Determine the target branch by checking remote branches (`git branch -r`) for `develop`, `main`, or `master` in that order of priority.
 7. Create the PR using `gh pr create --base <target branch> --title "<commit first line>" --body "<PR body>"`
 
 ## Important Notes
