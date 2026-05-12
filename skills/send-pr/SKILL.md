@@ -18,6 +18,7 @@ This skill handles the complete workflow of committing staged/unstaged changes, 
 2. **Commit** - Create a well-formed conventional commit
 3. **Push** - Push the current feature branch to origin
 4. **Raise PR** - Create a Pull Request
+5. **Request Review** - Prompt the user for reviewer logins and assign them to the PR
 
 ## Commit Message Format
 
@@ -37,7 +38,7 @@ Use Conventional Commits format:
 - `chore` - maintenance tasks, dependency updates
 
 ### Rules
-- First line must be **50 characters or fewer** to avoid GitHub truncation
+- First line should be **50 characters or fewer** for `git log --oneline` readability (GitHub itself truncates display at ~72; treat 72 as a hard ceiling)
 - Description should be lowercase, imperative mood ("add feature" not "added feature")
 - Body (if needed) should be wrapped at 72 characters
 
@@ -72,9 +73,9 @@ Use this template for the PR body:
 6. Determine the target (base) branch:
    - Try `gh repo view --json defaultBranchRef -q .defaultBranchRef.name` first
    - If that fails, run `git symbolic-ref refs/remotes/origin/HEAD | sed 's|^refs/remotes/origin/||'` to derive the plain branch name (the raw `git symbolic-ref` output is `refs/remotes/origin/<branch>` and cannot be passed directly to `gh pr create --base`)
-   - Only if both fail, fall back to checking remote branches (`git branch -r`) for `develop`, `main`, or `master` in that order
+   - Only if both fail, fall back to scanning remote branches: `git branch -r | sed 's|^[[:space:]]*origin/||' | grep -E '^(develop|main|master)$' | head -1`
 7. Write the PR body to a temporary file, then create the PR with `gh pr create --base <target branch> --title "<commit first line>" --body-file <path to PR body file>`. Clean up the temp file once the PR is created
-8. Ask the user which GitHub login(s) to request a review from, then run `gh pr edit <PR number> --add-reviewer <login>[,<login>...]` (skip if the user declines)
+8. Ask the user which GitHub login(s) to request a review from, then run `gh pr edit --add-reviewer <login>[,<login>...]` (no PR identifier needed — `gh pr edit` resolves it from the current branch; skip if the user declines)
 
 ## Important Notes
 
