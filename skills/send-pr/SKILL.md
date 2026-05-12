@@ -3,9 +3,9 @@ name: send-pr
 license: CC-BY-4.0
 description: >-
   Commits, pushes and raises a PR. Use this skill when the user asks to "ship", "commit, push and raise PR", or similar commands.
+disable-model-invocation: true
 metadata:
   repo: https://github.com/nq-rdl/agent-skills
-  disable-model-invocation: true
 ---
 
 # Commit, Push and Raise PR
@@ -40,7 +40,6 @@ Use Conventional Commits format:
 - First line must be **50 characters or fewer** to avoid GitHub truncation
 - Description should be lowercase, imperative mood ("add feature" not "added feature")
 - Body (if needed) should be wrapped at 72 characters
-- Determine the target branch by running `gh repo view --json defaultBranchRef -q .defaultBranchRef.name` (or `git symbolic-ref refs/remotes/origin/HEAD` as a fallback), and only resort to checking `develop`, `main`, `master` in that order if both commands fail
 
 ## Pull Request Format
 
@@ -67,11 +66,15 @@ Use this template for the PR body:
 
 1. Run `git status`, `git diff`, and `git diff --staged` to understand all pending changes
 2. Analyse the changes to determine the appropriate commit type and craft a meaningful message
-3. Stage all changes with `git add -A`
+3. Stage files by name (e.g. `git add path/to/file ...`). Avoid `git add -A`/`git add .` unless step 1's review confirms there are no `.env`, credentials, or large binaries that would be swept in
 4. Commit with the crafted message
 5. Push the branch with `git push -u origin HEAD`
-6. Determine the target (base) branch by running `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; if that fails, try `git symbolic-ref refs/remotes/origin/HEAD`; only fall back to checking remote branches (`git branch -r`) for `develop`, `main`, or `master` (in that order) if both commands fail.
-7. Create the PR by writing the multi-line PR body to a temporary file (or piping it on stdin) and using `gh pr create --base <target branch> --title "<commit first line>" --body-file <path to PR body file>`
+6. Determine the target (base) branch:
+   - Try `gh repo view --json defaultBranchRef -q .defaultBranchRef.name` first
+   - If that fails, run `git symbolic-ref refs/remotes/origin/HEAD | sed 's|^refs/remotes/origin/||'` to derive the plain branch name (the raw `git symbolic-ref` output is `refs/remotes/origin/<branch>` and cannot be passed directly to `gh pr create --base`)
+   - Only if both fail, fall back to checking remote branches (`git branch -r`) for `develop`, `main`, or `master` in that order
+7. Write the PR body to a temporary file, then create the PR with `gh pr create --base <target branch> --title "<commit first line>" --body-file <path to PR body file>`. Clean up the temp file once the PR is created
+8. Ask the user which GitHub login(s) to request a review from, then run `gh pr edit <PR number> --add-reviewer <login>[,<login>...]` (skip if the user declines)
 
 ## Important Notes
 
