@@ -23,7 +23,7 @@ Dispatch when any of these apply:
 
 - **Task too large** — exceeds current context or would dominate the session
 - **Parallel work** — multiple independent subtasks that benefit from concurrent execution
-- **Different tool is better suited** — web search, async coding, specialized model
+- **Different tool is better suited** — async coding, specialized model
 - **Fire-and-forget** — work that doesn't need immediate results
 - **User explicitly asks** — "dispatch this", "offload to jules", "fan out"
 
@@ -83,7 +83,7 @@ Backends fall into three categories. Use these to guide selection when the user 
 
 | Category | When to use | Pattern | Examples |
 |----------|-------------|---------|----------|
-| **CLI tools** | Standalone coding tasks, research | Create session → fire-and-forget → poll status | jules |
+| **CLI tools** | Standalone coding tasks | Create session → fire-and-forget → poll status | jules |
 | **Agent teams** | Parallel subtasks needing coordination | Create team → fan out teammates → collect results | agent-teams |
 | **External services** | Tasks routed to a remote API or service | API call → await result → report | pi.swe, opencode |
 
