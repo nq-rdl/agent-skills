@@ -1,0 +1,3 @@
+kind: Removed
+body: Remove the `gemini-cli` skill and its artifacts (`.gemini/`, `GEMINI.md`, Speckit Gemini integration) following the discontinuation of Gemini CLI; Antigravity CLI (`agy`) offers no headless/ACP replacement (#101).
+time: 2026-05-28T09:14:07.106318Z
