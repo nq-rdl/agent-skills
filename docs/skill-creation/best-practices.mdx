@@ -269,7 +269,7 @@ For more on designing and bundling scripts, see [Using scripts in skills](/skill
 
 ## Skills must not ship hooks
 
-Skills are platform-agnostic — they work across Claude Code, Gemini CLI, OpenCode, and any agent that reads `SKILL.md`. Hooks, by contrast, are tied to a specific platform's event lifecycle (`UserPromptSubmit`, `PreToolUse`, `onToolCall`, etc.). Including hook files inside a skill creates an invisible platform dependency that breaks portability.
+Skills are platform-agnostic — they work across Claude Code, OpenCode, and any agent that reads `SKILL.md`. Hooks, by contrast, are tied to a specific platform's event lifecycle (`UserPromptSubmit`, `PreToolUse`, `onToolCall`, etc.). Including hook files inside a skill creates an invisible platform dependency that breaks portability.
 
 **Rule**: A skill directory must not contain active hook configurations (JSON config files + shell scripts that register as event handlers). If a skill benefits from a companion hook, handle it as follows:
 
