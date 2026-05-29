@@ -126,7 +126,7 @@ jobs:
             - `skills/dispatch/SKILL.md` — clean pattern: when-to-use table, decision tree, error handling
             - `skills/tdd/SKILL.md` — structured workflow: red/green/refactor steps
             - `skills/go-naming/SKILL.md` — reference style: conventions with rationale
-            - `skills/cc-hooks/SKILL.md` — integration pattern: teaches agents to use a specific tool
+            - `skills/cc-hook/SKILL.md` — integration pattern: teaches agents to use a specific tool
 
             ## Task types
 
