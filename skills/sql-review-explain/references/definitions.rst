@@ -5,10 +5,12 @@ SQL Review — Shared Definitions
 artifacts, or whenever you need to say what an "assumption" or a "limitation"
 is in the SQL Review workflow.
 
-These definitions are the single source of truth for the whole SQL Review suite
-(``setup``, ``bootstrap``, ``analyse``, ``explain``). They are **static** —
-reference them, do not redefine them per skill, and do not improvise your own
-wording during a walkthrough.
+These definitions are the **canonical, cross-suite source of truth** for the
+whole SQL Review suite (``setup``, ``bootstrap``, ``analyse``, ``explain``).
+Reference them — do not redefine them per skill, and do not improvise your own
+wording during a walkthrough. They may still evolve (the ``Limitation``
+definition is being finalised in governance issue #105), but this file stays the
+single place they are defined.
 
 Assumption
 ----------

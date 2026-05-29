@@ -5,9 +5,9 @@ SQL Review — Artifact Contract (as consumed by ``explain``)
 for a SQL file.
 
 This describes the inputs ``explain`` **expects** to read. The artifacts
-themselves are produced by ``/sql-review:analyse`` and the folder is created by
-``/sql-review:setup``; this file documents the shape ``explain`` relies on so
-those steps have a target to conform to. Until they are built, **discover what
+themselves are produced by the suite's **analyse** step and the folder is
+created by the **setup** step; this file documents the shape ``explain`` relies
+on so those steps have a target to conform to. Until they are built, **discover what
 is actually on disk and degrade gracefully** — never fabricate review content.
 
 Folder layout
@@ -74,10 +74,10 @@ Field notes
 Graceful degradation
 ---------------------
 
-- **No ``.sqlreview/``** → tell the user to run ``/sql-review:setup`` then
-  ``/sql-review:analyse``; stop.
-- **Folder present, no review for this SQL** → tell the user to run
-  ``/sql-review:analyse``; stop.
+- **No ``.sqlreview/``** → tell the user to run the **setup** step, then the
+  **analyse** step; stop.
+- **Folder present, no review for this SQL** → tell the user to run the
+  **analyse** step; stop.
 - **``review.json`` missing but ``review.md`` present** → proceed from the
   markdown alone; you lose ``baseline_ref`` (so default to a full walkthrough)
   and explicit mappings.

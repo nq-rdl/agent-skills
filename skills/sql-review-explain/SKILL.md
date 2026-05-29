@@ -56,8 +56,9 @@ artifacts don't contain.
 2. Find the matching `.sqlreview/` artifacts for that SQL file (review doc
    markdown + structured JSON). See `references/artifact-contract.rst`.
 3. If `.sqlreview/` or the artifacts for this SQL file are missing, stop and
-   tell the user to run `/sql-review:analyse` (and `/sql-review:setup` if the
-   folder itself is absent) first. `explain` does not generate review content.
+   tell the user to run the suite's **analyse** step first (and the **setup**
+   step if the `.sqlreview/` folder itself is absent). `explain` does not
+   generate review content.
 4. **Confirm with the human** the resolved set before starting: which SQL file,
    which review doc, which JSON. Don't begin the walkthrough until they agree.
 
@@ -119,7 +120,8 @@ walkthrough (Step 3) rather than guessing the delta.
 
 Summarise what was confirmed and any open questions the analyst raised. State
 explicitly that no artifact was produced, and point follow-up work (mismatches,
-new assumptions/limitations) back to `/sql-review:analyse`.
+new assumptions/limitations) back to the **analyse** step, which owns the review
+artifacts.
 
 ---
 
