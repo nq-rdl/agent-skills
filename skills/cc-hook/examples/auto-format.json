@@ -1,0 +1,17 @@
+{
+  "description": "Run a formatter after every Edit/Write. PostToolUse runs after the tool, so the file is already on disk. jq extracts the path and pipes it to the formatter.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

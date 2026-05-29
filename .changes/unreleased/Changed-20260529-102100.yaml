@@ -1,0 +1,3 @@
+kind: Changed
+body: 'Overhaul the Claude Code hooks skill and rename it `cc-hooks` → `cc-hook` (now user-invocable as `/cc-hook`). Rewrite against current Claude Code docs — full event lifecycle, all five hook types (command, http, mcp_tool, prompt, agent, with prompt/agent hooks corrected from "static text" to model-driven {ok, reason} decisions), the modern output contract (`permissionDecision` allow/deny/ask vs top-level `decision` vs `PermissionRequest.decision.behavior`), exit-code semantics, and a dedicated reference on injection-safe context output. References are linked `.rst` files and examples use the current output formats.'
+time: 2026-05-29T10:21:00.672390000Z
