@@ -1,0 +1,3 @@
+kind: Added
+body: 'Add a committed `.claude/settings.json` for this repo: registers the `claude-plugins-official` marketplace and enables the skill-authoring plugins `skill-creator`, `plugin-dev`, and `superpowers`; sets the default model to Opus with always-on thinking at `xhigh` effort, and `sonnet` for subagents.'
+time: 2026-05-29T23:37:16.414447891+10:00
