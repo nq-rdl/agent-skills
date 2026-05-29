@@ -115,4 +115,3 @@ Choosing between them
 - Judgment from the event data alone → ``prompt`` hook.
 - Judgment that needs to inspect the real codebase / run commands → ``agent``
   hook.
-</content>

@@ -124,4 +124,3 @@ Checklist before shipping a context-injecting hook
 4. Is stdout **JSON-only** (debug to stderr, profile banners guarded)?
 5. Would a **deterministic** ``PreToolUse`` ``deny`` enforce the rule better
    than prose? If the rule is a hard guarantee, use the hook decision, not text.
-</content>

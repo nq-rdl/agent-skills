@@ -137,4 +137,3 @@ Reference implementation
 
 Anthropic's Bash command validator example:
 https://github.com/anthropics/claude-code/blob/main/examples/hooks/bash_command_validator_example.py
-</content>

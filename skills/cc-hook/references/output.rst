@@ -203,4 +203,3 @@ Prompt / agent hooks output
 ``type: "prompt"`` and ``type: "agent"`` hooks do **not** use this exit-code /
 ``permissionDecision`` contract. They return ``{"ok": true|false, "reason":
 "..."}`` from a model. See ``references/prompt-and-agent-hooks.rst``.
-</content>

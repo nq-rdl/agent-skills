@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'b=$(git branch --show-current 2>/dev/null || echo unknown); echo \"Current branch: $b. This project uses pixi and lefthook; tests run via pixi run test.\"'",
+            "command": "bash -c 'b=$(git branch --show-current 2>/dev/null || echo unknown); b=$(printf \"%s\" \"$b\" | tr -cd \"A-Za-z0-9._/-\"); [ -n \"$b\" ] || b=unknown; echo \"Current branch: $b. This project uses pixi and lefthook; tests run via pixi run test.\"'",
             "timeout": 5
           }
         ]

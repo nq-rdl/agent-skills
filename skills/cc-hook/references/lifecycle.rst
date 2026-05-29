@@ -139,4 +139,3 @@ Limitations to keep in mind
 - When multiple ``PreToolUse`` hooks return ``updatedInput``, the last to finish
   wins, and order is non-deterministic. Avoid two hooks rewriting one tool's
   input.
-</content>

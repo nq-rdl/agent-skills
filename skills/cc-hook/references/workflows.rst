@@ -106,4 +106,3 @@ Goal: review every hook that can run, for correctness, safety, and portability.
    the extension/plugin layer.
 7. **Hygiene.** Scripts executable, ``jq``/interpreters available, no shell
    profile printing banners onto stdout. → ``debugging.rst``.
-</content>

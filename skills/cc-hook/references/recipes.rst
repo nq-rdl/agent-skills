@@ -116,7 +116,7 @@ tool, so the file is already on disk.
          {
            "matcher": "Edit|Write",
            "hooks": [
-             { "type": "command", "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write" }
+             { "type": "command", "command": "path=$(jq -r '.tool_input.file_path // empty'); [ -n \"$path\" ] && npx prettier --write -- \"$path\"" }
            ]
          }
        ]
@@ -205,10 +205,12 @@ Script — ``session-context.sh``
 .. code:: bash
 
    #!/usr/bin/env bash
+   # Declarative facts only — no imperatives. Branch names and commit subjects
+   # are untrusted; sanitize them before injecting (see prompt-injection.rst).
    branch=$(git branch --show-current 2>/dev/null || echo "unknown")
-   last=$(git log -1 --oneline 2>/dev/null || echo "no commits")
-   # Declarative facts only — no imperatives.
-   echo "Current branch: $branch. Last commit: $last. This project uses pixi and lefthook."
+   branch=$(printf '%s' "$branch" | tr -cd 'A-Za-z0-9._/-'); [ -n "$branch" ] || branch="unknown"
+   last=$(git log -1 --pretty=%s 2>/dev/null | tr -cd '[:print:]' | cut -c1-72)
+   echo "Current branch: $branch. Last commit subject: ${last:-none}. This project uses pixi and lefthook."
 
 Config — fire on fresh start and after compaction:
 
@@ -342,4 +344,3 @@ Exit 2 or ``{"decision": "block"}`` to reject an unauthorized change.
 
 ``CLAUDE_ENV_FILE`` is run as a preamble before each Bash command. Run
 ``direnv allow`` once per directory.
-</content>

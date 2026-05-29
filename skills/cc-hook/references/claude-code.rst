@@ -302,7 +302,7 @@ Worked example (multiple types)
          {
            "matcher": "Edit|Write",
            "hooks": [
-             { "type": "command", "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write" }
+             { "type": "command", "command": "path=$(jq -r '.tool_input.file_path // empty'); [ -n \"$path\" ] && npx prettier --write -- \"$path\"" }
            ]
          }
        ]
@@ -324,4 +324,3 @@ Ready-to-adapt configs live in ``examples/``. Copy or merge into
    # Merge into existing settings
    jq -s '.[0] * .[1]' .claude/settings.local.json examples/<config>.json > /tmp/merged.json \
      && mv /tmp/merged.json .claude/settings.local.json
-</content>

@@ -196,4 +196,3 @@ to `/cc-hook:create`, `/cc-hook:debug`, and `/cc-hook:audit`.
 | [examples/safe-context-injection.json](examples/safe-context-injection.json) | Inject context with injection-safe phrasing |
 | [examples/auto-format.json](examples/auto-format.json) | Run a formatter after edits (`PostToolUse`) |
 | [examples/auto-approve-exit-plan.json](examples/auto-approve-exit-plan.json) | Auto-approve `ExitPlanMode` (`PermissionRequest`) |
-</content>
