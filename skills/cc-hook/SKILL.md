@@ -145,6 +145,21 @@ Full guidance + the strings>10k-chars behavior + `terminalSequence` allowlist ar
 
 ---
 
+## Workflows
+
+Three focused procedures live in [references/workflows.rst](references/workflows.rst).
+Load it and follow the matching one; each step points at the reference to read.
+These headings are stable entrypoints — a downstream Claude Code plugin maps them
+to `/cc-hook:create`, `/cc-hook:debug`, and `/cc-hook:audit`.
+
+| Workflow | Use when | Anchor |
+|----------|----------|--------|
+| **Create a hook** | Going from "I want X to always happen" to a registered, tested hook | `workflow-create` |
+| **Debug a hook** | A hook doesn't fire, fires wrong, or its output is ignored | `workflow-debug` |
+| **Audit hooks** | Reviewing every hook that can run for correctness, safety, portability | `workflow-audit` |
+
+---
+
 ## Common patterns
 
 | Goal | Event | Example |
@@ -161,6 +176,7 @@ Full guidance + the strings>10k-chars behavior + `terminalSequence` allowlist ar
 
 | File | Contents |
 |------|----------|
+| [references/workflows.rst](references/workflows.rst) | The create / debug / audit procedures, with stable anchors for plugin lenses |
 | [references/claude-code.rst](references/claude-code.rst) | Core reference — config, hook types, matchers, `if`, env vars, full event table |
 | [references/lifecycle.rst](references/lifecycle.rst) | The lifecycle: every event, firing order, and which events can block |
 | [references/output.rst](references/output.rst) | Output contract — exit codes, JSON schema, decision control per event |

@@ -275,11 +275,45 @@ Skills are platform-agnostic — they work across Claude Code, OpenCode, and any
 
 - **Document the hook pattern** in `SKILL.md` or `references/` — describe what the hook should do, when it should fire, and what it should inject, so any platform can implement it
 - **Implement the hook** in the platform's extension layer (e.g., a Claude Code plugin's `hooks/` directory, or the [agent-extensions](https://github.com/nq-rdl/agent-extensions) repo)
-- **Reference examples** for hook authoring (like `cc-hooks/examples/`) are fine — they're documentation teaching users how to write hooks, not active hook registrations
+- **Reference examples** for hook authoring (like `cc-hook/examples/`) are fine — they're documentation teaching users how to write hooks, not active hook registrations
 
 <Tip>
 If you find hook files inside a skill during migration or review, move them to the appropriate platform extension repo and create a tracking issue. The skill itself should only describe the hook's purpose and behavior.
 </Tip>
+
+## Author once, compose in extensions
+
+The two-repo split has a single guiding principle: **author the knowledge once
+in [agent-skills](https://github.com/nq-rdl/agent-skills), then compose and
+namespace it in [agent-extensions](https://github.com/nq-rdl/agent-extensions) —
+never fork the content.** Skills are the portable source of truth; the extension
+layer adds the platform-specific packaging (plugins, namespaced commands,
+installable hooks).
+
+This matters because Claude Code's `/namespace:command` colon syntax is a
+**plugin** feature, not a skill feature. A skill is always invoked as a single
+`/skill-name`. To expose focused sub-commands like `/cc-hook:create`, you
+package the skill as a plugin whose namespace is the prefix.
+
+**Where each piece lives:**
+
+| Concern | Repo | Form |
+|---------|------|------|
+| Domain knowledge, references, illustrative examples | `agent-skills` | One coherent skill (`skills/cc-hook/`) |
+| Stable workflow entrypoints | `agent-skills` | Anchored sections (e.g. `references/workflows.rst` → `workflow-create`) |
+| Namespaced sub-commands (`/cc-hook:create`) | `agent-extensions` | Plugin with thin **lens** skills |
+| Deployable hook configs (JSON + scripts that register) | `agent-extensions` | Plugin `hooks/` |
+
+**Keep the breakdown DRY.** A lens skill in the plugin is a short, scoped prompt
+that *points at* the shared references — it does not copy them. For example, a
+`create` lens says "follow the **Create a hook** workflow (`workflow-create`) in
+the cc-hook knowledge, scoped to authoring a new hook." When the knowledge
+changes, you update it once in `agent-skills` and re-vendor; the lenses and
+installable hooks rarely change.
+
+So the lifecycle is: **knowledge authored in `agent-skills` → vendored into the
+plugin → thin namespaced entrypoints + real installable hooks added in
+`agent-extensions`.** Author once; compose downstream.
 
 ## Next steps
 
