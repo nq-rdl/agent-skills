@@ -5,7 +5,7 @@ description: >-
   Walk a Data Analyst through a SQL file against its review artifacts as an
   interactive, in-session explanation — no new file is produced. Use when
   someone needs SQL explained against its review doc(s) and JSON, wants to see
-  how the code maps to the documented assumptions and limitations, or is
+  how the code maps to the documented assumptions, or is
   picking up a prior review and asks "what changed?". Triggers on requests to
   explain, walk through, or talk through SQL alongside its `.sqlreview/`
   artifacts, even if the folder isn't named. Resumes a previous explanation via
@@ -22,7 +22,7 @@ metadata:
 Interactive, human-in-the-loop walkthrough of a SQL file **against its review
 artifacts**, for a Data Analyst. You read the code and the review doc(s)/JSON
 the `analyse` step produced, then explain the SQL section by section — showing
-how each part maps to the documented **assumptions** and **limitations**.
+how each part maps to the documented **assumptions**.
 
 **This step produces no new artifact.** It is a conversation: explain, pause,
 confirm, move on. The value is the analyst leaving with a confident,
@@ -35,9 +35,9 @@ This is the final step of the SQL Review suite: `setup` → `bootstrap` →
 
 ## Shared definitions
 
-`Assumption` and `Limitation` mean specific things across the whole suite. Read
-`references/definitions.rst` before you start cross-referencing, and use those
-exact meanings — do not improvise your own.
+`Assumption` means something specific across the whole suite. Read
+`references/definitions.rst` before you start cross-referencing, and use that
+exact meaning — do not improvise your own.
 
 ## What `explain` reads
 
@@ -81,17 +81,17 @@ filters, window functions — whatever the code's natural units are). For each
 section:
 
 1. **Explain what it does** in plain language — inputs, transformation, output.
-2. **Cross-reference the review doc.** Point to the documented assumptions and
-   limitations that apply to this section, and show how the code reflects (or
-   appears to diverge from) them. This mapping is the core deliverable.
+2. **Cross-reference the review doc.** Point to the documented assumptions that
+   apply to this section, and show how the code reflects (or appears to diverge
+   from) them. This mapping is the core deliverable.
 3. **Pause for the human (human-in-the-loop).** At each key point — especially
-   where an assumption or limitation attaches, or where the code's behaviour is
+   where an assumption attaches, or where the code's behaviour is
    non-obvious — stop and ask the analyst to confirm understanding or raise a
    question before continuing. Use `AskUserQuestion` for explicit confirm/clarify
    forks. Do not dump the whole file at once.
 
 Move through the file at the human's pace. If they flag a mismatch between code
-and the documented assumptions/limitations, capture it in the conversation and
+and the documented assumptions, capture it in the conversation and
 suggest it be fed back to `analyse` — do not silently "fix" the artifacts here.
 
 ## Step 4 — Resume / diff walkthrough
@@ -101,7 +101,7 @@ When picking up a prior review:
 1. Compute the delta: `git diff <baseline_ref>..HEAD -- <sql_file>` (and the
    review artifacts, if they moved too).
 2. **Walk the human through what changed** — each hunk, in plain language, and
-   how it maps back to the review doc's assumptions and limitations. Pause for
+   how it maps back to the review doc's assumptions. Pause for
    confirmation as in Step 3.
 3. **Check the non-diff code for indirect consequences (required).** Changes
    rarely stay local. After the diff walkthrough, deliberately inspect the
@@ -109,8 +109,8 @@ When picking up a prior review:
    - a renamed/added/dropped column or CTE consumed by untouched downstream code;
    - altered join keys, filters, or grain that change the meaning of rows
      selected elsewhere;
-   - an assumption or limitation in the review doc that the change quietly
-     invalidates even though that section of code wasn't edited.
+   - an assumption in the review doc that the change quietly invalidates even
+     though that section of code wasn't edited.
    Surface anything you find and confirm it with the human.
 
 If `git` history or the baseline isn't available, say so and fall back to a full
@@ -120,8 +120,7 @@ walkthrough (Step 3) rather than guessing the delta.
 
 Summarise what was confirmed and any open questions the analyst raised. State
 explicitly that no artifact was produced, and point follow-up work (mismatches,
-new assumptions/limitations) back to the **analyse** step, which owns the review
-artifacts.
+new assumptions) back to the **analyse** step, which owns the review artifacts.
 
 ---
 
@@ -130,8 +129,8 @@ artifacts.
 - **Human-in-the-loop, always.** Explanation points are checkpoints, not a
   monologue. Pause and confirm.
 - **Cross-reference, don't reinvent.** Map code to the *documented* assumptions
-  and limitations using the shared definitions. If the doc and code disagree,
-  report it; don't paper over it.
+  using the shared definition. If the doc and code disagree, report it; don't
+  paper over it.
 - **Read-only.** `explain` neither writes review artifacts nor edits the SQL.
 - **Degrade gracefully.** Missing fields or artifacts → say what's missing and
   proceed with what's there; never fabricate review content.

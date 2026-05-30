@@ -30,10 +30,10 @@ the human rather than failing silently.
 ``review.md``
 -------------
 
-The human-readable review for the analyst, including the **Assumptions** and
-**Limitations** sections (see ``definitions.rst``). ``explain`` reads this to
-cross-reference code against the documented narrative. Treat it as the source of
-the *wording* presented to the analyst.
+The human-readable review for the analyst, including the **Assumptions**
+section (see ``definitions.rst``). ``explain`` reads this to cross-reference
+code against the documented narrative. Treat it as the source of the *wording*
+presented to the analyst.
 
 ``review.json`` — the machine contract
 ---------------------------------------
@@ -48,11 +48,8 @@ Structured form of the review. ``explain`` reads these fields:
      "assumptions": [
        { "id": "a1", "text": "...", "code_ref": "lines 10-14 / cte: net_rev" }
      ],
-     "limitations": [
-       { "id": "l1", "text": "...", "code_ref": "..." }
-     ],
      "mappings": [
-       { "code_ref": "...", "assumption_ids": ["a1"], "limitation_ids": [] }
+       { "code_ref": "...", "assumption_ids": ["a1"] }
      ],
      "generated_by": "sql-review-analyse",
      "generated_at": "<ISO-8601 timestamp>"
@@ -65,11 +62,11 @@ Field notes
 - **baseline_ref** — the git commit the review was performed against. This is
   the **diff baseline** for resume mode: ``git diff <baseline_ref>..HEAD --
   <sql_path>``. If absent or not a valid ref, fall back to a full walkthrough.
-- **assumptions / limitations** — the documented decision points and caveats,
-  ideally each with a ``code_ref`` pointing at the SQL region it attaches to.
-- **mappings** — optional explicit code-region → assumption/limitation links.
-  When present, drive the section-by-section walkthrough from these. When
-  absent, derive the mapping yourself from the ``code_ref`` fields and the SQL.
+- **assumptions** — the documented decision points, ideally each with a
+  ``code_ref`` pointing at the SQL region it attaches to.
+- **mappings** — optional explicit code-region → assumption links. When
+  present, drive the section-by-section walkthrough from these. When absent,
+  derive the mapping yourself from the ``code_ref`` fields and the SQL.
 
 Graceful degradation
 ---------------------
@@ -82,5 +79,4 @@ Graceful degradation
   markdown alone; you lose ``baseline_ref`` (so default to a full walkthrough)
   and explicit mappings.
 - **Missing individual fields** → use what's present, name what's missing, and
-  never invent assumptions, limitations, or mappings that the artifacts don't
-  contain.
+  never invent assumptions or mappings that the artifacts don't contain.
