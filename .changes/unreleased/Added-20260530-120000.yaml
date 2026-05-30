@@ -1,3 +1,3 @@
 kind: Added
-body: 'Define the cohort + data-element template structure as shared, cross-suite definitions for the SQL Review suite: a `Cohort` (inclusion/exclusion criteria) with one or more `Data element`s joined onto it (e.g. a defined patient population, then all their eGFR results). Every `sql-review-*` skill now assumes this template; `references/definitions.rst` documents `Cohort` and `Data element` and notes that DE clarification is owned by the `analyse` step. When `sql-review-explain` finds a SQL file that does not decompose into a cohort with joined data elements, it flags the gap to the Data Analyst to route back to the DE via `analyse` rather than guessing or prompting the DE itself.'
+body: 'Add a shared cohort/data-element template that defines how every `sql-review-*` skill decomposes a SQL file'
 time: 2026-05-30T12:00:00.000000000+00:00

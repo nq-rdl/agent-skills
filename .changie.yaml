@@ -24,3 +24,9 @@ newlines:
     beforeChangelogVersion: 1
     endOfVersion: 1
 envPrefix: CHANGIE_
+
+# Reject oversized changelog bodies at `changie new` time (length counted in
+# bytes). Backstop only — the changie skill's 20-word guidance does the real
+# trimming; this just rejects egregious, multi-change entries.
+body:
+    maxLength: 200
