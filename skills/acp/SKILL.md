@@ -42,7 +42,7 @@ Two roles, and it is easy to get them backwards:
 - **Agent** = the **coding AI** (Claude Code, Gemini CLI, pi…). It runs as a
   subprocess and does the work.
 
-```
+```text
 ┌─────────────────┐   spawns subprocess    ┌──────────────────┐
 │  CLIENT         │ ─────────────────────▶ │  AGENT           │
 │  (the editor)   │                        │  (the coding AI) │
@@ -97,7 +97,7 @@ each as an agent inside the *same editor*.)
 A session runs through a small, fixed sequence of JSON-RPC calls. Methods named
 `x/y` are namespaced; notifications are one-way (no response).
 
-```
+```text
 1. initialize            Client → Agent   negotiate protocol version + capabilities
    (authenticate)        Client → Agent   only if the agent reports it needs auth
 2. session/new           Client → Agent   start a session (cwd, MCP servers) → sessionId

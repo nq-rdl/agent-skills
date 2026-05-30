@@ -28,8 +28,8 @@ Conventions that hold everywhere:
 - File paths **MUST** be absolute.
 - Line numbers are **1-based**.
 - Text shown to users defaults to Markdown.
-- Content blocks reuse MCP's representations (text, image, audio, resource), so
-  ACP and MCP share a vocabulary.
+- Content blocks reuse MCP's representations (text, image, audio, resource,
+  resource_link), so ACP and MCP share a vocabulary.
 
 Transports
 ----------
@@ -129,9 +129,10 @@ The client opens with ``initialize`` to agree on a protocol version and discover
 capabilities. ``protocolVersion`` is a single **integer** (the latest each side
 supports), not a semver string.
 
+*Client → Agent:*
+
 .. code:: json
 
-   // Client → Agent
    {
      "protocolVersion": 1,
      "clientCapabilities": {
@@ -141,9 +142,10 @@ supports), not a semver string.
      "clientInfo": { "name": "zed", "version": "0.x" }
    }
 
+*Agent → Client:*
+
 .. code:: json
 
-   // Agent → Client
    {
      "protocolVersion": 1,
      "agentCapabilities": {
