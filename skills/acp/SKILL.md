@@ -127,8 +127,8 @@ Core methods (see `references/protocol.rst` for the full set and payloads):
 | Client → Agent | `session/cancel` *(notification)* | Cancel the current turn |
 
 Conventions worth remembering: **file paths are absolute**, **line numbers are
-1-based**, and content reuses MCP's content-block types (text, image, resource),
-so an ACP-literate tool is already half MCP-literate.
+1-based**, and content reuses MCP's content-block types (text, image, audio,
+resource, resource_link), so an ACP-literate tool is already half MCP-literate.
 
 ## Quickstart 1 — Run Claude Code in Zed (the flagship)
 

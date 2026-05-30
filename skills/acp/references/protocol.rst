@@ -42,11 +42,14 @@ JSON-RPC over its pipes:
 - ``stderr`` — the agent may write free-form UTF-8 logs; the client may capture,
   forward, or ignore them.
 
-Messages are newline-delimited (``\n``) and **MUST NOT** contain embedded
-newlines. The agent **MUST NOT** write anything to ``stdout`` that is not a valid
-ACP message — debug output goes to ``stderr``. This is the single most common
-cause of a broken agent: a stray ``console.log``/``print`` to stdout corrupts the
-stream.
+Messages are newline-delimited (``\n``): each JSON-RPC message is serialized as a
+single physical line, so the encoded JSON **MUST NOT** contain a literal newline
+between fields. JSON string *values* may still carry newlines as escaped ``\n``
+(or ``\u000a``) — you don't strip newlines from message content, you just keep the
+whole message on one line. The agent **MUST NOT** write anything to ``stdout``
+that is not a valid ACP message — debug output goes to ``stderr``. This is the
+single most common cause of a broken agent: a stray ``console.log``/``print`` to
+stdout corrupts the stream.
 
 **HTTP / WebSocket.** Streamable HTTP is a *draft proposal, in discussion* — not
 yet specified. Treat stdio as the only stable transport today. Implementers may
