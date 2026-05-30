@@ -5,45 +5,6 @@ before:
     - go work sync
 
 builds:
-  - id: pi-server
-    dir: skills/pi-rpc/scripts
-    main: ./cmd/pi-server/
-    binary: pi-server
-    env:
-      - CGO_ENABLED=0
-      - GOWORK=off
-    goos: [linux, darwin]
-    goarch: [amd64, arm64]
-    flags: [-trimpath]
-    ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}}
-
-  - id: pi-cli
-    dir: skills/pi-rpc/scripts
-    main: ./cmd/pi-cli/
-    binary: pi-cli
-    env:
-      - CGO_ENABLED=0
-      - GOWORK=off
-    goos: [linux, darwin]
-    goarch: [amd64, arm64]
-    flags: [-trimpath]
-    ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}}
-
-  - id: pi-mcp
-    dir: skills/pi-rpc/scripts
-    main: ./cmd/pi-mcp/
-    binary: pi-mcp
-    env:
-      - CGO_ENABLED=0
-      - GOWORK=off
-    goos: [linux, darwin]
-    goarch: [amd64, arm64]
-    flags: [-trimpath]
-    ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}}
-
   - id: jules
     dir: skills/jules/scripts
     main: ./cmd/jules/

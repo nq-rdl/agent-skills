@@ -1,0 +1,3 @@
+kind: Removed
+body: Remove the pi-rpc dispatch backend — deletes the pi-rpc skill, the pi-server/pi-cli/pi-mcp Go binaries, and the pi.swe dispatch references (#113)
+time: 2026-05-30T23:01:21.024419246+10:00
