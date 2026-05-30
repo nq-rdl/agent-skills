@@ -35,9 +35,16 @@ This is the final step of the SQL Review suite: `setup` → `bootstrap` →
 
 ## Shared definitions
 
-`Assumption` and `Limitation` mean specific things across the whole suite. Read
-`references/definitions.rst` before you start cross-referencing, and use those
-exact meanings — do not improvise your own.
+`Assumption`, `Limitation`, `Cohort`, and `Data element` mean specific things
+across the whole suite. Read `references/definitions.rst` before you start
+cross-referencing, and use those exact meanings — do not improvise your own.
+
+In particular, the suite assumes every SQL file under review follows one
+**template structure**: a **cohort** (defined by inclusion and exclusion
+criteria) with one or more **data elements** joined onto it — e.g. a defined
+patient population, then "all their eGFR results". Read the code against that
+template, and anchor assumptions and limitations to whichever part they attach
+to.
 
 ## What `explain` reads
 
@@ -59,7 +66,16 @@ artifacts don't contain.
    tell the user to run the suite's **analyse** step first (and the **setup**
    step if the `.sqlreview/` folder itself is absent). `explain` does not
    generate review content.
-4. **Confirm with the human** the resolved set before starting: which SQL file,
+4. **Confirm the cohort + data-element structure.** Check that the SQL
+   decomposes into a **cohort** (inclusion/exclusion criteria) with **data
+   elements** joined to it (see `references/definitions.rst`). If it does not —
+   no identifiable cohort, missing or implicit inclusion/exclusion criteria, or
+   it is unclear which columns are data elements versus cohort-defining logic —
+   **do not guess and do not prompt the DE yourself.** `explain` is read-only and
+   talks to the Data Analyst. **Flag the gap to the analyst** and recommend they
+   route it back to the Data Engineer via the **analyse** step (which owns DE
+   clarification), then continue with what is unambiguous.
+5. **Confirm with the human** the resolved set before starting: which SQL file,
    which review doc, which JSON. Don't begin the walkthrough until they agree.
 
 ## Step 2 — Choose the mode: full vs. resume
