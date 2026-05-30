@@ -24,12 +24,16 @@ defined.
 Assumption
 ----------
 
-A **decision point made by the RDL**: a choice taken during the SQL work in the
-absence of — or in place of — an explicit requirement. Assumptions are the
-things that, if wrong, would make the SQL answer the wrong question even though
-it runs correctly. An assumption *could have gone another way* — that is what
-makes it reviewable.
+An **assumption is a decision the RDL had to make to execute the work** — and
+that the client needs to be told about. A client brief is rarely complete:
+where a requirement is missing, ambiguous, or can't be confirmed, the RDL
+chooses how to proceed. Each such choice is an assumption. It could have gone
+another way, and if it doesn't match what the client actually meant, the SQL
+answers the wrong question even though it runs correctly.
 
-When explaining, tie each documented assumption to the specific code that
-embodies it (a filter, a join, a default, a date boundary, a dedup rule) so the
-analyst can judge whether the decision still holds.
+Because the deliverable is client-facing, every assumption must eventually be
+**reported** (typically in the README). When reviewing, tie each assumption to
+the specific code that embodies it (a filter, a join, a default, a date
+boundary, a dedup rule) so you can confirm the captured assumption is in fact
+borne out by the code, and so it can later be stated plainly for the client to
+confirm or correct.

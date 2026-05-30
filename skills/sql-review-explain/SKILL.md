@@ -2,15 +2,17 @@
 name: sql-review-explain
 license: CC-BY-4.0
 description: >-
-  Walk a Data Analyst through a SQL file against its review artifacts as an
-  interactive, in-session explanation — no new file is produced. Use when
-  someone needs SQL explained against its review doc(s) and JSON, wants to see
-  how the code maps to the documented assumptions, or is
-  picking up a prior review and asks "what changed?". Triggers on requests to
-  explain, walk through, or talk through SQL alongside its `.sqlreview/`
-  artifacts, even if the folder isn't named. Resumes a previous explanation via
-  git diff and double-checks unchanged code for indirect consequences. Final
-  step of the SQL Review suite (after setup, bootstrap, analyse).
+  Work through a SQL file with a Data Analyst to confirm the captured
+  assumptions are actually borne out by the code — an interactive, in-session
+  check; no new file is produced. Use when someone needs to verify that the
+  documented assumptions match the SQL, see how each assumption maps to the
+  code, or is picking up a prior review and asks "what changed?". Triggers on
+  requests to explain, walk through, review, or check SQL against its
+  `.sqlreview/` assumptions, even if the folder isn't named. Resumes a previous
+  review via git diff and double-checks unchanged code for indirect
+  consequences. Verification step of the SQL Review suite (after setup,
+  bootstrap, analyse); a separate downstream skill later uses the confirmed
+  assumptions to explain the work to the client.
 argument-hint: "Path to the SQL file to explain (e.g. models/revenue.sql)"
 user-invocable: true
 metadata:
@@ -20,15 +22,19 @@ metadata:
 # SQL Review — Explain
 
 Interactive, human-in-the-loop walkthrough of a SQL file **against its review
-artifacts**, for a Data Analyst. You read the code and the review doc(s)/JSON
-the `analyse` step produced, then explain the SQL section by section — showing
-how each part maps to the documented **assumptions**.
+artifacts**, done **together with a Data Analyst**. You read the code and the
+assumptions the `analyse` step captured, then go through the SQL section by
+section to **confirm each documented assumption is actually borne out by the
+code** — and flag anything that isn't.
 
-**This step produces no new artifact.** It is a conversation: explain, pause,
-confirm, move on. The value is the analyst leaving with a confident,
-cross-referenced understanding of the code — not another document.
+**This step produces no new artifact.** It is a working session: walk the code,
+check each assumption against it, pause, confirm, move on. The value is leaving
+with every captured assumption verified against the code (or its mismatch
+flagged) — not another document. Explaining the confirmed assumptions to the
+*client* is a separate, downstream skill; this step is about getting the
+assumptions right against the code first.
 
-This is the final step of the SQL Review suite: `setup` → `bootstrap` →
+This is the verification step of the SQL Review suite: `setup` → `bootstrap` →
 *[engineer writes SQL]* → `analyse` → **`explain`**.
 
 ---
@@ -81,9 +87,10 @@ filters, window functions — whatever the code's natural units are). For each
 section:
 
 1. **Explain what it does** in plain language — inputs, transformation, output.
-2. **Cross-reference the review doc.** Point to the documented assumptions that
-   apply to this section, and show how the code reflects (or appears to diverge
-   from) them. This mapping is the core deliverable.
+2. **Check it against the captured assumptions.** Point to the documented
+   assumptions that apply to this section and confirm the code actually embodies
+   them — or flag where the code and the assumption diverge. This verification
+   is the core deliverable.
 3. **Pause for the human (human-in-the-loop).** At each key point — especially
    where an assumption attaches, or where the code's behaviour is
    non-obvious — stop and ask the analyst to confirm understanding or raise a
@@ -118,9 +125,11 @@ walkthrough (Step 3) rather than guessing the delta.
 
 ## Step 5 — Close out
 
-Summarise what was confirmed and any open questions the analyst raised. State
-explicitly that no artifact was produced, and point follow-up work (mismatches,
-new assumptions) back to the **analyse** step, which owns the review artifacts.
+Summarise which assumptions were confirmed against the code and any mismatches
+or open questions raised. State explicitly that no artifact was produced, and
+point follow-up work (mismatches, new or corrected assumptions) back to the
+**analyse** step, which owns the review artifacts. Explaining the confirmed
+assumptions to the client happens later, in a separate downstream skill.
 
 ---
 
