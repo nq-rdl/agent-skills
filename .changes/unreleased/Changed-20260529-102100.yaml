@@ -1,3 +1,0 @@
-kind: Changed
-body: 'Overhaul and rename the `cc-hooks` skill to `cc-hook` — rewritten against current Claude Code docs, now user-invocable as `/cc-hook` (#109)'
-time: 2026-05-29T10:21:00.672390000Z

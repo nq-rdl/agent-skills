@@ -1,3 +1,0 @@
-kind: Added
-body: 'Add a committed `.claude/settings.json` registering the `claude-plugins-official` marketplace and enabling the `skill-creator`, `plugin-dev`, and `superpowers` plugins (#110)'
-time: 2026-05-29T23:37:16.414447891+10:00
