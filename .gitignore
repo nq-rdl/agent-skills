@@ -31,9 +31,5 @@ node_modules/
 .lycheecache
 
 # Go build artifacts (not committed; produced by `go build`, goreleaser, devcontainer setup)
-/pi-mcp
 /asctl
 /tools/asctl/asctl
-/skills/pi-rpc/scripts/pi-mcp
-/skills/pi-rpc/scripts/pi-server
-/skills/pi-rpc/scripts/bin/

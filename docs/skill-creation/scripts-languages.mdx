@@ -61,8 +61,8 @@ To expose a skill's logic as an MCP server (stdio transport):
 
 1. Add `cmd/<skill-name>-mcp/main.go` inside the skill's `scripts/` directory.
 2. Import `github.com/mark3labs/mcp-go` — the community Go MCP SDK.
-3. Follow the `pi-mcp` pattern in `skills/pi-rpc/scripts/cmd/pi-mcp/`:
-   - Create an `mcp.Server`, register one tool per action (`session_create`, `session_list`, etc.)
+3. Build the MCP server in the skill's `scripts/cmd/<name>-mcp/` directory:
+   - Create an `mcp.Server`, register one tool per action (e.g. `session_create`, `session_list`)
    - Call `server.ServeStdio(s)` — the agent-extensions launcher handles process lifetime
 4. Add a `build-mcp` target to the skill's `Makefile`.
 5. Add the binary to `.goreleaser.yaml` under `builds:`.

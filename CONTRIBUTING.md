@@ -30,10 +30,9 @@ pre-push tests automatically.
 ```
 agent-skills/
 ├── skills/                   # The skills themselves
-│   ├── pi-rpc/               # Each skill = a directory with SKILL.md
+│   ├── jules/                # Each skill = a directory with SKILL.md
 │   │   ├── SKILL.md          # Frontmatter + body; the public contract
-│   │   └── scripts/          # Per-skill runtime code (Go here: pi-server, pi-cli, pi-mcp)
-│   ├── jules/scripts/        # Go skill
+│   │   └── scripts/          # Per-skill runtime code (Go here: jules)
 │   ├── csv/                  # Python skill (+ pyproject.toml for deps)
 │   └── ...
 ├── tools/
@@ -62,12 +61,12 @@ frontmatter (`name`, `description`, optional `license`, `metadata`). See
 
 ### Go skills and tools
 
-Each Go module (`skills/pi-rpc/scripts`, `skills/jules/scripts`, `tools/asctl`)
+Each Go module (`skills/jules/scripts`, `tools/asctl`)
 has its own `go.mod` and is built/tested independently:
 
 ```bash
-cd skills/pi-rpc/scripts && make build && make test
-cd tools/asctl           && go build ./... && go test -race ./...
+cd skills/jules/scripts && make build && make test
+cd tools/asctl          && go build ./... && go test -race ./...
 ```
 
 From the repo root, `go.work` lets you test everything at once:
@@ -98,9 +97,7 @@ pixi run -e pdf  test
 ### MCP servers
 
 A skill that ships an MCP server lives as a Cobra subcommand in the skill's
-`scripts/cmd/<name>-mcp/` directory. `skills/pi-rpc/scripts/cmd/pi-mcp/` is
-the reference implementation — embeds the session manager directly, uses
-`mark3labs/mcp-go` over stdio. See
+`scripts/cmd/<name>-mcp/` directory, using `mark3labs/mcp-go` over stdio. See
 [`docs/skill-creation/scripts-languages.mdx`](docs/skill-creation/scripts-languages.mdx)
 for the pattern.
 
@@ -132,7 +129,7 @@ Lefthook runs these in parallel:
 
 | Hook | What it checks |
 |---|---|
-| `go-vet-*` / `go-format-*` / `go-build-*` | Per-module Go vet, gofmt, build (pi-rpc, jules, asctl) |
+| `go-vet-*` / `go-format-*` / `go-build-*` | Per-module Go vet, gofmt, build (jules, asctl) |
 | `ruff-lint` / `ruff-format` | Python style |
 | `typecheck` | Python type checking via `ty` |
 | `validate-skills` | SKILL.md frontmatter + structure |
@@ -183,7 +180,7 @@ git checkout -b feat/my-change main
 ```
 
 Use [conventional commits](https://www.conventionalcommits.org/):
-`feat(pi-rpc): …`, `fix(asctl): …`, `chore: …`, `docs: …`.
+`feat(jules): …`, `fix(asctl): …`, `chore: …`, `docs: …`.
 
 ### Add a changie fragment (required)
 
@@ -218,8 +215,7 @@ Tagging `v*` triggers `.github/workflows/release.yml`:
 1. Verifies the tag points to a commit on `main`
 2. Batches unreleased changie fragments into `.changes/<version>.md`
 3. Updates `CHANGELOG.md`, force-moves the tag to include the changelog commit
-4. Runs `goreleaser` — builds all binaries (pi-server, pi-cli, pi-mcp, jules,
-   asctl) for `linux/{amd64,arm64}` and `darwin/{amd64,arm64}`, uploads
+4. Runs `goreleaser` — builds all binaries (jules, asctl) for `linux/{amd64,arm64}` and `darwin/{amd64,arm64}`, uploads
    archives + checksums + SBOM to the GitHub Release
 5. Dispatches `agent-skills-release` event to `agent-extensions` so the
    downstream plugin registry can pull the new artifacts
