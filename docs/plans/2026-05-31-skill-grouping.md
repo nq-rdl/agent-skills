@@ -54,6 +54,14 @@ Claude Code   /sql-review:analysis   /sql-review:lint   /sql-review:report
 
 Flat standalone skills (`csv`, `tdd`, …) keep mapping to whatever plugin their bundle assigns, exactly as today — **grouping is additive, not a migration.**
 
+### Invariants the tooling must enforce (from the 2026-05-31 Codex review)
+
+- **`name` == leaf folder.** A grouped skill's frontmatter `name:` must equal its leaf directory — required by the Agent Skills standard (`docs/specification.mdx`) and already checked by `validate_metadata`. E.g. `skills/sql-review/analysis/SKILL.md` → `name: analysis`. This is also why grouping is standard-compliant: the standard applies to the **leaf** skill dir; `skills/<group>/` is just a container.
+- **group == `pluginName`.** A group folder's name must equal the `targets.claude.pluginName` of the bundle that ships it. Not enforced today — see MF-1.
+- **Flat skill ≠ group.** A directory with its **own** `SKILL.md` is a flat skill; any nested `SKILL.md` inside it are reference-only and never discovered (the existing `duckdb` shape). Validators must not descend into a dir that has its own `SKILL.md` — see MF-2.
+- **`pluginName` is unique across bundles.** Two bundles with the same `pluginName` would clobber/prune the same plugin tree — see MF-3.
+- **Keep the Python validator.** Do not drop `src/skills/ref/repo_check.py`; `pixi run validate-skills` still runs it (`pyproject.toml`), even though the package is marked legacy.
+
 ---
 
 ## Understanding Strategy B (read this first)
@@ -120,6 +128,77 @@ Within each PR, commit per task (TDD where tests exist). Keep both PRs in **draf
 | `registry/bundles/sql-review.yaml` | Declare the plugin | New bundle, path-qualified skill entries |
 | `.claude-plugin/marketplace.json` | Publish the plugin | Add `sql-review` plugin entry |
 | `AGENTS.md` (and any docs saying `skills/<name>/`) | Contributor docs | Document the optional group layout |
+
+---
+
+## Review must-fixes (folded in 2026-05-31 — apply alongside the phases)
+
+The Codex review confirmed the contract is standard-compliant but found four gaps that make it *enforceable* rather than merely stated. Each augments a phase task.
+
+### MF-1 — Enforce `<group> == pluginName` (augments Task 6, `validate.yml`)
+
+`validate-bundles` must reject a path-qualified entry whose group prefix differs from the bundle's Claude `pluginName`. Add to the inline Python, alongside the dup-leaf check:
+
+```python
+              plugin_name = ((data.get("targets") or {}).get("claude") or {}).get("pluginName") or bundle.stem
+              for name in skill_entries:
+                  if "/" in name and name.split("/", 1)[0] != plugin_name:
+                      print(f"::error file={bundle}::Grouped skill '{name}' must sit under group '{plugin_name}' to match pluginName")
+                      exit_code = 1
+```
+
+### MF-2 — Pin the `duckdb` shape: a flat skill MAY contain inert nested `SKILL.md` (augments Tasks 1 & 2)
+
+Rule: a directory with its **own** `SKILL.md` is a flat skill; the validators do **not** descend into it, so nested `SKILL.md` (e.g. `skills/duckdb/query/SKILL.md`) are reference-only and never registered. The Task 1/2 discovery already does this (`if hasSkillMD(top): emit; continue`). Add regression tests so it can't silently change.
+
+Go (append to `repocheck_test.go`):
+
+```go
+func TestIterSkillDirs_flatSkillWithNestedSkillMD(t *testing.T) {
+	root := t.TempDir()
+	makeSkillDir(t, root, "duckdb", "flat skill")               // skills/duckdb/SKILL.md
+	makeGroupedSkill(t, root, "duckdb", "query", "nested ref")  // skills/duckdb/query/SKILL.md
+	dirs, err := repocheck.IterSkillDirs(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(root, "duckdb") // ONLY the flat skill; nested is inert
+	if len(dirs) != 1 || dirs[0] != want {
+		t.Fatalf("got %v, want [%s] (must not descend into a dir that has its own SKILL.md)", dirs, want)
+	}
+}
+```
+
+Python (append to the repo_check test module):
+
+```python
+def test_iter_skill_dirs_flat_skill_with_nested(tmp_path: Path):
+    _make_skill(tmp_path, "duckdb")            # skills/duckdb/SKILL.md
+    _make_skill(tmp_path, "duckdb", "query")   # skills/duckdb/query/SKILL.md (inert)
+    assert iter_skill_dirs(tmp_path) == [tmp_path / "duckdb"]
+```
+
+### MF-3 — Unique `pluginName` across bundles (augments Task 6 `validate.yml`; defensive mirror in Task 4 `sync-plugins.sh`)
+
+Two bundles sharing a `pluginName` prune/clobber the same `plugins/<plugin>/skills` tree. Accumulate across the bundle loop in validate-bundles:
+
+```python
+          seen_plugins = {}
+          # ... inside the per-bundle loop, after computing plugin_name:
+              if plugin_name in seen_plugins:
+                  print(f"::error file={bundle}::pluginName '{plugin_name}' already used by {seen_plugins[plugin_name]}")
+                  exit_code = 1
+              else:
+                  seen_plugins[plugin_name] = str(bundle)
+```
+
+(Optional defensive mirror in `sync-plugins.sh`: track plugin names across bundles and `warn()` on a repeat.)
+
+### MF-4 — Expand the docs sweep (replaces Task 10's file list)
+
+Update every doc asserting a flat-only layout or stale packaging, in **both** repos. Grep first: `rg -n "skills/<name>|skills/<skill-name>|symlink|submodule" --glob '*.md' --glob '*.mdx'`. Known targets:
+- **agent-skills:** `README.md`, `docs/skills.md`, `docs/specification.mdx` (clarify the standard applies to the **leaf** skill dir; `skills/<group>/` is a container with no `SKILL.md`), and `docs/claude.md` if present.
+- **agent-extensions:** `AGENTS.md`, `docs/ARCHITECTURE.md`, and `docs/claude.md` (drop the stale symlink/submodule description — plugin trees are real-file copies rebuilt by `sync-plugins.sh`).
 
 ---
 
