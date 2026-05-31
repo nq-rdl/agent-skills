@@ -11,7 +11,7 @@ Ownership & Borrowing
 
 ``T`` owns its value; ``&T`` borrows it (shared, read-only); ``&mut T`` borrows
 it exclusively (read-write). Assigning or passing an owned non-``Copy`` value
-*moves* it — the source can no longer be used.
+*moves* it — the source is *invalidated* and can no longer be used.
 
 .. code:: rust
 
@@ -143,9 +143,12 @@ Closures & Iterators
 --------------------
 
 A closure ``|x| x * x`` is an anonymous function that can capture variables. The
-trait it implements says how it captures: ``Fn`` (borrows), ``FnMut`` (mutably
-borrows), ``FnOnce`` (consumes). ``move`` forces it to take ownership of what it
-captures (common when spawning threads).
+trait it implements says how it can be *called*: ``Fn`` (via ``&self`` — only
+reads its captures, so callable repeatedly), ``FnMut`` (via ``&mut self`` — may
+mutate captures), ``FnOnce`` (via ``self`` — may move captures out, so callable
+once). ``move`` is separate: it forces the closure to *capture by value* (take
+ownership), common when spawning threads — a ``move`` closure can still be
+``Fn`` if its body only reads what it captured.
 
 Iterator chains are **lazy**: ``.iter().map(...).filter(...)`` builds a pipeline
 that does nothing until a *consumer* (``.collect()``, ``.sum()``, a ``for`` loop)
@@ -170,7 +173,7 @@ is a *derive macro* that generates trait implementations for you.
 
 *Why it's there:* macros remove boilerplate the type system cannot. Reading rule:
 treat ``name!(...)`` as "expands to some code"; when you must see what, use
-``cargo expand`` (see ``tooling.rst``).
+``cargo expand`` (see ``references/tooling.rst``).
 
 Modules, Visibility & Turbofish
 -------------------------------

@@ -84,23 +84,26 @@ Look hard at:
   precisely — the common constructs promise *different* things. ``split_at_mut``
   is **safe**: it hands back two slices the compiler *guarantees* do not
   overlap, so trust it. ``get_unchecked`` / ``get_unchecked_mut`` are
-  **unsafe** and promise only *the index is in bounds* (a wrong index is
-  undefined behavior, not a panic). The **aliasing** rule binds *references*,
-  not raw pointers: a ``*mut T`` may alias freely, but the instant unsafe code
-  turns raw pointers or unchecked access into two live ``&mut`` over overlapping
-  memory, that is undefined behavior. Audit where unsafe code *materializes*
-  those references, not the safe ``split_at_mut`` helper; a broken aliasing
-  assumption corrupts results silently (std ``slice`` docs; Nomicon → Aliasing).
+  **unsafe**: they drop the bounds check, so the *caller* must guarantee the
+  index is in bounds (a wrong index is undefined behavior, not a panic). The
+  **aliasing** rule binds *references*, not raw pointers — a ``*mut T`` carries
+  no aliasing requirement of its own — but the instant unsafe code turns raw
+  pointers or unchecked access into two live ``&mut`` over overlapping memory,
+  that is undefined behavior. Audit where unsafe code *materializes* those
+  references, not the safe ``split_at_mut`` helper; a broken aliasing assumption
+  corrupts results silently (Reference → Behavior considered undefined; std
+  ``slice`` docs).
 - **Parallel-reduction nondeterminism.** Floating-point ``+`` is not associative,
   so a ``rayon`` reduction can give a *different sum* per run depending on
   chunking — correct-looking, not reproducible. Flag when a ``par_iter().sum()``
   or a custom ``reduce`` feeds a result that must be bit-reproducible.
 - **Integer / float casts.** ``as`` is silent and the rule depends on the
-  types: integer→integer **truncates / wraps** (``300_i32 as u8`` is ``44``),
-  while float→integer **saturates** to the target's range with ``NaN`` mapping
-  to ``0`` (``300.0_f32 as u8`` is ``255``, ``-1.0_f32 as u8`` is ``0``).
-  Separately, overflowing *arithmetic* on ``usize`` indices **panics in debug
-  builds but wraps in release** — so an index bug can stay hidden until the
+  types: integer→integer **truncates to the low bits** (``300_i32 as u8`` is
+  ``44``), while float→integer **saturates** to the target's range with ``NaN``
+  mapping to ``0`` (``300.0_f32 as u8`` is ``255``, ``-1.0_f32 as u8`` is
+  ``0``). Separately, overflowing *arithmetic* on ``usize`` indices **panics in
+  debug builds but wraps in release by default** (it tracks the
+  ``overflow-checks`` profile flag) — so an index bug can stay hidden until the
   optimized build (Reference → Type cast expressions).
 
 When reviewing a generated kernel, state the split explicitly: "in the safe

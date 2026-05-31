@@ -16,16 +16,11 @@ expressions") so this file stays the one place a link is maintained.
 When to reach for these
 -----------------------
 
-Routine reading needs no lookup. Fetch when being wrong would mislead:
-
-- **Edition-sensitive syntax** — anything that may have changed across editions,
-  or code that simply *looks unfamiliar* (``unsafe extern``, ``gen`` blocks,
-  ``let``-chains, ``async fn`` in traits). Start at the Edition Guide.
-- **A precise contract that decides correctness** — ``unsafe`` / FFI invariants,
-  ``as``-cast semantics, aliasing rules, the exact guarantee of a ``std`` method
-  (read its *Safety* section), the full meaning of an ``error[E####]``.
-- **A "guaranteed" / "safe" claim** you are about to make near the boundary of
-  what the compiler actually promises.
+``SKILL.md`` ("Verify against the source of truth") is the single statement of
+*when* to fetch — in short: edition-sensitive syntax, a precise ``unsafe`` /
+cast / aliasing contract, the exact meaning of an ``error[E####]``, or a
+"guaranteed / safe" claim near the boundary of what the compiler promises. This
+file is the *where*.
 
 Use the ``stable`` channel (latest release) by default. If the code targets a
 specific edition, the **Edition Guide** is what reconciles "this compiles for
@@ -80,14 +75,17 @@ references:
   `std::rc::Weak <https://doc.rust-lang.org/stable/std/rc/struct.Weak.html>`__ /
   `std::sync::Weak
   <https://doc.rust-lang.org/stable/std/sync/struct.Weak.html>`__.
-- Aliasing and ``unsafe`` contracts — `Nomicon: Aliasing
-  <https://doc.rust-lang.org/stable/nomicon/aliasing.html>`__ and `Nomicon: FFI
-  <https://doc.rust-lang.org/stable/nomicon/ffi.html>`__.
+- Aliasing and ``unsafe`` contracts — `Reference: Behavior considered undefined
+  <https://doc.rust-lang.org/stable/reference/behavior-considered-undefined.html>`__
+  is the authoritative list (e.g. two live ``&mut`` to overlapping memory is UB;
+  raw pointers are exempt). Conceptual intro: `Nomicon: Aliasing
+  <https://doc.rust-lang.org/stable/nomicon/aliasing.html>`__; FFI specifics:
+  `Nomicon: FFI <https://doc.rust-lang.org/stable/nomicon/ffi.html>`__.
 - Slice splitting / unchecked access contracts — `std::slice
   <https://doc.rust-lang.org/stable/std/primitive.slice.html>`__ (read the
   *Safety* note on ``get_unchecked`` and the guarantee on ``split_at_mut``).
 - Borrow / move diagnostics — `error_codes: E0382
-  <https://doc.rust-lang.org/stable/error_codes/E0382.html>`__ (borrow of moved
-  value), `E0502
+  <https://doc.rust-lang.org/stable/error_codes/E0382.html>`__ (use/borrow of a
+  moved value), `E0502
   <https://doc.rust-lang.org/stable/error_codes/E0502.html>`__ (mutable +
   immutable borrow).
