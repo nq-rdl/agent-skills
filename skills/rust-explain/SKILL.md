@@ -32,7 +32,7 @@ show what the compiler is protecting against, not just the fix.
 
 Rust evolves by **edition** (2015 → 2018 → 2021 → 2024) and the standard library
 grows every six weeks, so model knowledge drifts behind the language — the syntax
-you "remember" can be a version stale (the 2024 `unsafe extern` block is the
+you "remember" can be one version stale (the 2024 `unsafe extern` block is the
 classic trap). Correctness is the deliverable, so when a claim is high-stakes,
 confirm it against the official docs instead of asserting from memory. Fetch the
 canonical page when:
@@ -46,7 +46,9 @@ canonical page when:
 
 Routine reading needs no lookup — reach for the docs when being wrong would
 mislead. `references/canonical-sources.rst` maps each kind of question to its
-authoritative URL under `https://doc.rust-lang.org/stable/`.
+authoritative URL on the official Rust docs (mostly
+`https://doc.rust-lang.org/stable/`; a few, like the Clippy lint index, live on
+other rust-lang sites).
 
 ## Comparison policy
 
@@ -61,9 +63,11 @@ Pick the mode that fits the request:
 
 1. **Line-by-line annotate** — explain every borrow, lifetime, and `?` inline,
    in reading order.
-2. **Why does / doesn't this compile** — build borrow-checker intuition. Run the
-   code, pair it with the real `rustc` message, and explain what the rule
-   protects against. See `references/tooling.rst`.
+2. **Why does / doesn't this compile** — build borrow-checker intuition.
+   *Compile* the snippet (`cargo check` / `rustc`) to surface the real
+   diagnostic — no need to run it — then pair that message with what the rule
+   protects against. Reserve actually executing the code for when the reader
+   asks about runtime behavior. See `references/tooling.rst`.
 3. **Idiomatic rewrite + explain the diff** — show the gap between *works* and
    *fluent*. Let `cargo clippy` find the idiom, then explain the reasoning. See
    `references/tooling.rst`.
@@ -85,8 +89,9 @@ For numeric code — `ndarray`, `nalgebra`, `faer`, `polars`, `rayon`, and FFI
 into BLAS/LAPACK — load `references/numeric-idioms.rst`. It carries the
 **silent-bug radar**: where a generated kernel can be *quietly wrong* (stencil
 off-by-ones, aliasing, parallel-reduction nondeterminism) and the rule of thumb
-for what the compiler catches (memory, concurrency) versus what it cannot (your
-math).
+for what the compiler catches in **safe** code (memory, concurrency), what
+returns inside **unsafe/FFI** and must be audited by hand (the same memory and
+data-race classes), and what it *never* catches anywhere (your math).
 
 ## Tooling
 

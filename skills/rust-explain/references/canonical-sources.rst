@@ -3,7 +3,7 @@ Canonical Rust Documentation — Where to Verify
 
 The source of truth for everything this skill explains. Rust evolves by
 **edition** (2015 → 2018 → 2021 → 2024) and the standard library grows every
-six weeks, so a remembered fact can be a version stale — the bare
+six weeks, so a remembered fact can be one version stale — the bare
 ``extern "C"`` block, a cast rule, a lint name. When the reader's correctness
 depends on a detail you are not certain of, **fetch the page below and read the
 current wording** instead of asserting from memory. That is the difference
@@ -62,8 +62,9 @@ Pinpoint links for what this skill teaches
 The deep links behind the trickier, drift-prone passages in the other
 references:
 
-- ``as`` cast semantics (int→int truncates/wraps, float→int saturates, ``NaN`` →
-  0) — `Reference: Type cast expressions
+- ``as`` cast semantics (int→int: narrowing truncates, widening
+  sign/zero-extends, same-width reinterprets; float→int saturates, ``NaN`` → 0)
+  — `Reference: Type cast expressions
   <https://doc.rust-lang.org/stable/reference/expressions/operator-expr.html#type-cast-expressions>`__.
 - 2024-edition ``unsafe extern`` blocks (and per-item ``safe`` / ``unsafe``) —
   `Edition Guide: Unsafe extern blocks

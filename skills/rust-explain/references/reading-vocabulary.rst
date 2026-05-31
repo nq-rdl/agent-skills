@@ -160,8 +160,10 @@ drives it.
    let total: f64 = squares.iter().sum();
 
 *Why it's there:* laziness lets chains fuse into a single pass with no
-intermediate allocations — as fast as a hand-written loop. Reading rule: find the
-consumer at the end of the chain; that is what actually runs the work.
+intermediate allocations — the *zero-cost-abstraction* intent is that they
+optimize down to roughly what a hand-written loop emits (an optimizer outcome,
+not a language guarantee). Reading rule: find the consumer at the end of the
+chain; that is what actually runs the work.
 
 Macros
 ------
@@ -185,7 +187,7 @@ generic type the compiler cannot infer:
 .. code:: rust
 
    let v = "42".parse::<i32>().unwrap();      // ::<i32> tells parse what to make
-   let xs = (0..n).collect::<Vec<f64>>();     // ::<Vec<f64>> picks the container
+   let xs = (0..n).map(|i| i as f64).collect::<Vec<f64>>();  // ::<Vec<f64>> picks the container
 
 *Why it's there:* explicit paths and visibility keep the module graph auditable.
 Reading rule: a turbofish always answers "what type?" for the call immediately

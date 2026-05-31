@@ -61,9 +61,10 @@ Silent-Bug Radar (highest value)
 Rust's compiler eliminates whole bug classes — but **only in safe code, and
 never your math.** Anchor every review on this split.
 
-**In safe Rust the compiler catches** (do not re-audit these in safe code):
-use-after-free, double-free, data races on shared memory, out-of-bounds (a
-runtime panic, not silent corruption), null dereferences, uninitialized reads.
+**In safe Rust the compiler catches** (no longer *memory-safety* bugs to
+re-audit there): use-after-free, double-free, data races on shared memory,
+out-of-bounds (still a runtime panic to handle, just never silent corruption),
+null dereferences, uninitialized reads.
 
 **Inside ``unsafe`` / FFI they come back.** A wrong pointer, length, or lifetime
 in an ``unsafe`` block or a C call can reintroduce every one of those — the
@@ -98,13 +99,19 @@ Look hard at:
   chunking — correct-looking, not reproducible. Flag when a ``par_iter().sum()``
   or a custom ``reduce`` feeds a result that must be bit-reproducible.
 - **Integer / float casts.** ``as`` is silent and the rule depends on the
-  types: integer→integer **truncates to the low bits** (``300_i32 as u8`` is
-  ``44``), while float→integer **saturates** to the target's range with ``NaN``
-  mapping to ``0`` (``300.0_f32 as u8`` is ``255``, ``-1.0_f32 as u8`` is
-  ``0``). Separately, overflowing *arithmetic* on ``usize`` indices **panics in
-  debug builds but wraps in release by default** (it tracks the
-  ``overflow-checks`` profile flag) — so an index bug can stay hidden until the
-  optimized build (Reference → Type cast expressions).
+  types. A **narrowing** integer→integer cast keeps the low bits
+  (``300_i32 as u8`` is ``44``). A **widening** cast that stays in the same
+  signedness preserves the value (``-1_i8 as i32`` is ``-1``; ``200_u8 as u32``
+  is ``200``). But casting a **signed value into an unsigned type** turns a
+  negative number into a large positive one — ``-1_i32 as u32`` is
+  ``4294967295`` and ``-1_i32 as usize`` is ``usize::MAX`` — the classic silent
+  ``-1``-as-index bug, regardless of width. Meanwhile float→integer
+  **saturates** to the target's range with ``NaN`` mapping to ``0``
+  (``300.0_f32 as u8`` is ``255``, ``-1.0_f32 as u8`` is ``0``). Separately,
+  overflowing *arithmetic* on ``usize`` indices **panics in debug builds but
+  wraps in release by default**
+  (it tracks the ``overflow-checks`` profile flag) — so an index bug can stay
+  hidden until the optimized build (Reference → Type cast expressions).
 
 When reviewing a generated kernel, state the split explicitly: "in the safe
 regions the compiler guarantees memory and thread safety; inside ``unsafe`` /
