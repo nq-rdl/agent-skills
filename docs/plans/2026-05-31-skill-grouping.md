@@ -10,6 +10,52 @@
 
 ---
 
+## Decision & cross-repo grouping contract (settled 2026-05-31)
+
+**Decision:** our packaging pipeline targets **Claude Code only.** `agent-skills` stays the canonical source and keeps each `SKILL.md` compliant with the [Agent Skills standard](https://agentskills.io) so other hosts *can* consume individual skills — but **how non-Claude hosts consume the tree is out of scope for our automation.** This lets `agent-extensions` flatten/transform freely for Claude Code's one-level plugin model without hedging for other hosts.
+
+**This is Path B (shared source + sync), NOT Path A.** We keep the skills repo; we are *not* authoring plugins directly in extensions. The Claude-Code-only assumption only removes multi-host constraints from the extensions side.
+
+**The contract both repos must honor (this is what makes automation possible):**
+
+1. **`agent-skills` source** — a skill is either
+   - flat: `skills/<skill>/SKILL.md` (standalone, unchanged), or
+   - grouped: `skills/<group>/<skill>/SKILL.md` — **exactly one level**; the group folder has no direct `SKILL.md`.
+   The **group folder name == the Claude Code plugin name.**
+2. **`agent-extensions` registry** — a bundle sets `pluginName: <group>` and lists members as `<group>/<skill>`.
+3. **`agent-extensions` sync** — `sync-plugins.sh` copies `skills/<group>/<skill>/` → `plugins/<group>/skills/<skill>/`, **dropping the `<group>/` prefix**.
+4. **Claude Code** — installs `plugins/<group>/skills/<skill>/SKILL.md` as **`/<group>:<skill>`**.
+5. **Both repos' validators enforce the layout** — skills-repo `repo-check` (Go + Python) descends one level into groups; extensions `validate-bundles` resolves path-qualified entries and rejects duplicate leaf names within a bundle.
+
+**What `agent-skills` looks like going forward:**
+
+```
+skills/
+├── csv/SKILL.md                # flat standalone — unchanged
+├── tdd/SKILL.md                # flat standalone — unchanged
+└── sql-review/                 # GROUP (= plugin name); no SKILL.md here
+    ├── analysis/SKILL.md
+    ├── lint/SKILL.md
+    └── report/SKILL.md
+```
+
+**How `agent-extensions` deals with it:**
+
+```
+registry/bundles/sql-review.yaml   pluginName: sql-review
+                                   skills: [sql-review/analysis, sql-review/lint, sql-review/report]
+        │  sync-plugins.sh   (drops the "sql-review/" prefix → leaf only)
+        ▼
+plugins/sql-review/skills/{analysis,lint,report}/SKILL.md
+        │  marketplace.json  { name: sql-review, source: ./plugins/sql-review }
+        ▼
+Claude Code   /sql-review:analysis   /sql-review:lint   /sql-review:report
+```
+
+Flat standalone skills (`csv`, `tdd`, …) keep mapping to whatever plugin their bundle assigns, exactly as today — **grouping is additive, not a migration.**
+
+---
+
 ## Understanding Strategy B (read this first)
 
 You asked to understand B, not just run it. Here is the whole mental model in five facts.
