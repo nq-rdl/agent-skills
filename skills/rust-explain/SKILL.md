@@ -64,10 +64,13 @@ Pick the mode that fits the request:
 1. **Line-by-line annotate** — explain every borrow, lifetime, and `?` inline,
    in reading order.
 2. **Why does / doesn't this compile** — build borrow-checker intuition.
-   *Compile* the snippet (`cargo check` / `rustc`) to surface the real
-   diagnostic — no need to run it — then pair that message with what the rule
-   protects against. Reserve actually executing the code for when the reader
-   asks about runtime behavior. See `references/tooling.rst`.
+   *Compile* the snippet to surface the real diagnostic — no need to run it —
+   then pair that message with what the rule protects against. For untrusted or
+   unfamiliar code prefer `rustc` on a single file: `cargo check`/`cargo clippy`
+   still execute build scripts and procedural macros while compiling, so only
+   point them at trusted or sandboxed crates. Reserve actually executing the
+   code for when the reader asks about runtime behavior. See
+   `references/tooling.rst`.
 3. **Idiomatic rewrite + explain the diff** — show the gap between *works* and
    *fluent*. Let `cargo clippy` find the idiom, then explain the reasoning. See
    `references/tooling.rst`.

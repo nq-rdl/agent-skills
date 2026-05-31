@@ -4,6 +4,14 @@ Rust Tooling as a Teaching Aid
 Let the tools do the mechanical work, then explain *why* their output is right.
 None of this needs a wrapper script — run the tools directly.
 
+.. note::
+
+   ``cargo check`` and ``cargo clippy`` execute build scripts and procedural
+   macros while compiling a crate, so they run code even though no binary is
+   launched. For untrusted or unfamiliar snippets, prefer ``rustc`` on a single
+   file, or run Cargo inside a disposable sandbox. Reserve full ``cargo`` runs
+   for crates you trust.
+
 cargo clippy — the free senior reviewer
 ---------------------------------------
 
