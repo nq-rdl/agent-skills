@@ -28,6 +28,26 @@ The reader forms a hypothesis; you verify it and explain the *why*. Never give
 bare approval ("looks fine") — every answer teaches. When the reader is wrong,
 show what the compiler is protecting against, not just the fix.
 
+## Verify against the source of truth
+
+Rust evolves by **edition** (2015 → 2018 → 2021 → 2024) and the standard library
+grows every six weeks, so model knowledge drifts behind the language — the syntax
+you "remember" can be a version stale (the 2024 `unsafe extern` block is the
+classic trap). Correctness is the deliverable, so when a claim is high-stakes,
+confirm it against the official docs instead of asserting from memory. Fetch the
+canonical page when:
+
+- the answer is **edition-sensitive** — syntax that may have changed, or code
+  that simply *looks unfamiliar*;
+- a **precise contract decides correctness** — `unsafe`/FFI invariants,
+  `as`-cast semantics, aliasing rules, the exact meaning of an `error[E####]`;
+- you are about to call something *guaranteed* or *safe* and are unsure of the
+  boundary.
+
+Routine reading needs no lookup — reach for the docs when being wrong would
+mislead. `references/canonical-sources.rst` maps each kind of question to its
+authoritative URL under `https://doc.rust-lang.org/stable/`.
+
 ## Comparison policy
 
 Explain Rust **on its own terms** by default. Reach for a cross-language analogy
@@ -54,10 +74,10 @@ Pick the mode that fits the request:
 
 Most "I can't read this" moments come from a fixed pattern set: ownership &
 borrowing, lifetimes, error flow (`Result`/`Option`/`?`), traits & generics,
-pattern matching, smart pointers (`Box`/`Rc`/`Arc`/`RefCell`/`Mutex`), closures
-& iterators, macros, modules & turbofish. Each gets a plain-English *what it
-does* + *why it's there* in `references/reading-vocabulary.rst` — load it when
-explaining any of these.
+pattern matching, smart pointers (`Box`/`Rc`/`Arc`/`Weak`/`RefCell`/`Mutex`),
+closures & iterators, macros, modules & turbofish. Each gets a plain-English
+*what it does* + *why it's there* in `references/reading-vocabulary.rst` — load
+it when explaining any of these.
 
 ## Numeric & scientific Rust
 
@@ -79,3 +99,5 @@ math).
 - `references/reading-vocabulary.rst` — the Rust reading vocabulary
 - `references/numeric-idioms.rst` — numeric crates, FFI, silent-bug radar
 - `references/tooling.rst` — clippy, rustc, rust-analyzer, cargo doc/expand
+- `references/canonical-sources.rst` — official Rust docs to fetch when a
+  high-stakes claim needs verifying (the source of truth)

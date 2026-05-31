@@ -24,12 +24,14 @@ Ecosystem Idioms to Recognize
 FFI Reading: Rust Calling Native Libraries
 ------------------------------------------
 
-A call into a C-ABI library (BLAS / LAPACK, a vendor kernel) looks like this:
+A call into a C-ABI library (BLAS / LAPACK, a vendor kernel) looks like this on
+the **2024 edition**:
 
 .. code:: rust
 
-   extern "C" {
-       // declares a function provided by a C library, linked at build time
+   unsafe extern "C" {               // 2024 edition: the extern block is `unsafe`
+       // a function provided by a C library, linked at build time;
+       // an unmarked item defaults to `unsafe` to call
        fn cblas_ddot(n: i32, x: *const f64, incx: i32, y: *const f64, incy: i32) -> f64;
    }
 
@@ -40,6 +42,13 @@ A call into a C-ABI library (BLAS / LAPACK, a vendor kernel) looks like this:
 Reading rules:
 
 - ``extern "C"`` = "this uses the C ABI" (the calling convention for FFI).
+- **Editions differ — expect both forms.** Since the 2024 edition the block
+  must be written ``unsafe extern "C" { … }``, and each item may be marked
+  ``safe`` (callable without an ``unsafe`` block) or ``unsafe`` / left unmarked
+  (the caller upholds the contract). Crates on the 2015/2018/2021 editions still
+  use a bare ``extern "C" { … }``. If the form looks unfamiliar, confirm against
+  the Edition Guide (``references/canonical-sources.rst``) rather than guessing
+  — this is exactly the kind of syntax that drifts between editions.
 - Raw pointers ``*const T`` / ``*mut T`` are the C-facing types; ``.as_ptr()``
   hands a slice's buffer to C.
 - ``unsafe`` does **not** mean "wrong." It means *the compiler's guarantees stop
@@ -49,14 +58,20 @@ Reading rules:
 Silent-Bug Radar (highest value)
 --------------------------------
 
-Rust's compiler eliminates whole bug classes — but only some. Anchor every review
-on this split.
+Rust's compiler eliminates whole bug classes — but **only in safe code, and
+never your math.** Anchor every review on this split.
 
-**The compiler catches** (do not re-audit these): use-after-free, double-free,
-data races on shared memory, out-of-bounds via a runtime panic, null
-dereferences, uninitialized reads.
+**In safe Rust the compiler catches** (do not re-audit these in safe code):
+use-after-free, double-free, data races on shared memory, out-of-bounds (a
+runtime panic, not silent corruption), null dereferences, uninitialized reads.
 
-**The compiler cannot catch** (audit these every time): *your math.* Code that
+**Inside ``unsafe`` / FFI they come back.** A wrong pointer, length, or lifetime
+in an ``unsafe`` block or a C call can reintroduce every one of those — the
+``unsafe`` contract, not the compiler, is what holds them off. Audit each
+``unsafe`` region for exactly the bugs safe Rust had ruled out (Nomicon, via
+``references/canonical-sources.rst``).
+
+**The compiler never catches** (audit these every time): *your math.* Code that
 satisfies the borrow checker can still compute the wrong number.
 
 Look hard at:
@@ -65,16 +80,30 @@ Look hard at:
   ``1..n``, halo / ghost-cell handling, ``len()`` versus ``len()-1``. A bounds
   check turns a bad index into a *panic*, not a silently wrong result — but the
   wrong-but-in-range index is silent.
-- **Aliasing assumptions in ``unsafe`` / FFI.** Code using ``get_unchecked``,
-  ``split_at_mut``, or raw pointers promises "these do not overlap." If they can
-  overlap, results are silently corrupt.
+- **Aliasing & bounds promises in ``unsafe`` / FFI.** Read the contract
+  precisely — the common constructs promise *different* things. ``split_at_mut``
+  is **safe**: it hands back two slices the compiler *guarantees* do not
+  overlap, so trust it. ``get_unchecked`` / ``get_unchecked_mut`` are
+  **unsafe** and promise only *the index is in bounds* (a wrong index is
+  undefined behavior, not a panic). The **aliasing** rule binds *references*,
+  not raw pointers: a ``*mut T`` may alias freely, but the instant unsafe code
+  turns raw pointers or unchecked access into two live ``&mut`` over overlapping
+  memory, that is undefined behavior. Audit where unsafe code *materializes*
+  those references, not the safe ``split_at_mut`` helper; a broken aliasing
+  assumption corrupts results silently (std ``slice`` docs; Nomicon → Aliasing).
 - **Parallel-reduction nondeterminism.** Floating-point ``+`` is not associative,
   so a ``rayon`` reduction can give a *different sum* per run depending on
   chunking — correct-looking, not reproducible. Flag when a ``par_iter().sum()``
   or a custom ``reduce`` feeds a result that must be bit-reproducible.
-- **Integer / float casts.** ``as`` truncates or saturates silently
-  (``300_i32 as u8`` is ``44``); ``usize`` index arithmetic can wrap.
+- **Integer / float casts.** ``as`` is silent and the rule depends on the
+  types: integer→integer **truncates / wraps** (``300_i32 as u8`` is ``44``),
+  while float→integer **saturates** to the target's range with ``NaN`` mapping
+  to ``0`` (``300.0_f32 as u8`` is ``255``, ``-1.0_f32 as u8`` is ``0``).
+  Separately, overflowing *arithmetic* on ``usize`` indices **panics in debug
+  builds but wraps in release** — so an index bug can stay hidden until the
+  optimized build (Reference → Type cast expressions).
 
-When reviewing a generated kernel, state the split explicitly: "the compiler
-guarantees memory and thread safety here; it does **not** guarantee the
-arithmetic — check the indices, the reduction order, and the casts."
+When reviewing a generated kernel, state the split explicitly: "in the safe
+regions the compiler guarantees memory and thread safety; inside ``unsafe`` /
+FFI you must audit those too; **nowhere** does it guarantee the arithmetic —
+check the indices, the reduction order, and the casts."

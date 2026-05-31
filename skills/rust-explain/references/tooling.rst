@@ -26,10 +26,12 @@ explain the reasoning instead of merely echoing the fix.
      |
 
 Teach it: "Clippy flags ``needless_range_loop`` (see the `clippy lint index
-<https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop>`__).
+<https://rust-lang.github.io/rust-clippy/stable/index.html#needless_range_loop>`__).
 Indexing ``v[i]`` re-checks bounds every iteration and hides intent; ``for x in
-&v`` (equivalently ``v.iter()``) iterates the elements directly — clearer and
-bounds-check-free. This is the gap between *works* and *fluent*." For the
+&v`` (equivalently ``v.iter()``) iterates the elements directly — clearer, and
+it lets the optimizer elide the per-iteration bounds check in the common case
+(bounds-check *elimination* is an LLVM optimization, not a language guarantee).
+This is the gap between *works* and *fluent*." For the
 idiomatic-rewrite mode, run clippy first, then walk each lint.
 
 rustc errors as teachers
@@ -48,10 +50,11 @@ rule protects against. Two canonical examples:
    4 |     println!("{}", s);
      |                    ^ value borrowed here after move
 
-"``s`` was *moved* into ``t``, so ``s`` is empty. The compiler is preventing two
-owners of one heap buffer — which would double-free at scope end. Fix: borrow
-(``&s``) if you only need to read, or ``.clone()`` if you genuinely need a second
-copy."
+"``s`` was *moved* into ``t``, so ``s`` is no longer usable — not emptied,
+**invalidated**: the value now lives in ``t`` and the compiler statically
+forbids touching ``s``. It is preventing two owners of one heap buffer — which
+would double-free at scope end. Fix: borrow (``&s``) if you only need to read,
+or ``.clone()`` if you genuinely need a second copy."
 
 .. code:: text
 

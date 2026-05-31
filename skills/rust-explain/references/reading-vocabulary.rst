@@ -117,6 +117,11 @@ Smart Pointers & Combinations
 - ``Box<T>`` — owned value on the heap (one owner).
 - ``Rc<T>`` / ``Arc<T>`` — shared ownership by reference counting (``Arc`` is the
   thread-safe, atomic version).
+- ``Weak<T>`` — a *non-owning* ``Rc`` / ``Arc`` handle (from ``Rc::downgrade`` /
+  ``Arc::downgrade``). It does **not** keep the value alive; you call
+  ``.upgrade()`` to get an ``Option<Rc<T>>`` (or ``Option<Arc<T>>`` on the
+  ``Arc`` side) and find out whether it still exists. Its purpose is to
+  **break reference cycles** (see below).
 - ``RefCell<T>`` / ``Mutex<T>`` — interior mutability: mutate through a shared
   reference, with the borrow rule enforced at *runtime* (``RefCell``, single
   thread) or via a lock (``Mutex``, across threads).
@@ -125,9 +130,14 @@ Read combinations inside-out. ``Arc<Mutex<T>>`` = "a ``T`` that several threads
 share (``Arc``) and take turns mutating under a lock (``Mutex``)" — the canonical
 shared-mutable-state-across-threads shape.
 
-*Why it's there:* these recover patterns that ownership alone forbids (sharing,
-cycles, mutate-through-shared), each naming its exact cost. Reading rule: the
-outer wrapper is the sharing model, the inner one is the data.
+*Why it's there:* these recover patterns that ownership alone forbids — sharing,
+back-references, mutate-through-shared — each naming its exact cost. One caveat
+worth flagging when you see it: ``Rc`` / ``Arc`` do **not** manage *cycles* — a
+cycle of strong references never reaches refcount 0 and leaks, and ``Weak<T>``
+is precisely how correct code breaks it (Book §15.6, via
+``references/canonical-sources.rst``). Reading rule: the outer wrapper is the
+sharing model, the inner one is the data, and a ``Weak`` is a deliberately
+non-owning edge.
 
 Closures & Iterators
 --------------------
