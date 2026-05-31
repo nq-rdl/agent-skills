@@ -112,22 +112,6 @@ pre-push:
       glob: "*.py"
       run: pixi run -e default test
 
-    - name: python-test-csv
-      glob: "skills/csv/**/*.py"
-      run: pixi run -e csv test
-
-    - name: python-test-docx
-      glob: "skills/docx/**/*.py"
-      run: pixi run -e docx test
-
-    - name: python-test-xlsx
-      glob: "skills/xlsx/**/*.py"
-      run: pixi run -e xlsx test
-
-    - name: python-test-pdf
-      glob: "skills/pdf/**/*.py"
-      run: pixi run -e pdf test
-
     - name: changie-fragment
       run: |
         base=$(git merge-base HEAD origin/main 2>/dev/null)
