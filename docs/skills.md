@@ -30,14 +30,12 @@ RDL uses [nq-rdl/agent-extensions](https://github.com/nq-rdl/agent-extensions) t
 
 | Skill | Description |
 |-------|-------------|
-| [duckdb](../skills/duckdb/) | DuckDB CLI workflows bundled under one skill: attach databases, query files and tables, convert formats, inspect object storage, search docs, and run spatial analysis. |
 | [starrocks](../skills/starrocks/) | StarRocks analytical data warehouse — SQL authoring, table design, partitioning, materialized views, external catalogs. |
 
 ### Developer Workflow
 
 | Skill | Description |
 |-------|-------------|
-| [tdd](../skills/tdd/) | Test-driven development — red/green/refactor cycle, test quality rules, anti-patterns. |
 | [changie](../skills/changie/) | Changelog entry creation with Changie — non-interactive usage, entry quality, fragment naming. |
 | [husky](../skills/husky/) | Git hooks with husky v9 — installation, hook authoring, CI integration. |
 | [lefthook](../skills/lefthook/) | Git hooks with Lefthook — Go-based, language-agnostic alternative to husky. |
@@ -46,19 +44,11 @@ RDL uses [nq-rdl/agent-extensions](https://github.com/nq-rdl/agent-extensions) t
 | [skill-review](../skills/skill-review/) | Self-improvement loop — spawns a reviewer subagent to audit skills worked on in the current session. |
 | [cc-hook](../skills/cc-hook/) | Create, manage, and debug Claude Code hooks — all five hook types, the event lifecycle, the JSON output contract, and injection-safe context patterns. Invocable as `/cc-hook`. |
 
-### AI Agent Backends
-
-| Skill | Description |
-|-------|-------------|
-| [dispatch](../skills/dispatch/) | Tool-agnostic task dispatch — identify task, choose backend, invoke backend skill, track status. Works with any installed dispatch target. |
-| [opencode](../skills/opencode/) | Drive OpenCode programmatically via its REST API — sessions, prompts, SSE monitoring, permissions, extension authoring. |
-
 ### Documentation & Design
 
 | Skill | Description |
 |-------|-------------|
 | [writerside](../skills/writerside/) | JetBrains Writerside — semantic XML markup, topic structure, Docker builds, quality inspections. |
-| [canvas-design](../skills/canvas-design/) | Visual art and design in .png/.pdf — design philosophy creation expressed on canvas. Ships 81 bundled fonts. |
 
 ### R Language
 
@@ -84,8 +74,7 @@ Optional fields used in this repo:
 
 | Field | Used by | Purpose |
 |-------|---------|---------|
-| `license` | canvas-design | License reference for bundled assets |
-| `compatibility` | changie, husky, lefthook, opencode, r-expert, starrocks, writerside | Runtime environment requirements |
+| `compatibility` | changie, husky, lefthook, r-expert, starrocks, writerside | Runtime environment requirements |
 
 ## Portability Rules
 
