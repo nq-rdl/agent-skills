@@ -4,6 +4,19 @@ Rust Tooling as a Teaching Aid
 Let the tools do the mechanical work, then explain *why* their output is right.
 None of this needs a wrapper script — run the tools directly.
 
+Trust boundary first
+--------------------
+
+``cargo check``, ``cargo clippy``, and ``cargo build`` all *compile* the crate,
+and compiling **runs** its ``build.rs`` build script and any procedural macros —
+arbitrary code executed at check time, even though you never run the resulting
+binary. On unfamiliar or untrusted code that is a real risk, not a theoretical
+one. Prefer ``rustc`` on a self-contained single file (no manifest, so no build
+script; with no proc-macro crate to link, no macro runs either). Reach for full
+Cargo only on code you trust, or inside a disposable sandbox — a throwaway
+container or VM you can discard. This is the same caution the skill applies to
+mode 2 ("Why does / doesn't this compile").
+
 cargo clippy — the free senior reviewer
 ---------------------------------------
 

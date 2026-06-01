@@ -61,10 +61,14 @@ Silent-Bug Radar (highest value)
 Rust's compiler eliminates whole bug classes — but **only in safe code, and
 never your math.** Anchor every review on this split.
 
-**In safe Rust the compiler catches** (no longer *memory-safety* bugs to
-re-audit there): use-after-free, double-free, data races on shared memory,
-out-of-bounds (still a runtime panic to handle, just never silent corruption),
-null dereferences, uninitialized reads.
+**In safe Rust, memory safety is not yours to re-audit** — but mind *how* each
+class is ruled out. The compiler **rejects at compile time**: use-after-free,
+double-free, data races on shared memory, null dereferences, uninitialized
+reads. **Out-of-bounds is different** — the compiler does *not* catch it; safe
+Rust instead **converts it into a guaranteed runtime panic** (or a ``None`` from
+``.get()``), never silent corruption. So indexing is safe from *corruption*, but
+a wrong index still panics — a production failure to handle, and a correctness
+bug to chase (the stencil off-by-ones below).
 
 **Inside ``unsafe`` / FFI they come back.** A wrong pointer, length, or lifetime
 in an ``unsafe`` block or a C call can reintroduce every one of those — the
