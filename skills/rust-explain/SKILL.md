@@ -96,9 +96,11 @@ For numeric code — `ndarray`, `nalgebra`, `faer`, `polars`, `rayon`, and FFI
 into BLAS/LAPACK — load `references/numeric-idioms.rst`. It carries the
 **silent-bug radar**: where a generated kernel can be *quietly wrong* (stencil
 off-by-ones, aliasing, parallel-reduction nondeterminism) and the rule of thumb
-for what the compiler catches in **safe** code (memory, concurrency), what
-returns inside **unsafe/FFI** and must be audited by hand (the same memory and
-data-race classes), and what it *never* catches anywhere (your math).
+for what the compiler catches in **safe** code (memory safety and data-race
+freedom — *not* deadlocks, lock poisoning, atomic ordering, or logical races),
+what returns inside **unsafe/FFI** and must be audited by hand (the same
+memory-safety and data-race classes), and what it *never* catches anywhere (your
+math, and concurrency bugs beyond data races).
 
 ## Tooling
 

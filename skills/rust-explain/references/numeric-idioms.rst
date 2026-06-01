@@ -113,6 +113,14 @@ Look hard at:
   so a ``rayon`` reduction can give a *different sum* per run depending on
   chunking — correct-looking, not reproducible. Flag when a ``par_iter().sum()``
   or a custom ``reduce`` feeds a result that must be bit-reproducible.
+- **Concurrency beyond data races.** Safe Rust rules out *data races*, not
+  concurrency bugs in general — ``Arc<Mutex<T>>`` and ``rayon`` code that
+  compiles can still **deadlock**, **poison a lock** (``.lock()`` returns
+  ``Err`` after a holder panics mid-critical-section), use the wrong atomic
+  ``Ordering`` (``Relaxed`` where ``Acquire``/``Release`` was needed), or lose a
+  **check-then-act race** across two locks or atomics. The symptom is a hang or
+  a nondeterministic wrong result, never a compile error — so audit the *logic*,
+  not just the types.
 - **Integer / float casts.** ``as`` is silent and the rule depends on the
   types. A **narrowing** integer→integer cast keeps the low bits
   (``300_i32 as u8`` is ``44``). A **widening** cast that stays in the same
@@ -129,6 +137,8 @@ Look hard at:
   hidden until the optimized build (Reference → Type cast expressions).
 
 When reviewing a generated kernel, state the split explicitly: "in the safe
-regions the compiler guarantees memory and thread safety; inside ``unsafe`` /
-FFI you must audit those too; **nowhere** does it guarantee the arithmetic —
-check the indices, the reduction order, and the casts."
+regions the compiler guarantees memory safety and data-race freedom (not
+deadlocks, lock poisoning, atomic ordering, or logical races); inside
+``unsafe`` / FFI you must audit those memory and data-race classes too;
+**nowhere** does it guarantee the arithmetic or the concurrency logic — check
+the indices, the reduction order, the casts, and the locking."
