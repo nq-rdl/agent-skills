@@ -123,8 +123,7 @@ jobs:
             ## Existing skills to study
 
             Before creating or modifying a skill, read 2-3 existing skills for patterns:
-            - `skills/dispatch/SKILL.md` — clean pattern: when-to-use table, decision tree, error handling
-            - `skills/tdd/SKILL.md` — structured workflow: red/green/refactor steps
+            - `skills/changie/SKILL.md` — clean pattern: when-to-use table, writing rules, good/bad examples
             - `skills/go-naming/SKILL.md` — reference style: conventions with rationale
             - `skills/cc-hook/SKILL.md` — integration pattern: teaches agents to use a specific tool
 

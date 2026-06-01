@@ -33,7 +33,7 @@ agent-skills/
 │   ├── jules/                # Each skill = a directory with SKILL.md
 │   │   ├── SKILL.md          # Frontmatter + body; the public contract
 │   │   └── scripts/          # Per-skill runtime code (Go here: jules)
-│   ├── csv/                  # Python skill (+ pyproject.toml for deps)
+│   ├── go-naming/            # Pure-prompt skill: SKILL.md + references/, no scripts
 │   └── ...
 ├── tools/
 │   └── asctl/                # Go CLI for skill validation + prompt rendering
@@ -80,20 +80,6 @@ Follow the modern-Go patterns documented in
 `interface{}`, `slices.Contains` not manual loops, `wg.Go()` not
 `wg.Add(1)`/`wg.Done()`, `t.Context()` in tests, and so on.
 
-### Python skills
-
-The four file-format skills (`csv`, `docx`, `xlsx`, `pdf`) each have an
-isolated pixi environment:
-
-```bash
-pixi run -e csv  test       # pytest for csv skill only
-pixi run -e csv  lint       # ruff lint
-pixi run -e csv  typecheck  # ty typecheck
-pixi run -e docx test
-pixi run -e xlsx test
-pixi run -e pdf  test
-```
-
 ### MCP servers
 
 A skill that ships an MCP server lives as a Cobra subcommand in the skill's
@@ -103,8 +89,8 @@ for the pattern.
 
 ### TDD discipline
 
-For any non-trivial change, run the `/tdd` skill workflow: write a failing
-test first, implement until green, refactor. The `asctl` port from Python
+For any non-trivial change, work test-first: write a failing test first,
+implement until green, refactor. The `asctl` port from Python
 follows this — every Python test case became a Go test before implementation.
 
 Golden-file tests (see `tools/asctl/internal/prompt/`) are the preferred
@@ -115,7 +101,6 @@ pattern when output format stability matters.
 This repo's own skills help you work on it:
 
 - `infra:lefthook` — hook config guidance
-- `swe:tdd` — test-first workflow
 - `swe:changie` — changelog fragments
 - `astral:ty`, `astral:ruff` — Python static analysis
 - `modern-go-guidelines:use-modern-go` — idiomatic Go by version
