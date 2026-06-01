@@ -33,7 +33,7 @@ agent-skills/
 │   ├── jules/                # Each skill = a directory with SKILL.md
 │   │   ├── SKILL.md          # Frontmatter + body; the public contract
 │   │   └── scripts/          # Per-skill runtime code (Go here: jules)
-│   ├── csv/                  # Python skill (+ pyproject.toml for deps)
+│   ├── go-naming/            # Pure-prompt skill: SKILL.md + references/, no scripts
 │   └── ...
 ├── tools/
 │   └── asctl/                # Go CLI for skill validation + prompt rendering
