@@ -11,8 +11,15 @@ Ecosystem Idioms to Recognize
 - **ndarray** — N-dimensional arrays (the NumPy of Rust). ``Array2<f64>`` is an
   owned 2-D array; ``ArrayView2<f64>`` borrows one. Watch for ``.slice()`` with
   the ``s![..]`` indexing macro.
-- **nalgebra** — linear algebra with *compile-time* dimensions: ``Matrix3<f64>``,
-  ``Vector4<f64>``. Dimension mismatches become type errors.
+- **nalgebra** — linear algebra where *statically sized* types carry their
+  dimensions in the type: ``Matrix3<f64>``, ``Vector4<f64>``, ``SMatrix`` — there
+  a shape mismatch is a *compile-time* type error. But nalgebra also has
+  **dynamically sized** ``DMatrix<f64>`` / ``DVector<f64>`` (and mixed
+  static/dynamic shapes) whose dimensions are known only at runtime: there a
+  mismatch is a **runtime panic**, not a type error. Don't read "nalgebra" as
+  "shapes proven at compile time" — check whether the types are static or
+  dynamic, and guard or test dynamic operations the way you would any runtime
+  bound.
 - **faer** — high-performance dense linear algebra (decompositions, solves) built
   for speed; recognize ``faer::Mat``.
 - **polars** — dataframes (the Rust pandas): a lazy ``LazyFrame`` query plan and
