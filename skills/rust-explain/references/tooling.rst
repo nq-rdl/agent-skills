@@ -138,6 +138,16 @@ The IDE language server. For *reading*, its highest-value features are:
 - **Go to definition / find references** — trace where a trait impl or value
   actually comes from.
 
+But it is **not** outside the trust boundary. By default rust-analyzer runs the
+project's ``build.rs`` and procedural macros (``cargo.buildScripts.enable`` and
+``procMacro.enable`` are on) so its analysis is accurate — which means merely
+*opening* an untrusted workspace can execute code. "Read-only navigation" is not
+read-only (rust-analyzer says as much in its own security note — see
+``references/canonical-sources.rst``). On untrusted code, read files statically
+instead, or open it in a disposable sandbox with build scripts, proc-macros, and
+check-on-save disabled and any project-supplied editor/tool configuration
+ignored.
+
 cargo doc & cargo expand
 ------------------------
 

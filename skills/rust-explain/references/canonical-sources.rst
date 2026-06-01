@@ -22,9 +22,17 @@ cast / aliasing contract, the exact meaning of an ``error[E####]``, or a
 "guaranteed / safe" claim near the boundary of what the compiler promises. This
 file is the *where*.
 
-Use the ``stable`` channel (latest release) by default. If the code targets a
-specific edition, the **Edition Guide** is what reconciles "this compiles for
-them but looks wrong to me."
+Use the ``stable`` channel (latest release) by default — **but first check
+whether the project pins a version.** Editions are not the whole story: a crate
+can declare a minimum supported Rust version (``rust-version`` in
+``Cargo.toml``), repos often pin an exact toolchain (``rust-toolchain.toml``, or
+in CI), and the standard library grows new APIs and lints every six weeks.
+Before asserting an API exists or that an idiom compiles, read those pins and
+consult the docs for *that* version (or the project's own ``cargo doc`` against
+its toolchain) — latest-stable docs can show ``std`` APIs the project's compiler
+does not have, so an edition check alone will not catch the skew. If the code
+targets a specific edition, the **Edition Guide** is what reconciles "this
+compiles for them but looks wrong to me."
 
 The core documentation set
 --------------------------
@@ -79,7 +87,9 @@ references:
 - Aliasing and ``unsafe`` contracts — `Reference: Behavior considered undefined
   <https://doc.rust-lang.org/stable/reference/behavior-considered-undefined.html>`__
   is the authoritative list (e.g. two live ``&mut`` to overlapping memory is UB;
-  raw pointers are exempt). Conceptual intro: `Nomicon: Aliasing
+  a raw pointer carries no aliasing requirement *of its own*, but an *access*
+  through it — or an FFI write — that conflicts with a live ``&``/``&mut`` is
+  still UB). Conceptual intro: `Nomicon: Aliasing
   <https://doc.rust-lang.org/stable/nomicon/aliasing.html>`__; FFI specifics:
   `Nomicon: FFI <https://doc.rust-lang.org/stable/nomicon/ffi.html>`__.
 - Slice splitting / unchecked access contracts — `std::slice
@@ -90,3 +100,12 @@ references:
   moved value), `E0502
   <https://doc.rust-lang.org/stable/error_codes/E0502.html>`__ (mutable +
   immutable borrow).
+- Minimum supported Rust version / toolchain pinning — `Cargo: the rust-version
+  field <https://doc.rust-lang.org/stable/cargo/reference/rust-version.html>`__
+  (a project's supported compiler; check this and any ``rust-toolchain.toml``
+  before asserting an API exists or an idiom compiles, since ``std`` grows
+  faster than editions change).
+- rust-analyzer trust boundary — `rust-analyzer: Security
+  <https://rust-analyzer.github.io/book/security.html>`__ (it runs build scripts
+  and proc-macros by default, so opening an untrusted workspace can execute
+  code; the page lists the settings that disable that).

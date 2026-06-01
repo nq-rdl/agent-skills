@@ -91,13 +91,17 @@ Look hard at:
   overlap, so trust it. ``get_unchecked`` / ``get_unchecked_mut`` are
   **unsafe**: they drop the bounds check, so the *caller* must guarantee the
   index is in bounds (a wrong index is undefined behavior, not a panic). The
-  **aliasing** rule binds *references*, not raw pointers — a ``*mut T`` carries
-  no aliasing requirement of its own — but the instant unsafe code turns raw
-  pointers or unchecked access into two live ``&mut`` over overlapping memory,
-  that is undefined behavior. Audit where unsafe code *materializes* those
-  references, not the safe ``split_at_mut`` helper; a broken aliasing assumption
-  corrupts results silently (Reference → Behavior considered undefined; std
-  ``slice`` docs).
+  **aliasing** rule constrains *live references*, and it bites on every *access*
+  to that memory while a reference is live — not only when a second reference is
+  created. Holding several ``*mut T`` is fine in itself, but *reading or writing*
+  through a raw pointer (or letting C/FFI write) while a ``&mut`` to the same
+  bytes is live — or mutating while a non-``UnsafeCell`` ``&`` is live — is
+  undefined behavior, even though no second ``&mut`` ever exists. So audit the
+  *accesses*: every raw-pointer load/store and FFI write that touches memory a
+  live reference still covers, not just where unsafe code hands out another
+  reference (and ``split_at_mut`` itself stays safe — its two slices are
+  disjoint by construction). A broken aliasing assumption corrupts results
+  silently (Reference → Behavior considered undefined; std ``slice`` docs).
 - **Parallel-reduction nondeterminism.** Floating-point ``+`` is not associative,
   so a ``rayon`` reduction can give a *different sum* per run depending on
   chunking — correct-looking, not reproducible. Flag when a ``par_iter().sum()``
