@@ -7,15 +7,18 @@ None of this needs a wrapper script — run the tools directly.
 Trust boundary first
 --------------------
 
-``cargo check``, ``cargo clippy``, and ``cargo build`` all *compile* the crate,
-and compiling **runs** its ``build.rs`` build script and any procedural macros —
-arbitrary code executed at check time, even though you never run the resulting
-binary. On unfamiliar or untrusted code that is a real risk, not a theoretical
-one. Prefer ``rustc`` on a self-contained single file (no manifest, so no build
-script; with no proc-macro crate to link, no macro runs either). Reach for full
-Cargo only on code you trust, or inside a disposable sandbox — a throwaway
-container or VM you can discard. This is the same caution the skill applies to
-mode 2 ("Why does / doesn't this compile").
+Any Cargo command that *compiles* the crate — ``cargo check``, ``cargo clippy``,
+``cargo build``, ``cargo doc``, ``cargo expand``, ``cargo test``, ``cargo run`` —
+**runs** its ``build.rs`` build script and any procedural macros as part of
+compiling: arbitrary code executed before you ever run the binary. (``cargo
+expand`` is the sharpest case — expanding a proc-macro *is* executing it — and
+``cargo doc --open`` additionally launches a browser.) On unfamiliar or
+untrusted code that is a real risk, not a theoretical one. Prefer ``rustc`` on a
+self-contained single file (no manifest, so no build script; with no proc-macro
+crate to link, no macro runs either). Reach for full Cargo only on code you
+trust, or inside a disposable sandbox — a throwaway container or VM you can
+discard. This is the same caution the skill applies to mode 2 ("Why does /
+doesn't this compile").
 
 cargo clippy — the free senior reviewer
 ---------------------------------------
@@ -87,6 +90,27 @@ exactly the iterator-invalidation bug that C++ allows silently."
 
 Use ``rustc --explain E0502`` for the long-form explanation of any error code.
 
+Invoking ``rustc`` on a snippet: two defaults will mislead you. Bare
+``rustc file.rs`` assumes **edition 2015** and a **binary** crate, so modern
+syntax (``async``, ``let … else``) trips an edition error and any snippet
+without ``fn main`` trips ``error[E0601]`` — spurious errors that hide the
+borrow/lifetime one you actually want. Type-check a snippet like this instead:
+
+.. code:: text
+
+   rustc --edition 2021 --crate-type lib --emit=metadata snippet.rs -o "$(mktemp -d)/meta"
+
+``--edition`` should match the code (read it from ``Cargo.toml`` or ask the
+reader; use ``2024`` for the newest); ``--crate-type lib`` drops the ``fn main``
+requirement; ``--emit=metadata`` type-checks without producing — or running — a
+binary. Send the metadata to a throwaway temp dir rather than ``/dev/null``:
+``rustc`` writes its temp files *next to* the ``-o`` path, so a non-writable
+location (``/dev``) makes it abort with its own spurious error. Read the
+diagnostics it prints — a non-zero exit just means it found the error you were
+after. Code that pulls in external crates will not compile standalone: that
+needs the crate's own build, which means trusted code or a sandbox (see "Trust
+boundary first"), not raw ``rustc``.
+
 rust-analyzer — navigation
 --------------------------
 
@@ -106,3 +130,11 @@ cargo doc & cargo expand
 - ``cargo expand`` shows what a macro expands to. When ``#[derive(...)]`` or a
   ``name!()`` macro is opaque, expand it to read the generated code (requires the
   ``cargo-expand`` tool).
+
+Both compile the crate, so the **trust boundary above applies** — run them only
+on trusted code or in a sandbox. For *untrusted* code, the non-executing
+substitutes are: read the prebuilt docs on `docs.rs <https://docs.rs/>`__
+(already built in a sandbox) or the crate source directly instead of
+``cargo doc``; and read the macro's definition by hand (or expand it inside a
+throwaway container) instead of running ``cargo expand``, since expansion
+*executes* the macro.
