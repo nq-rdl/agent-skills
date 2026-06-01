@@ -1,0 +1,36 @@
+# Template: Jules scheduled maintenance workflow.
+#
+# Trigger: `schedule` (cron) plus `workflow_dispatch` for manual runs. There is
+# NO issue context and NO triggering actor, so this template uses NO @jules-*
+# handle guards and NO author_association check — only repo writers can edit the
+# cron or click "Run workflow". A concurrency group prevents overlapping runs.
+#
+# Placeholders to replace before deploying:
+#   [SECRET_NAME]     — GitHub Actions secret name for the Jules API key
+#   [PROMPT CONTENT]  — repo-specific prompt (indented 12 spaces)
+#   [CRON_SCHEDULE]   — cron expression, e.g. "0 2 * * 1" (Mondays 02:00 UTC)
+name: Jules Scheduled Maintenance
+
+on:
+  schedule:
+    - cron: "[CRON_SCHEDULE]"
+  workflow_dispatch:
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: jules-scheduled-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+    steps:
+      - name: Invoke Jules — Scheduled Maintenance
+        uses: nq-rdl/jules-action@d8ed19ed75a6c2a35fd4e06e5b2ca7cd68b27046  # pinned 2026-04-02
+        with:
+          jules_api_key: ${{ secrets.[SECRET_NAME] }}
+          include_commit_log: true
+          require_plan_approval: false
+          title: "Scheduled maintenance: ${{ github.workflow }}"
+          prompt: |
+            [PROMPT CONTENT]
