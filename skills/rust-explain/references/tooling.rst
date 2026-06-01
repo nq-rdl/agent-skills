@@ -7,18 +7,32 @@ None of this needs a wrapper script — run the tools directly.
 Trust boundary first
 --------------------
 
-Any Cargo command that *compiles* the crate — ``cargo check``, ``cargo clippy``,
-``cargo build``, ``cargo doc``, ``cargo expand``, ``cargo test``, ``cargo run`` —
-**runs** its ``build.rs`` build script and any procedural macros as part of
-compiling: arbitrary code executed before you ever run the binary. (``cargo
-expand`` is the sharpest case — expanding a proc-macro *is* executing it — and
-``cargo doc --open`` additionally launches a browser.) On unfamiliar or
-untrusted code that is a real risk, not a theoretical one. Prefer ``rustc`` on a
-self-contained single file (no manifest, so no build script; with no proc-macro
-crate to link, no macro runs either). Reach for full Cargo only on code you
-trust, or inside a disposable sandbox — a throwaway container or VM you can
-discard. This is the same caution the skill applies to mode 2 ("Why does /
-doesn't this compile").
+Compiling Rust runs code — and even *type-checking* can read your machine. Both
+are part of the trust boundary, in two layers:
+
+- **Any Cargo command that compiles** — ``cargo check``, ``cargo clippy``,
+  ``cargo build``, ``cargo doc``, ``cargo expand``, ``cargo test``, ``cargo
+  run`` — **runs** the crate's ``build.rs`` and any procedural macros as part of
+  compiling: arbitrary code, executed before you ever run a binary. (``cargo
+  expand`` is the sharpest case — expanding a proc-macro *is* executing it — and
+  ``cargo doc --open`` also launches a browser.)
+- **Plain ``rustc`` on a single file is lower-risk, not safe.** No manifest
+  means no ``build.rs``, and with no proc-macro crate to link, none of *those*
+  run — but ``rustc`` still expands **built-in** macros at compile time, and
+  ``env!``, ``option_env!``, ``include_str!``, ``include_bytes!``, and
+  ``include!`` read environment variables and files straight off your machine.
+  A snippet can fold them into a diagnostic, and the message — which this skill
+  tells you to read back — becomes an exfiltration channel. Verified with rustc
+  1.94.1: ``compile_error!(env!("HOME"))`` makes the compiler print your home
+  path, and ``compile_error!(include_str!("…/secret"))`` prints a file's
+  contents — no binary, build script, or proc-macro required.
+
+So for **untrusted** code, do not compile it on your own machine at all: read
+and explain it statically, or compile only inside a disposable sandbox with a
+**scrubbed environment** and no access to your home or repo, treating every
+diagnostic as attacker-controlled output. Reserve ``rustc`` / Cargo on the real
+machine for code you trust. This is the same caution the skill applies to mode 2
+("Why does / doesn't this compile").
 
 cargo clippy — the free senior reviewer
 ---------------------------------------
@@ -107,9 +121,11 @@ binary. Send the metadata to a throwaway temp dir rather than ``/dev/null``:
 ``rustc`` writes its temp files *next to* the ``-o`` path, so a non-writable
 location (``/dev``) makes it abort with its own spurious error. Read the
 diagnostics it prints — a non-zero exit just means it found the error you were
-after. Code that pulls in external crates will not compile standalone: that
-needs the crate's own build, which means trusted code or a sandbox (see "Trust
-boundary first"), not raw ``rustc``.
+after. Run this only on code you trust, or inside the scrubbed sandbox from
+"Trust boundary first": even this type-check expands ``env!`` / ``include_str!``,
+so a hostile snippet can leak local data into the very diagnostics you read
+back. Code that pulls in external crates will not compile standalone: that needs
+the crate's own build, which means trusted code or a sandbox, not raw ``rustc``.
 
 rust-analyzer — navigation
 --------------------------

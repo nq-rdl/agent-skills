@@ -65,13 +65,16 @@ Pick the mode that fits the request:
    in reading order.
 2. **Why does / doesn't this compile** — build borrow-checker intuition.
    *Compile* the snippet to surface the real diagnostic — no need to run it —
-   then pair that message with what the rule protects against. Prefer `rustc` on
-   the single file for unfamiliar code (`cargo check`/`clippy` compile the whole
-   crate, *running* its `build.rs` and proc-macros), and invoke it with the
-   snippet's edition and `--crate-type lib` so the borrow/lifetime error isn't
-   masked by a spurious edition-or-missing-`main` one. `references/tooling.rst`
-   has the exact command and the trust-boundary note. Reserve actually executing
-   the code for when the reader asks about runtime behavior.
+   then pair that message with what the rule protects against. Invoke `rustc`
+   with the snippet's edition and `--crate-type lib` so the borrow/lifetime
+   error isn't masked by a spurious edition-or-missing-`main` one. **Mind the
+   trust boundary:** compiling runs code (Cargo runs `build.rs`/proc-macros), and
+   even `rustc` type-checking expands built-in macros like `env!`/`include_str!`
+   that can leak local data into the diagnostics you read back — so compile
+   *untrusted* code only in a scrubbed sandbox, or just read it statically.
+   `references/tooling.rst` has the exact command and the full trust-boundary
+   note. Reserve actually executing the code for when the reader asks about
+   runtime behavior.
 3. **Idiomatic rewrite + explain the diff** — show the gap between *works* and
    *fluent*. Let `cargo clippy` find the idiom, then explain the reasoning. See
    `references/tooling.rst`.
