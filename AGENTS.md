@@ -17,7 +17,6 @@ pixi run -e default lint
 pixi run -e default test
 pixi run -e default typecheck
 pixi run -e default validate-skills
-cd skills/pi-rpc/scripts && make build && make test && make lint
 cd tools/asctl && go build ./... && go test -race -count=1 ./... && go vet ./...
 cd skills/jules/scripts && make build && make test && make lint
 ```

@@ -3,22 +3,6 @@ min_version: 1.9.0
 pre-commit:
   parallel: true
   jobs:
-    # --- Go: pi-rpc ---
-    - name: go-vet-pi-rpc
-      root: skills/pi-rpc/scripts/
-      glob: "*.go"
-      run: go vet ./...
-
-    - name: go-format-pi-rpc
-      root: skills/pi-rpc/scripts/
-      glob: "*.go"
-      run: test -z "$(gofmt -l {staged_files})"
-
-    - name: go-build-pi-rpc
-      root: skills/pi-rpc/scripts/
-      glob: "*.go"
-      run: CGO_ENABLED=0 go build ./...
-
     # --- Go: jules ---
     - name: go-vet-jules
       root: skills/jules/scripts/
@@ -93,11 +77,6 @@ commit-msg:
 pre-push:
   parallel: true
   jobs:
-    - name: go-test-pi-rpc
-      root: skills/pi-rpc/scripts/
-      glob: "{*.go,go.mod,go.sum,Makefile}"
-      run: go test -race -count=1 ./...
-
     - name: go-test-jules
       root: skills/jules/scripts/
       glob: "{*.go,go.mod,go.sum}"

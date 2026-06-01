@@ -56,6 +56,12 @@ RDL uses [nq-rdl/agent-extensions](https://github.com/nq-rdl/agent-extensions) t
 |-------|-------------|
 | [r-expert](../skills/r-expert/) | R language expert — writing, reviewing, and debugging R code with idiomatic best practices. |
 
+### Rust Language
+
+| Skill | Description |
+|-------|-------------|
+| [rust-explain](../skills/rust-explain/) | Teaching assistant for reading and navigating Rust code — reading vocabulary, numeric/scientific idioms, tooling, and the compile/trust boundary. |
+
 ## Frontmatter Specification
 
 All skills follow the [agentskills.io spec](https://agentskills.io/specification). Required fields:
