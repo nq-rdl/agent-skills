@@ -40,6 +40,7 @@ RDL uses [nq-rdl/agent-extensions](https://github.com/nq-rdl/agent-extensions) t
 | [husky](../skills/husky/) | Git hooks with husky v9 — installation, hook authoring, CI integration. |
 | [lefthook](../skills/lefthook/) | Git hooks with Lefthook — Go-based, language-agnostic alternative to husky. |
 | [document-release](../skills/document-release/) | Post-ship documentation review — ensures README, CHANGELOG, CLAUDE.md, and project docs stay in sync. |
+| [jules-dispatch-creator](../skills/jules-dispatch-creator/) | Generate Jules GitHub Actions dispatch workflows tailored to a repo — five trigger families (mention, label, scheduled, ci-workflow-run, issue-lifecycle). |
 | [report-skill-issue](../skills/report-skill-issue/) | File bug reports for broken skills to their upstream repository. |
 | [skill-review](../skills/skill-review/) | Self-improvement loop — spawns a reviewer subagent to audit skills worked on in the current session. |
 | [cc-hook](../skills/cc-hook/) | Create, manage, and debug Claude Code hooks — all five hook types, the event lifecycle, the JSON output contract, and injection-safe context patterns. Invocable as `/cc-hook`. |
