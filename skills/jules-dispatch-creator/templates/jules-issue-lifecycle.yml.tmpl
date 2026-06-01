@@ -1,0 +1,99 @@
+# Template: Jules issue-lifecycle (unblocked-issues) workflow.
+#
+# Trigger: `issues: [closed]`. A first job finds open issues that were blocked by
+# the just-closed issue ("blocked by #N" / "depends on #N" syntax) and are now
+# fully unblocked; a second job fans out over those issue numbers and invokes
+# Jules on each. This is NOT issue_comment and does NOT use @jules-* handle guards.
+#
+# Detection is implemented inline with actions/github-script rather than a
+# third-party action, so there is no unverifiable external dependency to pin and
+# the "blocked by" convention is explicit and adjustable below.
+#
+# Placeholders to replace before deploying:
+#   [SECRET_NAME]     — GitHub Actions secret name for the Jules API key
+#   [PROMPT CONTENT]  — repo-specific prompt (indented 12 spaces)
+#
+# Authorisation: each unblocked issue's author association must be OWNER or
+# MEMBER before Jules is invoked on it. author_association comes from the REST
+# API (gh issue view does not expose it), and github-script's core.setOutput is
+# injection-safe, so no bash heredoc is needed here.
+name: Jules Issue Lifecycle
+
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  detect-unblocked:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+    outputs:
+      matrix: ${{ steps.finder.outputs.issues }}
+      found: ${{ steps.finder.outputs.has_issues }}
+    steps:
+      - name: Find issues unblocked by the closed issue
+        id: finder
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const closed = context.payload.issue.number;
+            const { owner, repo } = context.repo;
+            // Adjust this pattern to match your dependency-tracking convention.
+            const blockedBy = /(?:blocked by|depends on)\s+#(\d+)/gi;
+
+            const open = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: "open", per_page: 100,
+            });
+
+            const ready = [];
+            for (const issue of open) {
+              if (issue.pull_request) continue;
+              const blockers = [...(issue.body || "").matchAll(blockedBy)].map((m) => Number(m[1]));
+              if (!blockers.includes(closed)) continue;
+              let allClosed = true;
+              for (const b of blockers) {
+                const { data: dep } = await github.rest.issues.get({ owner, repo, issue_number: b });
+                if (dep.state !== "closed") { allClosed = false; break; }
+              }
+              if (allClosed) ready.push(issue.number);
+            }
+            core.setOutput("issues", JSON.stringify(ready));
+            core.setOutput("has_issues", (ready.length > 0).toString());
+
+  implement:
+    needs: detect-unblocked
+    if: needs.detect-unblocked.outputs.found == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+    strategy:
+      matrix:
+        issue-number: ${{ fromJSON(needs.detect-unblocked.outputs.matrix) }}
+    steps:
+      - name: Fetch issue details
+        id: issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ matrix.issue-number }},
+            });
+            const allowed = ["OWNER", "MEMBER"];
+            core.setOutput("authorized", allowed.includes(issue.author_association).toString());
+            core.setOutput("title", issue.title);
+            core.setOutput("body", issue.body || "No description provided.");
+
+      - name: Invoke Jules on unblocked issue
+        if: steps.issue.outputs.authorized == 'true'
+        uses: nq-rdl/jules-action@d8ed19ed75a6c2a35fd4e06e5b2ca7cd68b27046  # pinned 2026-04-02
+        with:
+          jules_api_key: ${{ secrets.[SECRET_NAME] }}
+          include_commit_log: true
+          require_plan_approval: false
+          title: "Unblocked #${{ matrix.issue-number }}: ${{ steps.issue.outputs.title }}"
+          prompt: |
+            [PROMPT CONTENT]
