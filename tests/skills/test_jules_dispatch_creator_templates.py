@@ -18,10 +18,7 @@ import pytest
 import yaml
 
 TEMPLATES_DIR = (
-    Path(__file__).resolve().parents[2]
-    / "skills"
-    / "jules-dispatch-creator"
-    / "templates"
+    Path(__file__).resolve().parents[2] / "skills" / "jules-dispatch-creator" / "templates"
 )
 
 # Canonical @jules-* handle set for issue_comment (mention-dispatch) workflows.
