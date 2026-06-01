@@ -17,7 +17,10 @@ e.g. ``0 2 * * 1`` (Mondays 02:00 UTC) for a weekly cleanup or ``0 4 * * *`` for
 daily performance pass.
 
 A ``concurrency`` group prevents overlapping runs from racing each other (a slow
-maintenance run should not collide with the next scheduled tick).
+maintenance run should not collide with the next scheduled tick). It uses
+``cancel-in-progress: false`` so a manual ``workflow_dispatch`` or the next cron
+tick queues behind an in-flight pass rather than killing a long-running
+maintenance session.
 
 No authorisation guard
 ----------------------

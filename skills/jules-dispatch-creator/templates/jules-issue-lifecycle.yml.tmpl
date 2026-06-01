@@ -45,22 +45,37 @@ jobs:
           script: |
             const closed = context.payload.issue.number;
             const { owner, repo } = context.repo;
-            // Adjust this pattern to match your dependency-tracking convention.
-            const blockedBy = /(?:blocked by|depends on)\s+#(\d+)/gi;
+            // Adjust this pattern to match your dependency-tracking convention. It
+            // captures every "#N" inside a "blocked by …" / "depends on …" clause,
+            // including comma/"and"-separated lists like "blocked by #1, #2 and #3".
+            const blockedBy = /(?:blocked by|depends on)\s+((?:#\d+[\s,]*(?:and\s+)?)+)/gi;
 
             const open = await github.paginate(github.rest.issues.listForRepo, {
               owner, repo, state: "open", per_page: 100,
             });
 
+            // Cache blocker states so each blocker issue is fetched at most once per
+            // run — repos with shared blockers would otherwise issue redundant REST
+            // calls. The just-closed issue is closed by definition (this is the
+            // `issues: [closed]` event), so seed it to skip a guaranteed lookup.
+            const stateCache = new Map([[closed, "closed"]]);
+            const blockerState = async (number) => {
+              if (!stateCache.has(number)) {
+                const { data } = await github.rest.issues.get({ owner, repo, issue_number: number });
+                stateCache.set(number, data.state);
+              }
+              return stateCache.get(number);
+            };
+
             const ready = [];
             for (const issue of open) {
               if (issue.pull_request) continue;
-              const blockers = [...(issue.body || "").matchAll(blockedBy)].map((m) => Number(m[1]));
+              const blockers = [...(issue.body || "").matchAll(blockedBy)]
+                .flatMap((m) => [...m[1].matchAll(/#(\d+)/g)].map((r) => Number(r[1])));
               if (!blockers.includes(closed)) continue;
               let allClosed = true;
               for (const b of blockers) {
-                const { data: dep } = await github.rest.issues.get({ owner, repo, issue_number: b });
-                if (dep.state !== "closed") { allClosed = false; break; }
+                if ((await blockerState(b)) !== "closed") { allClosed = false; break; }
               }
               if (allClosed) ready.push(issue.number);
             }

@@ -59,6 +59,19 @@ EXPECTED_TRIGGERS = {
 
 PINNED_JULES_ACTION = re.compile(r"nq-rdl/jules-action@[0-9a-f]{40}")
 
+# Template-specific placeholders the skill fills at generation time. If one is
+# accidentally hardcoded to a concrete value, the file stops being a template;
+# these assertions lock the tokens in place.
+TEMPLATE_SPECIFIC_PLACEHOLDERS = {
+    "jules-label-dispatch.yml.tmpl": ("[TRIGGER_LABEL]",),
+    "jules-scheduled.yml.tmpl": ("[CRON_SCHEDULE]",),
+    "jules-ci-review-dispatch.yml.tmpl": ("[CI_WORKFLOW_NAMES]",),
+}
+
+# Opener of a multiline GITHUB_OUTPUT write, e.g. `echo "body<<$DELIM"`. The
+# captured group is the heredoc delimiter, which must be the random $DELIM.
+GITHUB_OUTPUT_HEREDOC = re.compile(r'echo\s+"[A-Za-z_]+<<(\S+?)"')
+
 
 def _read(name: str) -> str:
     return (TEMPLATES_DIR / name).read_text(encoding="utf-8")
@@ -137,14 +150,31 @@ def test_issue_lifecycle_matrix_is_fail_safe():
     )
 
 
+@pytest.mark.parametrize("name", sorted(TEMPLATE_SPECIFIC_PLACEHOLDERS))
+def test_template_specific_placeholders_present(name):
+    # A hardcoded value where a [PLACEHOLDER] belongs silently breaks generation.
+    text = _read(name)
+    for placeholder in TEMPLATE_SPECIFIC_PLACEHOLDERS[name]:
+        assert placeholder in text, f"{name}: missing template-specific placeholder {placeholder}"
+
+
 @pytest.mark.parametrize("name", sorted(EXPECTED_TRIGGERS))
 def test_no_fixed_heredoc_delimiter(name):
-    # SKILL.md rule: never use a fixed heredoc delimiter for issue content.
+    # SKILL.md rule: never use a fixed heredoc delimiter for issue content — a
+    # crafted title/body could otherwise close the block early and inject output.
     text = _read(name)
     for bad in ("<<EOF", "<<'EOF'", "ISSUE_EOF"):
         assert bad not in text, f"{name}: fixed heredoc delimiter {bad!r} is injection-prone"
-    # Any bash heredoc writing to GITHUB_OUTPUT must use a random delimiter.
-    if '"$GITHUB_OUTPUT"' in text and "<<" in text:
+    # Validate every multiline GITHUB_OUTPUT write individually: each delimiter
+    # must be the random $DELIM, not a fixed string. Checking each marker (rather
+    # than "openssl appears somewhere in the file") catches a single unprotected
+    # field even when its siblings are protected.
+    markers = GITHUB_OUTPUT_HEREDOC.findall(text)
+    for marker in markers:
+        assert marker == "$DELIM", (
+            f"{name}: GITHUB_OUTPUT heredoc delimiter {marker!r} must be the random $DELIM"
+        )
+    if markers:
         assert "openssl rand -hex 8" in text, (
-            f"{name}: bash heredoc to GITHUB_OUTPUT must use a random delimiter"
+            f"{name}: $DELIM must be generated with `openssl rand -hex 8`"
         )

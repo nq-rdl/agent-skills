@@ -37,8 +37,12 @@ The worst case is wasted API quota / an unsolicited PR (no secret exposure, no
 privilege escalation), but if your threat model cares, add a labeler check on
 ``github.event.sender.login`` against a CODEOWNERS/allowlist, or restrict label
 application via repository settings. A ``concurrency`` group keyed on the issue
-number (``jules-label-${{ github.event.issue.number }}``) also dedupes rapid
-label toggling on the same issue.
+number (``jules-label-${{ github.event.issue.number }}``) serialises repeated
+labelling of the same issue. It uses ``cancel-in-progress: false`` so a re-label
+queues behind an in-flight dispatch rather than cancelling it: the Jules
+invocation is dispatched asynchronously, so cancelling the workflow mid-run would
+not stop Jules — it would only suppress the confirmation comment and leave the
+session running unannounced.
 
 Do **not** add ``@jules-*`` handle guards; those belong only to mention-dispatch.
 

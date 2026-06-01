@@ -134,7 +134,7 @@ family — the detail that used to live inline here.
  come from `${{ steps.issue.outputs.* }}` (fetched via `gh`), and the triggering
  comment from `${{ github.event.comment.body }}` directly (it is not extracted to
  a step output). label-dispatch: the issue via `${{ steps.issue.outputs.* }}`,
- no comment. scheduled: none. ci-workflow-run: the failing-run details. 
+ no comment. scheduled: none. ci-workflow-run: the failing-run details.
  issue-lifecycle: the unblocked issue via `${{ steps.issue.outputs.* }}`.]
 
 [Instructions — family-specific, ends with "open a PR when complete"]

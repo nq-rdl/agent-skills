@@ -21,7 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: jules-scheduled-${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
+      # Queue rather than cancel: a maintenance pass can run for a long time, so a
+      # manual workflow_dispatch or the next cron tick should wait behind an
+      # in-flight run instead of killing it.
+      cancel-in-progress: false
     permissions:
       contents: read
     steps:
