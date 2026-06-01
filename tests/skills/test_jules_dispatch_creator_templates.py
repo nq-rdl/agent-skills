@@ -33,6 +33,16 @@ MENTION_TEMPLATES = {
     "jules-infra-dispatch.yml.tmpl": "infra",
 }
 
+# Templates whose triggers can fire repeatedly/automatically and so need a
+# concurrency group to avoid overlapping or duplicate Jules sessions. Mention
+# templates are excluded: a human types one mention at a time.
+CONCURRENCY_TEMPLATES = (
+    "jules-scheduled.yml.tmpl",
+    "jules-ci-review-dispatch.yml.tmpl",
+    "jules-label-dispatch.yml.tmpl",
+    "jules-issue-lifecycle.yml.tmpl",
+)
+
 # Every template the skill ships, mapped to the trigger key expected in its
 # `on:` block (which parses to the boolean key True). For `issues` triggers the
 # value also names the event type that must appear under `types:`.
@@ -108,6 +118,23 @@ def test_mention_guard_completeness(name):
         assert f"!contains(github.event.comment.body, '@jules-{other}')" in text, (
             f"{name}: must guard against @jules-{other}"
         )
+
+
+@pytest.mark.parametrize("name", CONCURRENCY_TEMPLATES)
+def test_repeatable_templates_have_concurrency(name):
+    assert "concurrency:" in _read(name), (
+        f"{name}: a repeatable/automatic trigger needs a concurrency group to "
+        f"avoid overlapping Jules sessions"
+    )
+
+
+def test_issue_lifecycle_matrix_is_fail_safe():
+    # Unblocked issues are independent work — one failing dispatch must not
+    # cancel the others, so the matrix must opt out of fail-fast.
+    text = _read("jules-issue-lifecycle.yml.tmpl")
+    assert "fail-fast: false" in text, (
+        "jules-issue-lifecycle.yml.tmpl: matrix over independent issues must set fail-fast: false"
+    )
 
 
 @pytest.mark.parametrize("name", sorted(EXPECTED_TRIGGERS))

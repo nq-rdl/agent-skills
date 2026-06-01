@@ -48,6 +48,27 @@ heredoc is needed here.
 
 Do **not** add ``@jules-*`` handle guards; those belong only to mention-dispatch.
 
+Concurrency and the closing actor
+---------------------------------
+
+A workflow-level ``concurrency`` group keyed on the closed issue
+(``jules-issue-lifecycle-${{ github.event.issue.number }}``,
+``cancel-in-progress: false``) serialises the pipeline so a rapid
+close/reopen/close on the same issue does not launch overlapping detection
+sweeps. The ``implement`` job's matrix uses ``fail-fast: false`` so that a failed
+dispatch on one unblocked issue does not cancel the others — each is independent
+work.
+
+The ``detect-unblocked`` job runs on **every** ``issues: closed`` event, with no
+guard on who closed the issue. This is deliberate: gating the scan on the closing
+issue's author would skip legitimate cases where closing an *externally* authored
+issue (e.g. a community bug report) unblocks internal work. Jules is never invoked
+incorrectly — the per-issue ``author_association`` check still gates every actual
+invocation — but be aware that a Triage-role actor can drive repeated (read-only)
+API scans by closing issues. If that denial-of-wallet surface matters for your
+repo, add a job-level ``if:`` on ``github.event.issue.author_association`` or a
+``github.actor`` allowlist to ``detect-unblocked``.
+
 Prompt contents
 ---------------
 

@@ -24,10 +24,21 @@ Authorisation
 
 Authorise on the **issue author's** association
 (``contains(fromJSON('["OWNER", "MEMBER"]'), github.event.issue.author_association)``),
-matching the OWNER/MEMBER convention used by the mention-dispatch templates. Only
-repo writers can apply labels, but the author guard additionally avoids acting on
-issues opened by outside accounts that happen to receive the label. Do **not** use
-the upstream example's hard-coded username allowlist — it does not generalise.
+matching the OWNER/MEMBER convention used by the mention-dispatch templates. Do
+**not** use the upstream example's hard-coded username allowlist — it does not
+generalise.
+
+This gates on the issue **author**, not on whoever applied the label — GitHub's
+``labeled`` event does not expose the labeler's association in a comparable field.
+Be aware of the limitation: the **Triage** role can apply labels *without* write
+access, so on a repo that grants Triage to outside collaborators, a Triage actor
+could apply the trigger label to an OWNER/MEMBER-authored issue and start Jules.
+The worst case is wasted API quota / an unsolicited PR (no secret exposure, no
+privilege escalation), but if your threat model cares, add a labeler check on
+``github.event.sender.login`` against a CODEOWNERS/allowlist, or restrict label
+application via repository settings. A ``concurrency`` group keyed on the issue
+number (``jules-label-${{ github.event.issue.number }}``) also dedupes rapid
+label toggling on the same issue.
 
 Do **not** add ``@jules-*`` handle guards; those belong only to mention-dispatch.
 

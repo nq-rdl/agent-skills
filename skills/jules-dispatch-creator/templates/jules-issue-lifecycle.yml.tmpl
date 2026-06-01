@@ -23,6 +23,12 @@ on:
   issues:
     types: [closed]
 
+# Serialise the pipeline per closed issue so a rapid close/reopen/close does not
+# launch overlapping detection sweeps.
+concurrency:
+  group: jules-issue-lifecycle-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   detect-unblocked:
     runs-on: ubuntu-latest
@@ -69,6 +75,9 @@ jobs:
       contents: read
       issues: read
     strategy:
+      # Each unblocked issue is independent work — a failed dispatch on one must
+      # not cancel the dispatches for the others.
+      fail-fast: false
       matrix:
         issue-number: ${{ fromJSON(needs.detect-unblocked.outputs.matrix) }}
     steps:
@@ -95,5 +104,7 @@ jobs:
           include_commit_log: true
           require_plan_approval: false
           title: "Unblocked #${{ matrix.issue-number }}: ${{ steps.issue.outputs.title }}"
+          # The unblocked issue's title and body are available to the prompt as
+          # ${{ steps.issue.outputs.title }} and ${{ steps.issue.outputs.body }}.
           prompt: |
             [PROMPT CONTENT]

@@ -130,9 +130,12 @@ family — the detail that used to live inline here.
 [Role-specific reference material — see the family reference]
 
 [Event context — injected by GitHub Actions, keep interpolations verbatim.
- The shape depends on the family: an issue + triggering comment for
- mention-dispatch; the issue for label-dispatch; none for scheduled; the
- failing-run details for ci-workflow-run; the unblocked issue for issue-lifecycle.]
+ The shape depends on the family. mention-dispatch: the issue title/body/labels
+ come from `${{ steps.issue.outputs.* }}` (fetched via `gh`), and the triggering
+ comment from `${{ github.event.comment.body }}` directly (it is not extracted to
+ a step output). label-dispatch: the issue via `${{ steps.issue.outputs.* }}`,
+ no comment. scheduled: none. ci-workflow-run: the failing-run details. 
+ issue-lifecycle: the unblocked issue via `${{ steps.issue.outputs.* }}`.]
 
 [Instructions — family-specific, ends with "open a PR when complete"]
 ```
@@ -182,11 +185,11 @@ YAML exactly — do not reformat, reorder, or simplify it.
 
 | Family | `@jules-*` guards | Issue context source | Actor authorisation | Concurrency |
 |--------|-------------------|----------------------|---------------------|-------------|
-| mention-dispatch | yes (all other handles) | `github.event.comment` | `author_association` OWNER/MEMBER | — |
-| label-dispatch | no | `github.event.issue` | issue `author_association` OWNER/MEMBER | — |
+| mention-dispatch | yes (all other handles) | `github.event.issue` via `gh` (+ `github.event.comment.body` for the triggering comment) | comment `author_association` OWNER/MEMBER | — |
+| label-dispatch | no | `github.event.issue` via `gh` | issue `author_association` OWNER/MEMBER | yes (per issue) |
 | scheduled | no | none | none (repo-controlled) | yes |
 | ci-workflow-run | no | none (CI failure context) | none | yes (per branch) |
-| issue-lifecycle | no | per-issue via github-script | per-issue `author_association` | — |
+| issue-lifecycle | no | per-issue via github-script | per-issue `author_association` | yes (per closed issue) |
 
 **Do not add `@jules-*` guards to any family except mention-dispatch.** The
 `workflow_run`, `schedule`, and `issues` triggers cannot collide with
