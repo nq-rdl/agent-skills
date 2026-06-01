@@ -78,6 +78,7 @@ ruff = ">=0.8.0"
 ty = ">=0.0.1a9"
 zensical = ">=0.0.31,<0.0.32"
 pandoc = ">=3.9.0.2,<4"
+pyyaml = ">=6.0.3,<7"
 
 [tool.pixi.environments]
 default = { features = [], solve-group = "default" }

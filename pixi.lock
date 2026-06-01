@@ -90,7 +90,7 @@ packages:
 - pypi: ./
   name: agent-skills
   version: 0.1.0
-  sha256: 1d6cc02914384ef3eab4a43a19162ac55a0ad575b02d41e3be8f38b133d0eb8d
+  sha256: 5a19f802a79133818f8cd34faab2286499c86489551fd24d2a4dd89aa031088b
   requires_dist:
   - click>=8.0
   - strictyaml>=1.7.3
@@ -520,7 +520,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/pyyaml?source=compressed-mapping
+  - pkg:pypi/pyyaml?source=hash-mapping
   size: 201616
   timestamp: 1770223543730
 - conda: https://conda.anaconda.org/conda-forge/linux-64/readline-8.3-h853b02a_0.conda
