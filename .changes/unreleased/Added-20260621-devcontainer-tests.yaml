@@ -1,0 +1,2 @@
+kind: Added
+body: 'devcontainer: add a static, Docker-free TDD test suite (tests/test_devcontainer.py) that locks the .devcontainer contract — config wiring (postCreate/postStart/waitFor, NET_ADMIN, remoteUser, mounts, claude-code extension), a fail-closed firewall with the required egress allowlist, Dockerfile/.go-version coherence, least-privilege sudoers, and bash -n on the shell scripts.'
