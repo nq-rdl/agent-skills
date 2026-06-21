@@ -1,0 +1,3 @@
+kind: Added
+body: 'Add the `sql-review-explain` skill — an interactive, human-in-the-loop walkthrough explaining a SQL file against its `.sqlreview/` review artifacts (#106)'
+time: 2026-05-29T22:51:26.861251489+00:00
