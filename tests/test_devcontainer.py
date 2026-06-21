@@ -145,11 +145,20 @@ def test_firewall_allowlist_hosts():
 
 
 def test_firewall_self_verification():
-    # The script proves it is fail-closed at runtime: example.com must be blocked
-    # and api.github.com reachable. Lock that verification in place.
+    # The script must prove it is fail-closed at runtime, not merely mention the
+    # hosts. A bare substring check passes even if the verification logic is
+    # inverted or deleted, so assert the actual control flow:
+    #   * reaching example.com is treated as FAILURE (curl success -> exit 1)
+    #   * api.github.com being UNreachable is treated as FAILURE (! curl -> exit 1)
     text = FIREWALL.read_text(encoding="utf-8")
-    assert "example.com" in text and "api.github.com" in text, \
-        "init-firewall.sh must self-verify (example.com blocked, api.github.com reachable)"
+    assert re.search(
+        r"if\s+curl[^\n]*example\.com[^\n]*;\s*then\b[\s\S]*?exit 1",
+        text,
+    ), "init-firewall.sh must fail (exit 1) if it can reach the blocked host example.com"
+    assert re.search(
+        r"if\s+!\s+curl[^\n]*api\.github\.com[^\n]*;\s*then\b[\s\S]*?exit 1",
+        text,
+    ), "init-firewall.sh must fail (exit 1) if it cannot reach the allowed host api.github.com"
 
 
 # --------------------------------------------------------------------------- #

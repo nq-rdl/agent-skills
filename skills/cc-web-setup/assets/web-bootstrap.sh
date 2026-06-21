@@ -301,13 +301,16 @@ ensure_codex_auth() {
   if [ -z "${CODEX_ACCESS_TOKEN:-}" ]; then
     return 0
   fi
-  # An all-whitespace CODEX_ACCESS_TOKEN passes the -z guard above but is unusable
-  # (e.g. a secret slot populated with a stray newline/spaces). Trim leading
-  # whitespace once — reused by the auth.json-blob detection below — and, if
-  # nothing remains, surface a clear "blank" diagnostic instead of letting it fall
-  # through to `codex login --with-access-token`, which would reject it as a
-  # malformed JWT and emit a misleading "must be an agent identity JWT" warning.
+  # A CODEX_ACCESS_TOKEN with surrounding whitespace passes the -z guard above but
+  # is unusable as-is: a JWT never contains leading/trailing whitespace, yet a
+  # secret injected from a file commonly carries a stray trailing newline (and a
+  # slot may hold only spaces). Trim BOTH ends once — reused by the blank check,
+  # the auth.json-blob detection, AND the login below — so an otherwise-valid
+  # token isn't piped verbatim to `codex login --with-access-token` and rejected
+  # as a malformed JWT (which emits a misleading "must be an agent identity JWT"
+  # warning). If nothing remains, surface a clear "blank" diagnostic instead.
   local _codex_tok_trimmed="${CODEX_ACCESS_TOKEN#"${CODEX_ACCESS_TOKEN%%[![:space:]]*}"}"
+  _codex_tok_trimmed="${_codex_tok_trimmed%"${_codex_tok_trimmed##*[![:space:]]}"}"
   if [ -z "$_codex_tok_trimmed" ]; then
     log "WARNING: CODEX_ACCESS_TOKEN is set but contains only whitespace — treating as unset (no codex login)."
     # "treating as unset" must be literal: codex reads CODEX_ACCESS_TOKEN at runtime
@@ -341,7 +344,9 @@ ensure_codex_auth() {
     return 0
   fi
   # printf (no trailing newline) keeps the token off argv; codex reads it on stdin.
-  if printf '%s' "$CODEX_ACCESS_TOKEN" | codex login --with-access-token >>"$LOG" 2>&1; then
+  # Pipe the whitespace-trimmed token: a stray leading/trailing newline would make
+  # codex reject an otherwise-valid JWT (see _codex_tok_trimmed above).
+  if printf '%s' "$_codex_tok_trimmed" | codex login --with-access-token >>"$LOG" 2>&1; then
     log "Codex authenticated via access token."
     return 0
   fi

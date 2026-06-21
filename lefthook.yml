@@ -61,10 +61,15 @@ pre-commit:
       run: command -v lychee >/dev/null 2>&1 && skills/lychee/scripts/check-links.sh {staged_files} || true
 
     # Optional shellcheck for the cc-web-setup skill's shipped shell assets/tests.
-    # Mirrors lychee-links: skips silently when shellcheck is not on PATH.
+    # Skips silently when shellcheck is not on PATH, but a real lint failure must
+    # block — so gate ONLY on tool presence, never `... || true` (which would also
+    # swallow genuine warnings and make this hook purely advisory).
     - name: shellcheck-cc-web-setup
       glob: "skills/cc-web-setup/**/*.sh"
-      run: command -v shellcheck >/dev/null 2>&1 && shellcheck -S warning skills/cc-web-setup/assets/*.sh skills/cc-web-setup/scripts/*.sh || true
+      run: |
+        if command -v shellcheck >/dev/null 2>&1; then
+          shellcheck -S warning skills/cc-web-setup/assets/*.sh skills/cc-web-setup/scripts/*.sh
+        fi
 
 commit-msg:
   # Non-blocking changie reminder. Prints a hint when no fragment was staged
