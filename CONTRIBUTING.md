@@ -154,6 +154,7 @@ follow-up PR, the pixi task will be dropped.
 Pull requests trigger:
 
 - `.github/workflows/skills-validation.yml` — builds `asctl` and runs `asctl repo-check`
+- `.github/workflows/skillspector.yml` — runs the NVIDIA SkillSpector scan, uploads SARIF, and gates the PR on findings
 - Per-module Go test workflows (matrix across Go versions where applicable)
 - Changelog check — fails the PR if no new fragment in `.changes/unreleased/`
 
