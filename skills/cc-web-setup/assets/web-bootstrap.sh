@@ -348,6 +348,15 @@ ensure_codex_auth() {
   # codex reject an otherwise-valid JWT (see _codex_tok_trimmed above).
   if printf '%s' "$_codex_tok_trimmed" | codex login --with-access-token >>"$LOG" 2>&1; then
     log "Codex authenticated via access token."
+    # The trimmed value only fixed THIS login. If the raw env var carried
+    # surrounding whitespace, the value still visible to later Bash tool shells is
+    # a MALFORMED JWT — codex reads live CODEX_ACCESS_TOKEN before ~/.codex/auth.json,
+    # so every later `codex exec` would fail despite the auth.json this login just
+    # wrote. Drop the raw value (codex then falls back to auth.json). A clean token
+    # (raw == trimmed) is left in place so the normal direct-token path keeps working.
+    if [ "$CODEX_ACCESS_TOKEN" != "$_codex_tok_trimmed" ]; then
+      drop_codex_access_token "it carried surrounding whitespace (a malformed JWT for later codex calls)"
+    fi
     return 0
   fi
   log "WARNING: 'codex login --with-access-token' failed — CODEX_ACCESS_TOKEN must be a Codex agent identity JWT, not a ChatGPT access token or API key (see ${LOG})."

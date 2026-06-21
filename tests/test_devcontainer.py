@@ -150,15 +150,19 @@ def test_firewall_self_verification():
     # inverted or deleted, so assert the actual control flow:
     #   * reaching example.com is treated as FAILURE (curl success -> exit 1)
     #   * api.github.com being UNreachable is treated as FAILURE (! curl -> exit 1)
+    # The `exit 1` must live in the `then` body: `(?:(?!else|fi)[\s\S])*?` forbids
+    # the match from crossing an `else`/`fi` boundary, so moving the `exit 1` into
+    # the `else` branch (inverting the guard) no longer satisfies the test.
     text = FIREWALL.read_text(encoding="utf-8")
+    then_body = r"(?:(?!\b(?:else|fi)\b)[\s\S])*?"
     assert re.search(
-        r"if\s+curl[^\n]*example\.com[^\n]*;\s*then\b[\s\S]*?exit 1",
+        rf"if\s+curl[^\n]*example\.com[^\n]*;\s*then\b{then_body}\bexit 1\b",
         text,
-    ), "init-firewall.sh must fail (exit 1) if it can reach the blocked host example.com"
+    ), "init-firewall.sh must fail (exit 1) in the then-branch if it can reach the blocked host example.com"
     assert re.search(
-        r"if\s+!\s+curl[^\n]*api\.github\.com[^\n]*;\s*then\b[\s\S]*?exit 1",
+        rf"if\s+!\s+curl[^\n]*api\.github\.com[^\n]*;\s*then\b{then_body}\bexit 1\b",
         text,
-    ), "init-firewall.sh must fail (exit 1) if it cannot reach the allowed host api.github.com"
+    ), "init-firewall.sh must fail (exit 1) in the then-branch if it cannot reach the allowed host api.github.com"
 
 
 # --------------------------------------------------------------------------- #
