@@ -1,4 +1,14 @@
-# agent-skills
+# RDL Agent Skills
+
+:warning: **This repository is now archived**
+
+RDL Agent Skills are now managed in [`nq-rdl/agent-extensions`](https://github.com/nq-rdl/agent-extensions).
+
+This repository will remain public and can be forked, but is no longer maintained.
+
+---
+
+
 
 RDL's repository for authoring, documenting, and validating Agent Skills.
 
