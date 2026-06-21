@@ -155,13 +155,13 @@ test_codex_fresh_login() {
 }
 
 test_codex_blank_token() {
-  local d log; d="$(new_stub_dir)"; log="$WORK/c4.log"
+  local d log envf; d="$(new_stub_dir)"; log="$WORK/c4.log"; envf="$WORK/c4-envfile"; : > "$envf"
   # codex stub drops a sentinel if it is ever invoked.
   write_stub "$d" codex "> '$WORK/c4-called'; exit 0"
   rm -f "$WORK/c4-called"
   # A whitespace-only token is non-empty (passes the -z guard) but unusable: it
   # must be diagnosed as blank, NOT piped to `codex login --with-access-token`.
-  run_ensure_codex_auth "$d" "$log" "   " \
+  ( export CLAUDE_ENV_FILE="$envf"; run_ensure_codex_auth "$d" "$log" "   " ) \
     && fail "codex blank-token: returned 0 for a whitespace-only token" \
     || ok "codex blank-token: returned non-zero"
   grep -q 'only whitespace' "$log" 2>/dev/null \
@@ -169,6 +169,11 @@ test_codex_blank_token() {
     || fail "codex blank-token: not diagnosed as blank. Log: $(cat "$log" 2>/dev/null)"
   [ -e "$WORK/c4-called" ] && fail "codex blank-token: codex was invoked" \
     || ok "codex blank-token: codex NOT invoked"
+  # "treating as unset" must be honored: the blank token has to be dropped from the
+  # session env (codex reads CODEX_ACCESS_TOKEN at runtime), so the unset is persisted.
+  grep -qF 'unset CODEX_ACCESS_TOKEN' "$envf" 2>/dev/null \
+    && ok "codex blank-token: persisted unset to CLAUDE_ENV_FILE" \
+    || fail "codex blank-token: did not persist unset. File: $(cat "$envf" 2>/dev/null)"
 }
 
 run_configure_codex_sandbox() {

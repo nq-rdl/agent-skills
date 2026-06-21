@@ -257,6 +257,24 @@ seed_codex_auth_json() {
   return 1
 }
 
+# Drop CODEX_ACCESS_TOKEN on BOTH fronts so a value codex can't use as a JWT never
+# reaches it: (1) `unset` it in THIS process, and (2) persist `unset CODEX_ACCESS_TOKEN`
+# to CLAUDE_ENV_FILE so later Bash tool shells inherit the unset too. Codex reads
+# CODEX_ACCESS_TOKEN from the live env at runtime and parses it AS a JWT, so leaving a
+# blank/whitespace or auth.json-blob value in place makes every later `codex exec` fail
+# even when a valid auth.json is on disk. $1 is a short reason for the log line.
+drop_codex_access_token() {
+  local reason="$1"
+  if [ -n "${CLAUDE_ENV_FILE:-}" ] && ! grep -qF 'unset CODEX_ACCESS_TOKEN' "$CLAUDE_ENV_FILE" 2>/dev/null; then
+    if echo 'unset CODEX_ACCESS_TOKEN' >> "$CLAUDE_ENV_FILE" 2>>"$LOG"; then
+      log "Unset CODEX_ACCESS_TOKEN for the session (${reason})."
+    else
+      log "WARNING: could not append 'unset CODEX_ACCESS_TOKEN' to CLAUDE_ENV_FILE — later codex calls may still see it (see ${LOG})."
+    fi
+  fi
+  unset CODEX_ACCESS_TOKEN
+}
+
 # Authenticate the Codex CLI non-interactively from an env-injected OAuth token.
 #
 # The web container is fresh each session and ~/.codex is not persisted, so the
@@ -292,6 +310,9 @@ ensure_codex_auth() {
   local _codex_tok_trimmed="${CODEX_ACCESS_TOKEN#"${CODEX_ACCESS_TOKEN%%[![:space:]]*}"}"
   if [ -z "$_codex_tok_trimmed" ]; then
     log "WARNING: CODEX_ACCESS_TOKEN is set but contains only whitespace — treating as unset (no codex login)."
+    # "treating as unset" must be literal: codex reads CODEX_ACCESS_TOKEN at runtime
+    # and would still parse the whitespace as a (malformed) JWT, so drop it for real.
+    drop_codex_access_token "it contains only whitespace"
     return 1
   fi
   if ! command -v codex >/dev/null 2>&1; then
@@ -302,23 +323,13 @@ ensure_codex_auth() {
   # (e.g. to reuse a single GH_TOKEN-style secret slot for a personal ChatGPT-OAuth
   # credential). `--with-access-token` would reject it as a malformed JWT, so detect
   # the JSON shape (a leading '{' after optional whitespace) and route it to the
-  # auth.json seeding path instead. Crucially, codex ALSO reads CODEX_ACCESS_TOKEN
-  # from the live env at runtime and parses it AS a JWT: with a JSON blob there,
-  # every later `codex exec` fails even with a valid auth.json on disk. So we drop it
-  # on TWO fronts: (1) `unset` it in THIS process, and (2) persist
-  # `unset CODEX_ACCESS_TOKEN` to CLAUDE_ENV_FILE so subsequent Bash tool shells
-  # inherit the unset too. Then codex falls back to ~/.codex/auth.json.
+  # auth.json seeding path instead. Drop CODEX_ACCESS_TOKEN first (see
+  # drop_codex_access_token) so codex doesn't parse the blob as a JWT at runtime; it
+  # then falls back to ~/.codex/auth.json.
   # (_codex_tok_trimmed is the leading-trimmed token computed above.)
   if [ "${_codex_tok_trimmed:0:1}" = '{' ]; then
-    if [ -n "${CLAUDE_ENV_FILE:-}" ] && ! grep -qF 'unset CODEX_ACCESS_TOKEN' "$CLAUDE_ENV_FILE" 2>/dev/null; then
-      if echo 'unset CODEX_ACCESS_TOKEN' >> "$CLAUDE_ENV_FILE" 2>>"$LOG"; then
-        log "Unset CODEX_ACCESS_TOKEN for the session (it holds an auth.json blob, not a JWT)."
-      else
-        log "WARNING: could not append 'unset CODEX_ACCESS_TOKEN' to CLAUDE_ENV_FILE — later codex calls may still see the blob (see ${LOG})."
-      fi
-    fi
     local _codex_blob="$CODEX_ACCESS_TOKEN"
-    unset CODEX_ACCESS_TOKEN
+    drop_codex_access_token "it holds an auth.json blob, not a JWT"
     CODEX_AUTH_JSON="$_codex_blob" seed_codex_auth_json
     return $?
   fi
