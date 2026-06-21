@@ -29,6 +29,22 @@ EOF
   chmod +x "$dir/claude"
 }
 
+# Like make_claude_stub, but the plugin install AND update both fail (marketplace
+# registration still succeeds), so the pre-seed cannot recover — exercises the
+# documented non-zero exit on a real provisioning failure.
+make_claude_stub_failing() { # <dir>
+  local dir="$1"
+  cat >"$dir/claude" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$CLAUDE_LOG"
+case "$*" in
+  *"plugin install"*|*"plugin update"*) exit 1 ;;
+  *) exit 0 ;;
+esac
+EOF
+  chmod +x "$dir/claude"
+}
+
 new_bin() { # build a PATH dir with coreutils + optional claude
   local d tool real; d="$(mktemp -d "$WORK/bin.XXXXXX")"
   for tool in bash printf cat rm mkdir dirname grep head touch; do
@@ -101,6 +117,44 @@ test_local_hook() {
     || fail "local-hook: project hook not sourced. Out: $(cat "$out")"
 }
 
+# --- Test 6: plugin pre-seed failure -> non-zero exit ------------------------
+test_plugin_failure_rc() {
+  # The exit-status contract: a plugin that can neither install nor update is a
+  # provisioning failure and must produce a non-zero exit (not a silent rc=0).
+  local bin proj out clog; bin="$(new_bin)"; proj="$(mktemp -d "$WORK/p6.XXXXXX")"; out="$WORK/t6.out"
+  make_claude_stub_failing "$bin"; clog="$WORK/t6-claude.log"; : > "$clog"
+  if run_setup "$bin" "$proj" "$out" "CLAUDE_LOG=$clog"; then
+    fail "plugin-fail: expected non-zero exit when pre-seed fails. Out: $(cat "$out")"
+  else
+    ok "plugin-fail: non-zero exit when a plugin can neither install nor update"
+  fi
+  grep -q 'Provisioning finished with errors' "$out" \
+    && ok "plugin-fail: surfaced the provisioning failure in the epilogue" \
+    || fail "plugin-fail: did not log the failure. Out: $(cat "$out")"
+}
+
+# --- Test 7: a project hook that exits is contained by the subshell ----------
+test_local_hook_exit_contained() {
+  # `( source "$local_hook" )` must isolate a stray `exit` so it cannot abort
+  # main() at the source line: rc becomes 1 and the epilogue still runs.
+  local bin proj out clog; bin="$(new_bin)"; proj="$(mktemp -d "$WORK/p7.XXXXXX")"; out="$WORK/t7.out"
+  make_claude_stub "$bin"; clog="$WORK/t7-claude.log"; : > "$clog"
+  mkdir -p "$proj/scripts"
+  printf 'touch "%s/t7-before"\nexit 1\n' "$WORK" > "$proj/scripts/cc-web-setup.local.sh"
+  rm -f "$WORK/t7-before"
+  if run_setup "$bin" "$proj" "$out" "CLAUDE_LOG=$clog"; then
+    fail "exit-contained: expected non-zero exit (hook failed). Out: $(cat "$out")"
+  else
+    ok "exit-contained: hook's non-zero exit propagates to rc"
+  fi
+  [ -e "$WORK/t7-before" ] \
+    && ok "exit-contained: the hook actually ran" \
+    || fail "exit-contained: hook did not run at all. Out: $(cat "$out")"
+  grep -q 'Provisioning finished with errors' "$out" \
+    && ok "exit-contained: main() ran its epilogue (the exit did not escape the subshell)" \
+    || fail "exit-contained: epilogue missing — exit escaped the subshell. Out: $(cat "$out")"
+}
+
 # --- Test 5: sourceable (main-guard) -----------------------------------------
 test_sourceable() {
   # Sourcing must NOT run main(): define globals only. Assert MARKETPLACES exists
@@ -115,6 +169,8 @@ test_defaults
 test_overrides
 test_no_claude
 test_local_hook
+test_plugin_failure_rc
+test_local_hook_exit_contained
 test_sourceable
 
 echo ""

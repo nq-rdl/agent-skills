@@ -398,11 +398,15 @@ configure_codex_sandbox() {
 # $CLAUDE_ENV_FILE (which subsequent Bash commands source). Idempotent via a grep
 # guard so re-runs do not duplicate the line. No-op when CLAUDE_ENV_FILE is unset.
 persist_path() {
-  local dir="$1"
+  local dir="$1" line
   [ -n "${CLAUDE_ENV_FILE:-}" ] || return 0
-  if ! grep -qF "$dir" "$CLAUDE_ENV_FILE" 2>/dev/null; then
-    # shellcheck disable=SC2016  # literal $HOME/$PATH intended — expanded when sourced later
-    echo "export PATH=\"${dir}:\$PATH\"" >> "$CLAUDE_ENV_FILE"
+  # shellcheck disable=SC2016  # literal $PATH intended — expanded when sourced later
+  line="export PATH=\"${dir}:\$PATH\""
+  # Idempotent on the EXACT line (grep -qxF), not a substring: an unusual dir
+  # cannot false-match another entry and skip a needed export. printf avoids
+  # echo's backslash/-flag surprises.
+  if ! grep -qxF "$line" "$CLAUDE_ENV_FILE" 2>/dev/null; then
+    printf '%s\n' "$line" >> "$CLAUDE_ENV_FILE"
     log "Persisted ${dir} on PATH via CLAUDE_ENV_FILE."
   fi
 }
@@ -427,9 +431,11 @@ main() {
   # shellcheck disable=SC2034  # consumed by the sourced project hook, not this file
   [ "$(id -u)" -eq 0 ] || SUDO='sudo -n'
 
-  # Verbose output sink (keeps the model's context clean — see header).
+  # Verbose output sink (keeps the model's context clean — see header). Created
+  # 0600 via a subshell umask so the log (which may capture command output) is
+  # not world-readable from the outset.
   LOG="${TMPDIR:-/tmp}/rdl-web-bootstrap.log"
-  : > "$LOG" 2>/dev/null || LOG=/dev/null
+  ( umask 077; : > "$LOG" ) 2>/dev/null || LOG=/dev/null
 
   # Resolve the repo root. The hook exports CLAUDE_PROJECT_DIR; fall back to the
   # script's own location so it also works when run by hand.
@@ -496,14 +502,21 @@ main() {
   # The portable engine above carries no project dependencies. Repo-specific glue
   # — language toolchains on PATH, container runtimes, git-hook wiring (.husky /
   # .githooks / lefthook), fetching the default branch for merge-base checks, etc.
-  # — belongs in scripts/web-bootstrap.local.sh, sourced here if present. It shares
-  # main()'s helpers and globals (log, $LOG, $PROJECT_DIR, $SUDO, $CLAUDE_ENV_FILE,
-  # persist_path). Keep every step non-fatal — this hook must always exit 0.
+  # — belongs in scripts/web-bootstrap.local.sh, sourced here if present. A subshell
+  # inherits main()'s helpers and globals (log, $LOG, $PROJECT_DIR, $SUDO,
+  # $CLAUDE_ENV_FILE, persist_path), so its file/system side effects persist.
+  #
+  # SECURITY/ISOLATION: web-bootstrap.local.sh is trusted, repo-owned code — the
+  # same trust level as this committed hook. Running it in a SUBSHELL keeps a stray
+  # `exit` (or `exit 1`) from breaking this hook's "always exit 0" discipline and
+  # stops its variable edits from leaking back; it does NOT sandbox the code (a
+  # project hook legitimately needs the session's git/gh credentials). Signal a
+  # soft failure with a non-zero exit/return — it is logged, never fatal.
   local local_hook="${PROJECT_DIR}/scripts/web-bootstrap.local.sh"
   if [ -f "$local_hook" ]; then
     log "Running project bootstrap hook (web-bootstrap.local.sh)…"
     # shellcheck source=/dev/null
-    source "$local_hook" || log "WARNING: project bootstrap hook reported errors (see ${LOG})."
+    ( source "$local_hook" ) || log "WARNING: project bootstrap hook reported errors (see ${LOG})."
   fi
 
   log "Session bootstrap complete."

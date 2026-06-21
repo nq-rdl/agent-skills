@@ -73,7 +73,7 @@ fi
 main() {
   # Verbose output sink (keeps stdout clean — see header).
   LOG="${TMPDIR:-/tmp}/rdl-cc-web-setup.log"
-  : > "$LOG" 2>/dev/null || LOG=/dev/null
+  ( umask 077; : > "$LOG" ) 2>/dev/null || LOG=/dev/null
 
   # Resolve the repo root. `make cc-web-setup` runs from the repo root and the
   # hook exports CLAUDE_PROJECT_DIR; fall back to the script's own location so it
@@ -105,7 +105,12 @@ main() {
          || claude plugin update "$plugin" --scope project </dev/null >>"$LOG" 2>&1; then
         log "  ${plugin}: ready."
       else
+        # A plugin that can neither install nor update is a real provisioning
+        # failure: the documented exit-status contract (0 = installed/skipped,
+        # non-zero = failed) requires surfacing it, even though the SessionStart
+        # hook will retry next session.
         log "  WARNING: could not install/update ${plugin} (see ${LOG})."
+        rc=1
       fi
     done
   else
@@ -116,13 +121,21 @@ main() {
   # The portable engine above carries no project dependencies. A repo that needs
   # heavy provisioning baked into the snapshot (language toolchains, container
   # runtimes, k8s-in-docker, etc.) puts it in scripts/cc-web-setup.local.sh,
-  # which is sourced here if present. It shares main()'s log()/$LOG/$PROJECT_DIR
-  # and should set `rc=1` to signal a hard provisioning failure.
+  # which is sourced here if present. A subshell inherits main()'s helpers and
+  # globals (log, $LOG, $PROJECT_DIR), so file/system side effects persist; the
+  # hook signals a hard provisioning failure by exiting/returning non-zero, which
+  # the subshell exit status captures into rc.
+  #
+  # SECURITY/ISOLATION: cc-web-setup.local.sh is trusted, repo-owned code — the
+  # same trust level as this committed script (and every other file in scripts/).
+  # Running it in a SUBSHELL means a stray `exit` cannot abort provisioning and
+  # its variable edits cannot leak back into main(); it does NOT sandbox the code
+  # (a project hook legitimately needs the session's git/gh credentials).
   local local_hook="${PROJECT_DIR}/scripts/cc-web-setup.local.sh"
   if [ -f "$local_hook" ]; then
     log "Running project setup hook (cc-web-setup.local.sh)…"
     # shellcheck source=/dev/null
-    source "$local_hook" || { log "WARNING: project setup hook reported errors (see ${LOG})."; rc=1; }
+    ( source "$local_hook" ) || { log "WARNING: project setup hook reported errors (see ${LOG})."; rc=1; }
   fi
 
   if [ "$rc" -eq 0 ]; then
