@@ -283,6 +283,17 @@ ensure_codex_auth() {
   if [ -z "${CODEX_ACCESS_TOKEN:-}" ]; then
     return 0
   fi
+  # An all-whitespace CODEX_ACCESS_TOKEN passes the -z guard above but is unusable
+  # (e.g. a secret slot populated with a stray newline/spaces). Trim leading
+  # whitespace once — reused by the auth.json-blob detection below — and, if
+  # nothing remains, surface a clear "blank" diagnostic instead of letting it fall
+  # through to `codex login --with-access-token`, which would reject it as a
+  # malformed JWT and emit a misleading "must be an agent identity JWT" warning.
+  local _codex_tok_trimmed="${CODEX_ACCESS_TOKEN#"${CODEX_ACCESS_TOKEN%%[![:space:]]*}"}"
+  if [ -z "$_codex_tok_trimmed" ]; then
+    log "WARNING: CODEX_ACCESS_TOKEN is set but contains only whitespace — treating as unset (no codex login)."
+    return 1
+  fi
   if ! command -v codex >/dev/null 2>&1; then
     log "WARNING: CODEX_ACCESS_TOKEN is set but the codex CLI is not on PATH — skipping."
     return 1
@@ -297,7 +308,7 @@ ensure_codex_auth() {
   # on TWO fronts: (1) `unset` it in THIS process, and (2) persist
   # `unset CODEX_ACCESS_TOKEN` to CLAUDE_ENV_FILE so subsequent Bash tool shells
   # inherit the unset too. Then codex falls back to ~/.codex/auth.json.
-  local _codex_tok_trimmed="${CODEX_ACCESS_TOKEN#"${CODEX_ACCESS_TOKEN%%[![:space:]]*}"}"
+  # (_codex_tok_trimmed is the leading-trimmed token computed above.)
   if [ "${_codex_tok_trimmed:0:1}" = '{' ]; then
     if [ -n "${CLAUDE_ENV_FILE:-}" ] && ! grep -qF 'unset CODEX_ACCESS_TOKEN' "$CLAUDE_ENV_FILE" 2>/dev/null; then
       if echo 'unset CODEX_ACCESS_TOKEN' >> "$CLAUDE_ENV_FILE" 2>>"$LOG"; then
@@ -357,6 +368,9 @@ configure_codex_sandbox() {
       return 0
     fi
 
+    # `[].]` is a valid two-member bracket class {']', '.'} — a `]` immediately
+    # after `[` is literal in POSIX ERE — so this matches a `[permissions]` table
+    # header or any `[permissions.<sub>]` subtable, and nothing else.
     if printf '%s\n' "$toplevel" | grep -Eq '^[[:space:]]*default_permissions[[:space:]]*=' \
         || grep -Eq '^[[:space:]]*\[permissions[].]' "$config"; then
       log "Codex permission profile already configured — leaving config.toml untouched."

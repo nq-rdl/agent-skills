@@ -48,7 +48,27 @@ if [ -d "$PROJECT_DIR/.claude/skills" ]; then
     [ -e "$s" ] || continue
     sname="$(sed -n 's/^name:[[:space:]]*//p' "$s" | head -n1)"
     [ -n "$sname" ] || sname="$(basename "$(dirname "$s")")"
-    sdesc="$(sed -n 's/^description:[[:space:]]*//p' "$s" | head -n1 | cut -c1-120)"
+    # Description's first human line. Handle BOTH the inline form
+    # (`description: text`) and YAML block/folded scalars (`description: >-` or
+    # `|` followed by indented lines): a bare `sed` on the `description:` line
+    # would capture the literal `>-`/`|` indicator for the folded form. For a
+    # block indicator (or an empty value) fall through to the first non-empty
+    # continuation line, and strip one layer of surrounding quotes.
+    sdesc="$(awk -v sq="'" '
+      /^description:([[:space:]]|$)/ {
+        line = $0
+        sub(/^description:[[:space:]]*/, "", line)
+        if (line == "" || line ~ /^[|>][+-]?[[:space:]]*$/) {
+          while ((getline nl) > 0) {
+            if (nl ~ /[^[:space:]]/) { sub(/^[[:space:]]+/, "", nl); line = nl; break }
+          }
+        }
+        sub(/^"/, "", line); sub(/"$/, "", line)
+        sub("^" sq, "", line); sub(sq "$", "", line)
+        print line
+        exit
+      }
+    ' "$s" | cut -c1-120)"
     if [ -n "$sdesc" ]; then
       skills+=("/$sname — $sdesc")
     else
