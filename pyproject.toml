@@ -71,6 +71,7 @@ lint = "ruff check ."
 test = "pytest"
 typecheck = "ty check src/"
 validate-skills = "python -m skills.ref.repo_check"
+cc-web-setup-test = "bash skills/cc-web-setup/scripts/test-cc-web-setup.sh && bash skills/cc-web-setup/scripts/test-web-bootstrap.sh"
 
 [tool.pixi.dependencies]
 pytest = ">=7.0"

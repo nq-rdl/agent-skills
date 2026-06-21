@@ -1,0 +1,2 @@
+kind: Added
+body: 'cc-web-setup: new skill that bootstraps a repository for Claude Code on the web — installs a parameterized `.claude/settings.json` plus portable `web-bootstrap.sh` (SessionStart hook), `cc-web-setup.sh` (pre-snapshot setup script that pre-seeds the RDL marketplace), and `announce-capabilities.sh`. Project-specific dependencies stay in an optional `*.local.sh` seam. Ships unit + integration tests (gh/codex provisioning, parameterized plugin pre-seed, CLAUDE_CODE_REMOTE gate).'
