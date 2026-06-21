@@ -1,0 +1,125 @@
+# Template: Jules issue-lifecycle (unblocked-issues) workflow.
+#
+# Trigger: `issues: [closed]`. A first job finds open issues that were blocked by
+# the just-closed issue ("blocked by #N" / "depends on #N" syntax) and are now
+# fully unblocked; a second job fans out over those issue numbers and invokes
+# Jules on each. This is NOT issue_comment and does NOT use @jules-* handle guards.
+#
+# Detection is implemented inline with actions/github-script rather than a
+# third-party action, so there is no unverifiable external dependency to pin and
+# the "blocked by" convention is explicit and adjustable below.
+#
+# Placeholders to replace before deploying:
+#   [SECRET_NAME]     — GitHub Actions secret name for the Jules API key
+#   [PROMPT CONTENT]  — repo-specific prompt (indented 12 spaces)
+#
+# Authorisation: each unblocked issue's author association must be OWNER or
+# MEMBER before Jules is invoked on it. author_association comes from the REST
+# API (gh issue view does not expose it), and github-script's core.setOutput is
+# injection-safe, so no bash heredoc is needed here.
+name: Jules Issue Lifecycle
+
+on:
+  issues:
+    types: [closed]
+
+# Serialise the pipeline per closed issue so a rapid close/reopen/close does not
+# launch overlapping detection sweeps.
+concurrency:
+  group: jules-issue-lifecycle-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  detect-unblocked:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+    outputs:
+      matrix: ${{ steps.finder.outputs.issues }}
+      found: ${{ steps.finder.outputs.has_issues }}
+    steps:
+      - name: Find issues unblocked by the closed issue
+        id: finder
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const closed = context.payload.issue.number;
+            const { owner, repo } = context.repo;
+            // Adjust this pattern to match your dependency-tracking convention. It
+            // captures every "#N" inside a "blocked by …" / "depends on …" clause,
+            // including comma/"and"-separated lists like "blocked by #1, #2 and #3".
+            const blockedBy = /(?:blocked by|depends on)\s+((?:#\d+[\s,]*(?:and\s+)?)+)/gi;
+
+            const open = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: "open", per_page: 100,
+            });
+
+            // Cache blocker states so each blocker issue is fetched at most once per
+            // run — repos with shared blockers would otherwise issue redundant REST
+            // calls. The just-closed issue is closed by definition (this is the
+            // `issues: [closed]` event), so seed it to skip a guaranteed lookup.
+            const stateCache = new Map([[closed, "closed"]]);
+            const blockerState = async (number) => {
+              if (!stateCache.has(number)) {
+                const { data } = await github.rest.issues.get({ owner, repo, issue_number: number });
+                stateCache.set(number, data.state);
+              }
+              return stateCache.get(number);
+            };
+
+            const ready = [];
+            for (const issue of open) {
+              if (issue.pull_request) continue;
+              const blockers = [...(issue.body || "").matchAll(blockedBy)]
+                .flatMap((m) => [...m[1].matchAll(/#(\d+)/g)].map((r) => Number(r[1])));
+              if (!blockers.includes(closed)) continue;
+              let allClosed = true;
+              for (const b of blockers) {
+                if ((await blockerState(b)) !== "closed") { allClosed = false; break; }
+              }
+              if (allClosed) ready.push(issue.number);
+            }
+            core.setOutput("issues", JSON.stringify(ready));
+            core.setOutput("has_issues", (ready.length > 0).toString());
+
+  implement:
+    needs: detect-unblocked
+    if: needs.detect-unblocked.outputs.found == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+    strategy:
+      # Each unblocked issue is independent work — a failed dispatch on one must
+      # not cancel the dispatches for the others.
+      fail-fast: false
+      matrix:
+        issue-number: ${{ fromJSON(needs.detect-unblocked.outputs.matrix) }}
+    steps:
+      - name: Fetch issue details
+        id: issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ matrix.issue-number }},
+            });
+            const allowed = ["OWNER", "MEMBER"];
+            core.setOutput("authorized", allowed.includes(issue.author_association).toString());
+            core.setOutput("title", issue.title);
+            core.setOutput("body", issue.body || "No description provided.");
+
+      - name: Invoke Jules on unblocked issue
+        if: steps.issue.outputs.authorized == 'true'
+        uses: nq-rdl/jules-action@d8ed19ed75a6c2a35fd4e06e5b2ca7cd68b27046  # pinned 2026-04-02
+        with:
+          jules_api_key: ${{ secrets.[SECRET_NAME] }}
+          include_commit_log: true
+          require_plan_approval: false
+          title: "Unblocked #${{ matrix.issue-number }}: ${{ steps.issue.outputs.title }}"
+          # The unblocked issue's title and body are available to the prompt as
+          # ${{ steps.issue.outputs.title }} and ${{ steps.issue.outputs.body }}.
+          prompt: |
+            [PROMPT CONTENT]

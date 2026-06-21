@@ -1,0 +1,3 @@
+kind: Added
+body: 'Add the `sql-review-analyse` skill — reads a finished SQL file and produces its templated `.sqlreview/` review artifacts with human-in-the-loop sign-off (#104)'
+time: 2026-05-30T13:00:00.000000000+00:00
