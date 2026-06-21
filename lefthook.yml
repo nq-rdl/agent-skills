@@ -106,6 +106,12 @@ pre-push:
       glob: "skills/cc-web-setup/**/*.sh"
       run: bash skills/cc-web-setup/scripts/test-cc-web-setup.sh && bash skills/cc-web-setup/scripts/test-web-bootstrap.sh
 
+    - name: skillspector
+      glob: "skills/**"
+      # Informational: report findings but never block the push (CI uploads the
+      # SARIF to the Security tab). Set SKILLSPECTOR_SKIP=1 to skip the scan.
+      run: tools/skillspector/scan.sh || true
+
     - name: changie-fragment
       run: |
         base=$(git merge-base HEAD origin/main 2>/dev/null)

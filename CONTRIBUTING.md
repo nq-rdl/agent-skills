@@ -127,6 +127,7 @@ Lefthook runs these in parallel:
 |---|---|
 | `go-test-*` | Full test suite per Go module, `-race -count=1` |
 | `python-test` | `pytest` |
+| `skillspector` | [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector) security scan of `skills/` via Docker. **Informational — reports findings but does not block the push** (CI uploads the same findings as SARIF to the Security tab). Requires Docker. Override the pinned build with `SKILLSPECTOR_REF`, or skip with `SKILLSPECTOR_SKIP=1`. |
 
 ### Validating manually
 
@@ -137,6 +138,7 @@ pixi run validate-skills       # same via legacy Python path (identical output)
 pixi run typecheck             # ty check src/ skills/
 pixi run lint                  # ruff check
 pixi run test                  # pytest
+pixi run skillspector          # SkillSpector security scan of skills/ (Docker)
 
 # Run hook stages on demand
 lefthook run pre-commit
@@ -152,6 +154,7 @@ follow-up PR, the pixi task will be dropped.
 Pull requests trigger:
 
 - `.github/workflows/skills-validation.yml` — builds `asctl` and runs `asctl repo-check`
+- `.github/workflows/skillspector.yml` — runs the NVIDIA SkillSpector scan and uploads SARIF to the Security tab (informational; findings are reported, not gated)
 - Per-module Go test workflows (matrix across Go versions where applicable)
 - Changelog check — fails the PR if no new fragment in `.changes/unreleased/`
 
