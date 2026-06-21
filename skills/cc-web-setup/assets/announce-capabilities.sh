@@ -59,8 +59,16 @@ if [ -d "$PROJECT_DIR/.claude/skills" ]; then
         line = $0
         sub(/^description:[[:space:]]*/, "", line)
         if (line == "" || line ~ /^[|>][+-]?[[:space:]]*$/) {
+          # The text is on the following INDENTED continuation line(s). Reset
+          # first so a missing continuation (e.g. an indicator at EOF) yields an
+          # empty description rather than the literal `>-`/`|`. Skip blank lines,
+          # but STOP at a column-0 line — the closing `---` or a sibling key is
+          # not part of this scalar and must never be taken as the description.
+          line = ""
           while ((getline nl) > 0) {
-            if (nl ~ /[^[:space:]]/) { sub(/^[[:space:]]+/, "", nl); line = nl; break }
+            if (nl ~ /^[[:space:]]*$/) continue
+            if (nl !~ /^[[:space:]]/) break
+            sub(/^[[:space:]]+/, "", nl); line = nl; break
           }
         }
         sub(/^"/, "", line); sub(/"$/, "", line)

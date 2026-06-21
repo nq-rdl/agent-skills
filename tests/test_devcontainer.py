@@ -182,16 +182,18 @@ def test_dockerfile_installs_required_tools():
             f"Dockerfile apt-get install block must list {pkg!r} as its own package"
 
     # The remaining tools come from release tarballs / installers / npm — assert
-    # the specific install marker for each rather than a bare word.
-    install_markers = {
-        "changie": "changie/releases",
-        "pixi": "pixi.sh/install.sh",
-        "claude-code": "@anthropic-ai/claude-code",
-        "lefthook": "lefthook@",
+    # the actual install STEP for each. These are regexes (not bare substrings)
+    # so a tool named only in a comment can't satisfy the check: claude-code and
+    # lefthook must appear on the `npm install` line, not in the prose above it.
+    install_steps = {
+        "changie": r"wget[^\n]*changie/releases",
+        "pixi": r"curl[^\n]*pixi\.sh/install\.sh",
+        "claude-code": r"npm install[^\n]*@anthropic-ai/claude-code",
+        "lefthook": r"npm install[^\n]*lefthook@",
     }
-    for tool, marker in install_markers.items():
-        assert marker in dockerfile, \
-            f"Dockerfile does not install {tool!r} (missing marker {marker!r})"
+    for tool, pattern in install_steps.items():
+        assert re.search(pattern, dockerfile), \
+            f"Dockerfile does not install {tool!r} (no line matching {pattern!r})"
 
 
 def test_firewall_copied_and_sudoers_least_privilege():
