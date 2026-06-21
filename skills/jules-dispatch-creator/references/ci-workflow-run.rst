@@ -22,9 +22,11 @@ Loop prevention
 
 The template's ``if`` guard excludes ``main`` and any branch starting with
 ``jules/``. If Jules creates fix branches with a ``jules/`` prefix, its own PRs
-will not re-trigger the workflow. The ``concurrency`` group ensures only one Jules
-session runs per branch at a time. Verify this convention holds for the
-jules-action version in use.
+will not re-trigger the workflow. The ``concurrency`` group
+(``cancel-in-progress: true``) ensures only one Jules session runs per branch at
+a time, with a newer CI-failure run superseding an older, still-running one —
+unlike the issue-driven families, which queue with ``cancel-in-progress: false``.
+Verify this convention holds for the jules-action version in use.
 
 Prompt contents
 ---------------

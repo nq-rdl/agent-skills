@@ -49,7 +49,10 @@ Do **not** add ``@jules-*`` handle guards; those belong only to mention-dispatch
 Prompt structure
 ----------------
 
-Issue context comes from ``github.event.issue.*`` (there is no triggering comment).
+Issue context (title, body, labels) is fetched via ``gh`` in the ``Fetch issue
+context`` step and injected through ``${{ steps.issue.outputs.* }}`` (there is no
+triggering comment; ``github.event.issue.*`` only supplies trigger metadata such
+as the issue number and ``author_association`` for the gate).
 Otherwise follow the standard ordering in ``SKILL.md``: role + project overview,
 orientation process, role-specific reference material, the injected issue context,
 then the instructions block.

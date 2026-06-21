@@ -172,8 +172,10 @@ Wait for targeted feedback or approval before writing any files.
 
 Once the user approves, write only the workflow file(s) requested in Phase 0.
 
-Read the relevant template from `templates/<workflow>-dispatch.yml.tmpl` (or
-`templates/jules-<family>.yml.tmpl` for the newer families), located in the same
+Read the relevant template from `templates/jules-<role>-dispatch.yml.tmpl`
+(mention-dispatch family, e.g. `jules-swe-dispatch.yml.tmpl`) or
+`templates/jules-<family>.yml.tmpl` (newer families, e.g.
+`jules-label-dispatch.yml.tmpl`, `jules-scheduled.yml.tmpl`), located in the same
 directory as this SKILL.md — not the project's working directory. Replace
 `[PROMPT CONTENT]` with the approved prompt, indented **12 spaces** (the YAML
 literal block scalar level in the template). Replace `[SECRET_NAME]` with the
@@ -185,8 +187,8 @@ YAML exactly — do not reformat, reorder, or simplify it.
 
 | Family | `@jules-*` guards | Issue context source | Actor authorisation | Concurrency |
 |--------|-------------------|----------------------|---------------------|-------------|
-| mention-dispatch | yes (all other handles) | `github.event.issue` via `gh` (+ `github.event.comment.body` for the triggering comment) | comment `author_association` OWNER/MEMBER | — |
-| label-dispatch | no | `github.event.issue` via `gh` | issue `author_association` OWNER/MEMBER | yes (per issue) |
+| mention-dispatch | yes (all other handles) | `steps.issue.outputs.*` (fetched via `gh`) + `github.event.comment.body` for the triggering comment | comment `author_association` OWNER/MEMBER | — |
+| label-dispatch | no | `steps.issue.outputs.*` (fetched via `gh`) | issue `author_association` OWNER/MEMBER | yes (per issue) |
 | scheduled | no | none | none (repo-controlled) | yes |
 | ci-workflow-run | no | none (CI failure context) | none | yes (per branch) |
 | issue-lifecycle | no | per-issue via github-script | per-issue `author_association` | yes (per closed issue) |
