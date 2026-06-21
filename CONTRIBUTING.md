@@ -127,6 +127,7 @@ Lefthook runs these in parallel:
 |---|---|
 | `go-test-*` | Full test suite per Go module, `-race -count=1` |
 | `python-test` | `pytest` |
+| `skillspector` | [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector) security scan of `skills/` via Docker (also enforced in CI). Requires Docker. Override the pinned build with `SKILLSPECTOR_REF`, or bypass with `SKILLSPECTOR_SKIP=1` (not recommended). |
 
 ### Validating manually
 
@@ -137,6 +138,7 @@ pixi run validate-skills       # same via legacy Python path (identical output)
 pixi run typecheck             # ty check src/ skills/
 pixi run lint                  # ruff check
 pixi run test                  # pytest
+pixi run skillspector          # SkillSpector security scan of skills/ (Docker)
 
 # Run hook stages on demand
 lefthook run pre-commit

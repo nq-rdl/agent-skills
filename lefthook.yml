@@ -91,6 +91,10 @@ pre-push:
       glob: "*.py"
       run: pixi run -e default test
 
+    - name: skillspector
+      glob: "skills/**"
+      run: tools/skillspector/scan.sh
+
     - name: changie-fragment
       run: |
         base=$(git merge-base HEAD origin/main 2>/dev/null)

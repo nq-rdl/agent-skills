@@ -71,6 +71,7 @@ lint = "ruff check ."
 test = "pytest"
 typecheck = "ty check src/"
 validate-skills = "python -m skills.ref.repo_check"
+skillspector = "tools/skillspector/scan.sh"
 
 [tool.pixi.dependencies]
 pytest = ">=7.0"
