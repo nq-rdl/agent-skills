@@ -62,10 +62,12 @@ artifacts don't contain.
 1. Resolve the **SQL file** under review (from the argument, or ask).
 2. Find the matching `.sqlreview/` artifacts for that SQL file (review doc
    markdown + structured JSON). See `references/artifact-contract.rst`.
-3. If `.sqlreview/` or the artifacts for this SQL file are missing, stop and
-   tell the user to run the suite's **analyse** step first (and the **setup**
-   step if the `.sqlreview/` folder itself is absent). `explain` does not
-   generate review content.
+3. If `.sqlreview/` is absent, or no review artifacts exist at all for this SQL
+   file, stop and tell the user to run the suite's **setup** step (if the folder
+   itself is absent) and/or the **analyse** step. `explain` does not generate
+   review content. Partial presence (e.g. `review.md` present but `review.json`
+   missing) is **not** a stop condition — follow the graceful-degradation rules
+   in `references/artifact-contract.rst` instead of stopping.
 4. **Confirm the cohort + data-element structure.** Check that the SQL
    decomposes into a **cohort** (inclusion/exclusion criteria) with **data
    elements** joined to it (see `references/definitions.rst`). If it does not —
@@ -86,6 +88,8 @@ was performed against — see the contract).
 - **No usable baseline, or first time through** → **full walkthrough** (Step 3).
 - **A baseline exists and the SQL has changed since** → **resume / diff
   walkthrough** (Step 4).
+- **A baseline exists and the SQL is unchanged since** → **full walkthrough**
+  (Step 3) against the existing artifacts; there is no delta to resume.
 
 If unsure which applies, ask the human whether this is a fresh walkthrough or a
 pick-up of a prior review.
@@ -115,7 +119,7 @@ suggest it be fed back to `analyse` — do not silently "fix" the artifacts here
 When picking up a prior review:
 
 1. Compute the delta: `git diff <baseline_ref>..HEAD -- <sql_file>` (and the
-   review artifacts, if they moved too).
+   review artifacts, if they changed too).
 2. **Walk the human through what changed** — each hunk, in plain language, and
    how it maps back to the review doc's assumptions and limitations. Pause for
    confirmation as in Step 3.

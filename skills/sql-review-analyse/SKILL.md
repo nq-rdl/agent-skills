@@ -83,6 +83,9 @@ Check for an existing review for this SQL file (`review.json` → `baseline_ref`
 - **No prior review** → **fresh analysis** (Step 3).
 - **A prior review exists and the SQL has changed since its `baseline_ref`** →
   **resume / diff analysis** (Step 4).
+- **A prior review exists and the SQL is unchanged since its `baseline_ref`** →
+  the review is already up to date; confirm with the DE whether to re-review
+  anyway (treat as a fresh analysis if so), otherwise stop without rewriting it.
 
 If unsure which applies, ask the DE whether this is a first review or an update.
 
@@ -135,7 +138,7 @@ conforming to `references/artifact-contract.rst`:
   / Limitations.
 - `review.json` — the machine contract: `sql_path`, `baseline_ref` (the SQL
   file's current HEAD commit), the signed-off `assumptions` and `limitations`
-  (each with `id` and `code_ref`), optional `mappings`, `generated_by`,
+  (each with `id`, `text`, and `code_ref`), optional `mappings`, `generated_by`,
   `generated_at`.
 
 Keep the two consistent — every assumption/limitation appears in both. On a
