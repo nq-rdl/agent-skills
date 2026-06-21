@@ -168,10 +168,32 @@ def test_go_version_matches_repo():
 
 def test_dockerfile_installs_required_tools():
     dockerfile = DOCKERFILE.read_text(encoding="utf-8")
-    # Verify the install STEP for each tool is present (not just a bare word):
-    # apt packages for gh/sudo, release/installer steps for the rest.
-    for needle in ("gh", "sudo", "changie", "pixi", "claude-code", "lefthook"):
-        assert needle in dockerfile, f"Dockerfile does not install {needle!r}"
+    # A bare `needle in dockerfile` substring check yields false positives (e.g.
+    # "gh" matches "lefthook" / a URL), so it can't actually lock the install
+    # contract. Assert the real install STEP for each tool instead.
+
+    # apt packages must be listed inside the `apt-get install` block, each as its
+    # own package entry — not merely present somewhere in the file.
+    m = re.search(r"apt-get\s+install\b[^\n]*\\\n(.*?)&&", dockerfile, re.DOTALL)
+    assert m, "Dockerfile must contain an apt-get install block"
+    apt_block = m.group(1)
+    for pkg in ("gh", "sudo"):
+        assert re.search(rf"^\s*{re.escape(pkg)}\s*\\?\s*$", apt_block, re.M), \
+            f"Dockerfile apt-get install block must list {pkg!r} as its own package"
+
+    # The remaining tools come from release tarballs / installers / npm — assert
+    # the actual install STEP for each. These are regexes (not bare substrings)
+    # so a tool named only in a comment can't satisfy the check: claude-code and
+    # lefthook must appear on the `npm install` line, not in the prose above it.
+    install_steps = {
+        "changie": r"wget[^\n]*changie/releases",
+        "pixi": r"curl[^\n]*pixi\.sh/install\.sh",
+        "claude-code": r"npm install[^\n]*@anthropic-ai/claude-code",
+        "lefthook": r"npm install[^\n]*lefthook@",
+    }
+    for tool, pattern in install_steps.items():
+        assert re.search(pattern, dockerfile), \
+            f"Dockerfile does not install {tool!r} (no line matching {pattern!r})"
 
 
 def test_firewall_copied_and_sudoers_least_privilege():

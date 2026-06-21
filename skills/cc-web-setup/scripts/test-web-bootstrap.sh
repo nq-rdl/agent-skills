@@ -39,6 +39,12 @@ new_stub_dir() {
 
 write_stub() {
   local dir="$1" name="$2" body="$3"
+  # new_stub_dir() pre-populates the dir with symlinks to the real coreutils
+  # (e.g. `id`). Without removing it first, the `>` redirect would FOLLOW such a
+  # symlink and try to overwrite the real system binary (clobbering it, or
+  # failing with EACCES) instead of replacing the link with our stub. Drop any
+  # existing entry so the stub always lands in the temp dir.
+  rm -f "$dir/$name"
   printf '#!/usr/bin/env bash\n%s\n' "$body" >"$dir/$name"
   chmod +x "$dir/$name"
 }
@@ -148,6 +154,28 @@ test_codex_fresh_login() {
     || ok "codex fresh-login: token never in argv"
 }
 
+test_codex_blank_token() {
+  local d log envf; d="$(new_stub_dir)"; log="$WORK/c4.log"; envf="$WORK/c4-envfile"; : > "$envf"
+  # codex stub drops a sentinel if it is ever invoked.
+  write_stub "$d" codex "> '$WORK/c4-called'; exit 0"
+  rm -f "$WORK/c4-called"
+  # A whitespace-only token is non-empty (passes the -z guard) but unusable: it
+  # must be diagnosed as blank, NOT piped to `codex login --with-access-token`.
+  ( export CLAUDE_ENV_FILE="$envf"; run_ensure_codex_auth "$d" "$log" "   " ) \
+    && fail "codex blank-token: returned 0 for a whitespace-only token" \
+    || ok "codex blank-token: returned non-zero"
+  grep -q 'only whitespace' "$log" 2>/dev/null \
+    && ok "codex blank-token: diagnosed as blank" \
+    || fail "codex blank-token: not diagnosed as blank. Log: $(cat "$log" 2>/dev/null)"
+  [ -e "$WORK/c4-called" ] && fail "codex blank-token: codex was invoked" \
+    || ok "codex blank-token: codex NOT invoked"
+  # "treating as unset" must be honored: the blank token has to be dropped from the
+  # session env (codex reads CODEX_ACCESS_TOKEN at runtime), so the unset is persisted.
+  grep -qF 'unset CODEX_ACCESS_TOKEN' "$envf" 2>/dev/null \
+    && ok "codex blank-token: persisted unset to CLAUDE_ENV_FILE" \
+    || fail "codex blank-token: did not persist unset. File: $(cat "$envf" 2>/dev/null)"
+}
+
 run_configure_codex_sandbox() {
   local home="$1" out_file="$2"
   # shellcheck disable=SC2030,SC2031,SC2034  # LOG is read by configure_codex_sandbox (sourced)
@@ -232,6 +260,7 @@ test_gh_missing_sha256sum
 test_codex_no_token
 test_codex_missing_cli
 test_codex_fresh_login
+test_codex_blank_token
 test_sandbox_creates
 test_sandbox_respects_existing
 test_persist_path
