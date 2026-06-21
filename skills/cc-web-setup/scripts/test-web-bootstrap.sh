@@ -39,6 +39,12 @@ new_stub_dir() {
 
 write_stub() {
   local dir="$1" name="$2" body="$3"
+  # new_stub_dir() pre-populates the dir with symlinks to the real coreutils
+  # (e.g. `id`). Without removing it first, the `>` redirect would FOLLOW such a
+  # symlink and try to overwrite the real system binary (clobbering it, or
+  # failing with EACCES) instead of replacing the link with our stub. Drop any
+  # existing entry so the stub always lands in the temp dir.
+  rm -f "$dir/$name"
   printf '#!/usr/bin/env bash\n%s\n' "$body" >"$dir/$name"
   chmod +x "$dir/$name"
 }

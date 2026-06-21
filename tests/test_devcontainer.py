@@ -168,10 +168,30 @@ def test_go_version_matches_repo():
 
 def test_dockerfile_installs_required_tools():
     dockerfile = DOCKERFILE.read_text(encoding="utf-8")
-    # Verify the install STEP for each tool is present (not just a bare word):
-    # apt packages for gh/sudo, release/installer steps for the rest.
-    for needle in ("gh", "sudo", "changie", "pixi", "claude-code", "lefthook"):
-        assert needle in dockerfile, f"Dockerfile does not install {needle!r}"
+    # A bare `needle in dockerfile` substring check yields false positives (e.g.
+    # "gh" matches "lefthook" / a URL), so it can't actually lock the install
+    # contract. Assert the real install STEP for each tool instead.
+
+    # apt packages must be listed inside the `apt-get install` block, each as its
+    # own package entry — not merely present somewhere in the file.
+    m = re.search(r"apt-get\s+install\b[^\n]*\\\n(.*?)&&", dockerfile, re.DOTALL)
+    assert m, "Dockerfile must contain an apt-get install block"
+    apt_block = m.group(1)
+    for pkg in ("gh", "sudo"):
+        assert re.search(rf"^\s*{re.escape(pkg)}\s*\\?\s*$", apt_block, re.M), \
+            f"Dockerfile apt-get install block must list {pkg!r} as its own package"
+
+    # The remaining tools come from release tarballs / installers / npm — assert
+    # the specific install marker for each rather than a bare word.
+    install_markers = {
+        "changie": "changie/releases",
+        "pixi": "pixi.sh/install.sh",
+        "claude-code": "@anthropic-ai/claude-code",
+        "lefthook": "lefthook@",
+    }
+    for tool, marker in install_markers.items():
+        assert marker in dockerfile, \
+            f"Dockerfile does not install {tool!r} (missing marker {marker!r})"
 
 
 def test_firewall_copied_and_sudoers_least_privilege():
