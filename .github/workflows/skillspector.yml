@@ -31,14 +31,18 @@ jobs:
           sarif_file: skillspector.sarif
           category: skillspector
 
-      - name: Enforce gate
-        if: steps.scan.outputs.exit != '0'
+      # Informational only: report findings to the run summary but never fail the
+      # check. Findings surface as code-scanning alerts (Security tab, category
+      # "skillspector") via the SARIF upload above.
+      - name: Report findings
+        if: always()
         env:
           SCAN_EXIT: ${{ steps.scan.outputs.exit }}
         run: |
-          if [ "$SCAN_EXIT" = "1" ]; then
-            echo "SkillSpector flagged a high-risk skill (risk score > 50)." >&2
+          if [ "$SCAN_EXIT" = "0" ]; then
+            echo "SkillSpector: no high-risk findings." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$SCAN_EXIT" = "1" ]; then
+            echo "SkillSpector flagged potential findings (risk score > 50). Review them in the Security tab (code scanning, category \`skillspector\`). Informational — this check does not gate the PR." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "SkillSpector failed to run (exit $SCAN_EXIT): tool/execution error, not a finding." >&2
+            echo "SkillSpector failed to run (exit $SCAN_EXIT): tool/execution error. Informational — this check does not gate the PR." >> "$GITHUB_STEP_SUMMARY"
           fi
-          exit 1

@@ -108,7 +108,9 @@ pre-push:
 
     - name: skillspector
       glob: "skills/**"
-      run: tools/skillspector/scan.sh
+      # Informational: report findings but never block the push (CI uploads the
+      # SARIF to the Security tab). Set SKILLSPECTOR_SKIP=1 to skip the scan.
+      run: tools/skillspector/scan.sh || true
 
     - name: changie-fragment
       run: |

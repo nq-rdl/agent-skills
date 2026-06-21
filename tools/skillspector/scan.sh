@@ -14,8 +14,9 @@
 #   SKILLSPECTOR_SKIP    Set to 1 to skip the scan entirely (escape hatch).
 #
 # Exit codes: 0 = clean, 1 = risk_score > 50 (a finding), 2 = execution error
-# (missing/failed Docker, or a SkillSpector internal error). The CI gate uses
-# this split to distinguish a real finding from a tool failure.
+# (missing/failed Docker, or a SkillSpector internal error). Both callers (the CI
+# workflow and the pre-push hook) report findings for visibility but do not fail
+# on them — findings surface as code-scanning alerts via the CI SARIF upload.
 set -euo pipefail
 
 # Pinned for reproducible, supply-chain-safe scans. No upstream release tags
