@@ -33,6 +33,12 @@ jobs:
 
       - name: Enforce gate
         if: steps.scan.outputs.exit != '0'
+        env:
+          SCAN_EXIT: ${{ steps.scan.outputs.exit }}
         run: |
-          echo "SkillSpector flagged a high-risk skill (exit ${{ steps.scan.outputs.exit }})." >&2
+          if [ "$SCAN_EXIT" = "1" ]; then
+            echo "SkillSpector flagged a high-risk skill (risk score > 50)." >&2
+          else
+            echo "SkillSpector failed to run (exit $SCAN_EXIT): tool/execution error, not a finding." >&2
+          fi
           exit 1

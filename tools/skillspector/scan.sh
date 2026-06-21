@@ -20,7 +20,11 @@ set -euo pipefail
 # exist, so we pin to a commit SHA. Bump this (or override via SKILLSPECTOR_REF)
 # to upgrade.
 SKILLSPECTOR_REF="${SKILLSPECTOR_REF:-a5092dd9b9521ff57a9b53612bb129ce78019002}"
-IMAGE="skillspector:${SKILLSPECTOR_REF}"
+# Docker tags allow only [A-Za-z0-9_.-]; a branch ref like "feature/foo" would
+# produce an invalid tag. Derive a sanitized tag from the ref (the unmodified ref
+# is still used for the git build URL below).
+SKILLSPECTOR_TAG="$(printf '%s' "$SKILLSPECTOR_REF" | tr -c 'A-Za-z0-9_.-' '-')"
+IMAGE="skillspector:${SKILLSPECTOR_TAG}"
 
 if [ "${SKILLSPECTOR_SKIP:-0}" = "1" ]; then
   echo "skillspector: SKILLSPECTOR_SKIP=1 set; skipping scan."
@@ -45,10 +49,12 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 args=(scan /scan/skills --no-llm --format "${SKILLSPECTOR_FORMAT:-terminal}")
 
 if [ -n "${SKILLSPECTOR_OUTPUT:-}" ]; then
-  # Need to write the report into the workspace: mount read-write.
+  # Need to write the report into the workspace: mount read-write. Run as the host
+  # user (with a writable HOME) so the report isn't left root-owned on the host.
   echo "skillspector: scanning skills/ (-> ${SKILLSPECTOR_OUTPUT})..." >&2
   args+=(--output "/scan/${SKILLSPECTOR_OUTPUT}")
-  exec docker run --rm -v "${REPO_ROOT}:/scan" "$IMAGE" "${args[@]}"
+  exec docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+    -v "${REPO_ROOT}:/scan" "$IMAGE" "${args[@]}"
 else
   echo "skillspector: scanning skills/ (static analysis)..." >&2
   exec docker run --rm -v "${REPO_ROOT}:/scan:ro" "$IMAGE" "${args[@]}"
