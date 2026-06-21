@@ -176,6 +176,50 @@ test_codex_blank_token() {
     || fail "codex blank-token: did not persist unset. File: $(cat "$envf" 2>/dev/null)"
 }
 
+test_codex_trims_token() {
+  local d log envf; d="$(new_stub_dir)"; log="$WORK/c5.log"; envf="$WORK/c5-envfile"; : > "$envf"
+  # codex stub: report "unauthenticated" so login runs, then capture the stdin the
+  # token is piped on.
+  # shellcheck disable=SC2016
+  write_stub "$d" codex \
+    '[ "$1 $2" = "login status" ] && exit 1
+     if [ "$2" = "--with-access-token" ]; then cat > "'"$WORK"'/c5-stdin"; exit 0; fi
+     exit 1'
+  rm -f "$WORK/c5-stdin"
+  # A valid JWT wrapped in surrounding whitespace (e.g. a secret read from a file
+  # with a trailing newline). It must be trimmed before being piped to codex,
+  # otherwise codex rejects the otherwise-valid JWT as malformed.
+  ( export CLAUDE_ENV_FILE="$envf"; run_ensure_codex_auth "$d" "$log" "
+  SECRET.JWT.VALUE
+  " ) && ok "codex trim-token: returns 0" \
+    || fail "codex trim-token: returned non-zero"
+  [ "$(cat "$WORK/c5-stdin" 2>/dev/null)" = "SECRET.JWT.VALUE" ] \
+    && ok "codex trim-token: surrounding whitespace stripped before stdin" \
+    || fail "codex trim-token: token not trimmed. Got: [$(cat "$WORK/c5-stdin" 2>/dev/null)]"
+  # The RAW (whitespace-wrapped) value still in the live env is a malformed JWT for
+  # later `codex exec`, so after the trimmed login it must be dropped + persisted.
+  grep -qF 'unset CODEX_ACCESS_TOKEN' "$envf" 2>/dev/null \
+    && ok "codex trim-token: dropped the raw whitespace token from the session env" \
+    || fail "codex trim-token: did not persist unset of the raw token. File: [$(cat "$envf" 2>/dev/null)]"
+}
+
+test_codex_clean_token_kept() {
+  local d log envf; d="$(new_stub_dir)"; log="$WORK/c6.log"; envf="$WORK/c6-envfile"; : > "$envf"
+  # shellcheck disable=SC2016
+  write_stub "$d" codex \
+    '[ "$1 $2" = "login status" ] && exit 1
+     if [ "$2" = "--with-access-token" ]; then exit 0; fi
+     exit 1'
+  # A pristine JWT (no surrounding whitespace) must be LEFT in the env so the normal
+  # direct-token path keeps working for later codex calls — do NOT drop it.
+  ( export CLAUDE_ENV_FILE="$envf"; run_ensure_codex_auth "$d" "$log" "SECRET.JWT.VALUE" ) \
+    && ok "codex clean-token: returns 0" \
+    || fail "codex clean-token: returned non-zero"
+  grep -qF 'unset CODEX_ACCESS_TOKEN' "$envf" 2>/dev/null \
+    && fail "codex clean-token: wrongly dropped a pristine token. File: [$(cat "$envf" 2>/dev/null)]" \
+    || ok "codex clean-token: pristine token left in place"
+}
+
 run_configure_codex_sandbox() {
   local home="$1" out_file="$2"
   # shellcheck disable=SC2030,SC2031,SC2034  # LOG is read by configure_codex_sandbox (sourced)
@@ -261,6 +305,8 @@ test_codex_no_token
 test_codex_missing_cli
 test_codex_fresh_login
 test_codex_blank_token
+test_codex_trims_token
+test_codex_clean_token_kept
 test_sandbox_creates
 test_sandbox_respects_existing
 test_persist_path
